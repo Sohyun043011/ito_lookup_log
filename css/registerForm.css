@@ -1,0 +1,12 @@
+body{
+	font-family: 나눔스퀘어, 'NanumSquare', sans-serif;
+    margin:0;
+    height:100%;
+}
+div{
+    box-sizing: border-box;
+}
+p,h4,h3,h2,h1,span{
+    /* 글씨 이뿌게 */
+	transform : rotate(0.04deg); 
+}

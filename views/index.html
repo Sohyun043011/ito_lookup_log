@@ -4,9 +4,64 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Docawefument</title>
+    <title>근태관리</title>
+  	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  	<link rel="stylesheet" href="../css/registerForm.css">
+  	<!-- Bootstrap CSS -->
+  	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+   	<!-- 글꼴 -->
+   	<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/moonspam/NanumSquare@1.0/nanumsquare.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.14.3/xlsx.full.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js"></script>
+  	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  	<script src="registerForm_ajax2.js"></script>
+  	<script src="exportexcel.js"></script>
+    <script type="text/javascript">
+        $.datepicker.setDefaults({
+            dateFormat: 'yy-mm-dd',
+            prevText: '이전 달',
+            nextText: '다음 달',
+            monthNames: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+            monthNamesShort: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+            dayNames: ['일', '월', '화', '수', '목', '금', '토'],
+            dayNamesShort: ['일', '월', '화', '수', '목', '금', '토'],
+            dayNamesMin: ['일', '월', '화', '수', '목', '금', '토'],
+            showMonthAfterYear: true,
+            yearSuffix: '년'
+        });
+    
+        $(function() {
+            $("#datepicker1, #datepicker2").datepicker();
+        });
+        </script>
 </head>
 <body>
-    
+    <div id="wrap">
+        <div id="header">
+            <div class="logo">
+                <img id="top_title_img" src="https://webmail.ito.or.kr/userImg/ito.or.kr/logoFile.jpg" style="float:left; margin-top:35px;"></img>
+            </div>
+            <div class="title">
+                <p class="fs-2 fw-bold" id="top_title">초과근무 및 연차 조회</p>
+            </div> 
+        </div>
+        <div class="main">
+            <div class="left_bar">
+                사번 :&nbsp;&nbsp;<input type="text" name="mberNm" id="mberNm" maxlength="16" title="사번" style="height:20px;"><br/><br/>
+                유형 :&nbsp;
+                <select name="type" id="type" title="부서"  style="width:177px; height:28px;">
+                </select><br/><br/>
+                기간 :&nbsp;&nbsp;<br/><br/><input type="text" id="datepicker1" style="height:20px; width:185px;" dir="rtl"> &nbsp;부터 
+                <br/><br/><input type="text" id="datepicker2" style="height:20px; width:185px;" dir="rtl">&nbsp;&nbsp;까지</strong><br/><br/>
+                <input type="button" id="excelFileExport" value="엑셀 파일 다운로드"/>
+                <button id="search">조회하기</button> 
+            </div>
+            <div class="contents" style="overflow:auto;">
+                <div id="table_area" style="width:100%;height:98%;"></div>
+                <div id="result_area"></div>  
+            </div>
+        </div>
+    </div>
 </body>
 </html>
