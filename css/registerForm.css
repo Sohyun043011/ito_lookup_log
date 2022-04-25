@@ -1,3 +1,4 @@
+@charset "UTF-8";
 body{
 	font-family: 나눔스퀘어, 'NanumSquare', sans-serif;
     margin:0;
@@ -6,7 +7,201 @@ body{
 div{
     box-sizing: border-box;
 }
+html{
+    height:100%;
+}
 p,h4,h3,h2,h1,span{
-    /* 글씨 이뿌게 */
 	transform : rotate(0.04deg); 
 }
+::placeholder {
+    color: black;
+    font-size: 0.9em;
+    font-weight: 400;
+    opacity: 1; /* Firefox */
+}
+.container{
+    /* width: 2000px;
+    height:1000px; */
+}
+#container{
+	position:relative;
+	/* width:100%; */	
+}
+
+#wrap{
+	/* overflow:auto; */
+	min-width:1120px;
+	
+	/* min-height:3000px; */
+	
+    /* width: 2000px;
+    height:1000px; */
+}
+.header{
+	
+    /* min-width:700px; */
+    height:160px;
+    /* width:500px; */
+    align-items: center;
+    text-align:center;
+    margin:5px;
+
+    display:flex;
+	flex-direction:row;
+	/* 	border:0.5px solid grey; */
+	/* border-radius : 20px; */
+}
+.title{
+	display:table;
+	/* width:800px; */
+	margin:0 auto;
+	/* text-align:center; */
+	text-align:left;
+	flex:5;
+	letter-spacing:-1px;
+}
+
+#top_title{
+	/* display:table-cell;
+	width:500px;
+	height:inherit;
+	vertical-align:middle;	 */
+	margin:0px;
+	min-width: 263px;
+	color:black;
+}
+.no-border{
+    border-radius: 0px;
+}
+.date_select{
+    align-items: center;
+    justify-content: center;
+}
+.left-container{
+    float:left;
+    position: relative;
+    justify-content: space-between;
+    align-items: center;
+    border:0.5px solid grey;
+    border-radius: 10px;
+    padding:20px;
+    margin:5px;
+    width:250px;
+    min-width: 200px;
+    height:500px;
+}
+.right-container{
+    float:right;
+    
+    height: 500px;
+    
+    /* height:100%; */
+    position:absolute;
+    left:255px;
+    width: 1300px;
+    padding:10px;
+    margin:5px;
+   /*  margin-right: 0px; */
+    border:0.5px solid grey;
+    border-radius: 10px;
+    overflow:auto; 
+}
+.input-container{
+    font-size:14px;
+    /* position:sticky; */
+    display:flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    top:70px;
+}
+.btn_class{
+    display:block;
+    align-items: center;
+    justify-content: space-between;
+    
+    
+}
+.btn_search {
+	margin: 5px;
+	width: 100%;
+}
+.ani-time{
+	transition : all 0.5s;
+}
+
+/* .left_bar{
+	padding:20px;
+	border:1px solid black;
+	float:left;
+	width:430px;
+	height:800px;
+	flex:1;
+}
+ */
+
+
+.contents{
+	padding:10px;
+	border:1px solid black;
+	float:left;
+	margin-left:10px;
+	height:820px;
+	flex:6;
+}
+.input_div{
+	display: flex;
+    align-items: center;
+}
+.main{
+	display:flex;
+	flex-direction:row;
+}
+
+.lookup{
+	border-collapse:collapse;
+	border-top:3px solid #168;
+	font-size:12px;
+	
+	/* table-layout:fixed; 
+	표크기 고정할 때 사용  */
+	
+	
+}
+
+.lookup th{
+	color:#168;
+	background:#f0f6f9;
+	
+}
+
+.lookup th, .lookup td{
+	text-align:center;	
+	padding:10px;
+	border:1px solid #ddd;	
+	white-space:nowrap; 
+	width:65px;
+	word-break:break-all;
+	
+}
+
+.lookup th:first-child, .lookup td:first-child{
+	border-left:0;
+}
+
+.lookup th:last-child, .lookup td:last-child{
+	border-right:0;	
+}
+
+.lookup tr td:first-child{
+	text-align: center;
+}
+
+.lookup caption{caption-side: bottom; display:none}
+
+#table_area{
+	margin:10px;
+}
+
+
+

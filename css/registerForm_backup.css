@@ -1,0 +1,90 @@
+@charset "UTF-8";
+body{
+	font-family:맑은고딕;
+}
+.header{
+	display:flex;
+	flex-direction:row;
+	width:100%;
+	text-align:center;
+	border:1px solid black;
+	border-radius : 30px;
+}
+.title{
+	display:table;
+	width:800px;
+	margin:0 auto;
+	height:160px;
+	text-align:center;
+	flex:5;
+	letter-spacing:5px;
+}
+
+
+#top_title{
+	display:table-cell;
+	width:500px;
+	height:inherit;
+	vertical-align:middle;	
+}
+
+.left_bar{
+	padding:20px;
+	border:1px solid black;
+	float:left;
+	width:430px;
+	height:800px;
+	flex:1;
+}
+
+.contents{
+	padding:10px;
+	border:1px solid black;
+	float:left;
+	margin-left:10px;
+	height:820px;
+	flex:6;
+}
+.main{
+	display:flex;
+	flex-direction:row;
+}
+.logo{
+	flex:1;	
+}
+.lookup{
+	border-collapse:collapse;
+	border-top:3px solid #168;
+}
+
+.lookup th{
+	color:#168;
+	background:#f0f6f9;
+	text-align:center;	
+}
+
+.lookup th, .lookup td{
+	padding:10px;
+	border:1px solid #ddd;	
+	white-space:nowrap;
+}
+
+.lookup th:first-child, .lookup td:first-child{
+	border-left:0;
+}
+
+.lookup th:last-child, .lookup td:last-child{
+	border-right:0;	
+}
+
+.lookup tr td:first-child{
+	text-align:center;
+}
+
+.lookup caption{caption-side: bottom; display:none}
+
+#table_area{
+	margin:10px;
+}
+
+

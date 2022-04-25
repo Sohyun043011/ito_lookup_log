@@ -38,30 +38,59 @@
 </head>
 <body>
     <div id="wrap">
-        <div id="header">
-            <div class="logo">
-                <img id="top_title_img" src="https://webmail.ito.or.kr/userImg/ito.or.kr/logoFile.jpg" style="float:left; margin-top:35px;"></img>
+        <div id="container">
+            <div class="header">
+                <div class="logo">
+                    <img id="top_title_img" src="https://webmail.ito.or.kr/userImg/ito.or.kr/logoFile.jpg" style="float:left; height:60px;">
+                </div>
+                <div class="title">
+                    <p class="fs-3 fw-bold" id="top_title">초과근무 및 연차 조회</p>
+                </div> 
             </div>
-            <div class="title">
-                <p class="fs-2 fw-bold" id="top_title">초과근무 및 연차 조회</p>
-            </div> 
+            <div class="left-container">
+                <div class="input-container">
+    
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">사번</span>
+                        <input type="text" name="mberNm" id="mberNm" maxlength="16" title="사번" class="form-control" placeholder="사번을 입력해주세요" aria-label="Username" aria-describedby="basic-addon1">
+                      </div>
+                      
+                      <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">유형</span>
+                            <select name="type" id="type" title="부서" class="form-select" style="font-size:smaller">
+                            <option value="" disabled selected>부서를 선택해주세요</option>
+                            
+    
+                      </select>
+                      </div>
+                      
+                      <div class="date_select">
+                          <div class="input-group mb-3">
+                              <span class="input-group-text w-100 no-border" id="basic-addon1">날짜선택</span>
+                              <input type="text" id="datepicker1" class="form-control w-100 no-border"  style="margin-left: 0px;" placeholder="시작 날짜를 선택해주세요" aria-describedby="basic-addon1" dir="rtl">
+                              
+                              <input type="text" id="datepicker2" class="form-control w-100 no-border" style="margin-left: 0px;" placeholder="끝 날짜를 선택해주세요"  dir="rtl">
+                              
+                          </div>
+                      </div>
+                  
+                      <div class="btn_class">
+                          <button type="button" class="btn btn-secondary btn_search" id="search" >출퇴근 기록 조회하기</button>
+                          <button type="button" class="btn btn-secondary btn_search" id="btn_search2" >급량비 조회하기</button>
+                          <button type="button" class="btn btn-secondary btn_search" id="btn_download">Excel Download</button>
+                      </div>
+                </div>
+                
+    
+            </div>
+    
+            <div class="right-container">
+                <div id="table_area"></div>
+                <div id="result_area"></div>
+            </div>
+            <div class="" style="clear:both"></div>
         </div>
-        <div class="main">
-            <div class="left_bar">
-                사번 :&nbsp;&nbsp;<input type="text" name="mberNm" id="mberNm" maxlength="16" title="사번" style="height:20px;"><br/><br/>
-                유형 :&nbsp;
-                <select name="type" id="type" title="부서"  style="width:177px; height:28px;">
-                </select><br/><br/>
-                기간 :&nbsp;&nbsp;<br/><br/><input type="text" id="datepicker1" style="height:20px; width:185px;" dir="rtl"> &nbsp;부터 
-                <br/><br/><input type="text" id="datepicker2" style="height:20px; width:185px;" dir="rtl">&nbsp;&nbsp;까지</strong><br/><br/>
-                <input type="button" id="excelFileExport" value="엑셀 파일 다운로드"/>
-                <button id="search">조회하기</button> 
-            </div>
-            <div class="contents" style="overflow:auto;">
-                <div id="table_area" style="width:100%;height:98%;"></div>
-                <div id="result_area"></div>  
-            </div>
-        </div>
+        
     </div>
 </body>
 </html>
