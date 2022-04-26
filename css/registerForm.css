@@ -78,6 +78,7 @@ p,h4,h3,h2,h1,span{
     justify-content: center;
 }
 .left-container{
+	font: bold;
     float:left;
     position: relative;
     justify-content: space-between;
@@ -90,6 +91,12 @@ p,h4,h3,h2,h1,span{
     min-width: 200px;
     height:500px;
 }
+.form-control{
+	font-size:small !important
+}
+.form-select{
+	font-size:x-small !important
+}
 .right-container{
     float:right;
     
@@ -98,7 +105,7 @@ p,h4,h3,h2,h1,span{
     /* height:100%; */
     position:absolute;
     left:255px;
-    width: 1300px;
+    width: 80%;
     padding:10px;
     margin:5px;
    /*  margin-right: 0px; */
@@ -123,7 +130,7 @@ p,h4,h3,h2,h1,span{
     
 }
 .btn_search {
-	margin: 5px;
+	margin-bottom: 10px;
 	width: 100%;
 }
 .ani-time{
