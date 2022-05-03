@@ -1,4 +1,4 @@
-
+document.write("<script src='../ajax.js'></script>");
 $(document).ready(function(){
     $.datepicker.setDefaults({
         dateFormat: 'yy-mm-dd'
@@ -71,14 +71,17 @@ $(document).ready(function(){
                 var list =[];
                 for(var i=0;i<result.length;i++)
                 {
-                    
+                    day = (result[i].YMD).replace(/(\d{4})(\d{2})(\d{2})/g, '$1-$2-$3');
+                    var week = ['일', '월', '화', '수', '목', '금', '토'];
+                    var dayOfWeek = week[new Date(day).getDay()];
+
                     list.push({
                         "No":`${i+1}`,
                         "사번":result[i]['EMP_ID'],
                         "이름": result[i].NAME,
                         "날짜": result[i].YMD, 
-                        "요일": "화요일",
-                        "근무유형":result[i].SHIFT_CD,
+                        "요일": dayOfWeek,
+                        "근무유형":calShiftWorkDict3[`${result[i].SHIFT_CD}`],
                         "출입시각":result[i].INOUT,
                         "확정시각":result[i].FIX1,
                         "계획시간":result[i].PLAN1
