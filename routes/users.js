@@ -1,6 +1,9 @@
 var express = require('express');
 var router = express.Router();
+var db=require('mysql2-promise')();
+var db_config=require('../db_config')
 
+<<<<<<< HEAD
 router.get('/login',function(req, res){
   /*
     최초 로그인 메소드
@@ -9,6 +12,29 @@ router.get('/login',function(req, res){
     이후 '/'로 redirect
   */
   res.render('test',{data:{name:'박소현',emp_id:'20224002'}})
+=======
+router.get('/login/:emp_id',async function(req, res){
+  /*1. 넘겨받은 사번정보 조회 후 있으면 세션 생성 단계 진입*/
+  /*2. 세션 생성 (최대 N개, M분 만료) */
+  
+  sql=`select count(*) as count from connect.hr_info where emp_id=${req.params.emp_id}`;
+  db.configure(db_config['mysql']);
+  db.query(sql).spread(function(rows){
+    if (JSON.parse(JSON.stringify(rows))[0]['count']=='1'){
+      console.log('직원정보가 존재합니다.');
+      req.session.save(err=>{
+        if(err) throw err;
+        req.session.user=req.params.emp_id
+        console.log('세션 생성 완료!');
+        /*3. '/user/main/으로 redirect */
+        res.redirect('/main');
+    })
+    } else{
+      console.log('직원정보가 존재하지 않습니다.');
+      res.send('<p>만료된 페이지<p>');
+    };
+  })
+>>>>>>> 4d9f023b9ad49936aa51defe07a1831323988a5d
 });
 
 router.get('/main', function(req, res) { //
