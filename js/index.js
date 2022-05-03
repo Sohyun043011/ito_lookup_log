@@ -60,12 +60,53 @@ $(document).ready(function(){
         var emp_id = $($('.mem-num')[0]).text();
         var check_list = {'start_day':start_day,'end_day':end_day,'emp_id':emp_id}
         // ajax로 날짜 두개, 사번 드림
+       
         $.ajax({
             method:'POST',
             url:'/users/inout',
             data:check_list,
             success:function(result){
                 alert('성공')
+                console.log(result.length);
+                var list =[];
+                for(var i=0;i<result.length;i++)
+                {
+                    
+                    list.push({
+                        "No":`${i+1}`,
+                        "사번":result[i]['EMP_ID'],
+                        "이름": result[i].NAME,
+                        "날짜": result[i].YMD, 
+                        "요일": "화요일",
+                        "근무유형":result[i].SHIFT_CD,
+                        "출입시각":result[i].INOUT,
+                        "확정시각":result[i].FIX1,
+                        "계획시간":result[i].PLAN1
+                    })
+                }
+                console.log(list)
+             
+                $(".inout-table").jsGrid({
+                    width: "100%",
+                    height: "100%",
+                    sorting: true,
+                    paging: true,
+                    data: list,
+                    pageSize: 15,
+                    pageButtonCount: 5,
+                    fields: [
+                        { name: "No", type: "text",width:"35px"},
+                        { name: "사번", type: "text"},
+                        { name: "이름", type: "text"},
+                        { name: "날짜", type: "text"},
+                        { name: "요일", type: "text"},
+                        { name:"근무유형", type:"text"},
+                        { name:"출입시각", type:"text"},
+                        { name:"확정시각", type:"text"},
+                        { name:"계획시간", type:"text"}
+        
+                    ]
+                });
                 // res로 받은 정보들을 list에 넣음 
                 console.log(result)
             },
@@ -75,29 +116,6 @@ $(document).ready(function(){
         })
         // db에서 받은 정보를 list에 넣을 것
         
-     
-     
-        $(".inout-table").jsGrid({
-            width: "100%",
-            height: "100%",
-            sorting: true,
-            paging: true,
-            data: list,
-            pageSize: 15,
-            pageButtonCount: 5,
-            fields: [
-                { name: "No", type: "text",width:"35px"},
-                { name: "사번", type: "text"},
-                { name: "이름", type: "text"},
-                { name: "날짜", type: "text"},
-                { name: "요일", type: "text"},
-                { name:"근무유형", type:"text"},
-                { name:"출입시각", type:"text"},
-                { name:"확정시각", type:"text"},
-                { name:"계획시간", type:"text"}
-
-            ]
-        });
     });
 });
 
