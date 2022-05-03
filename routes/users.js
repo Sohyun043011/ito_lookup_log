@@ -24,7 +24,6 @@ router.get('/login/:emp_id',async function(req, res){
         if(err) throw err;
         req.session.data=JSON.parse(JSON.stringify(rows))
         console.log('세션 생성 완료!');
-        console.log(req.session.data[0])
 
         /*3. '/user/main/으로 redirect */
         res.redirect('/users/main');
@@ -38,7 +37,7 @@ router.get('/login/:emp_id',async function(req, res){
 
 router.get('/main', function(req, res) { //
   if(req&&req.session&&req.session.data){
-    res.render('main',{list:req.session.data})
+    res.render('main',{list:req.session.data[0]})
   }
   else res.status(404).send('<p>오류</p>');
   /*
