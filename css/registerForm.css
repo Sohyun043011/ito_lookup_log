@@ -10,8 +10,8 @@ div{
 html{
     height:100%;
 }
-p,h4,h3,h2,h1,span,button{
-	transform : rotate(0.04deg); 
+p,h4,h3,h2,h1,span,button,div{
+	transform: skew(-0.1deg);
 }
 ::placeholder {
     color: black;
@@ -19,21 +19,20 @@ p,h4,h3,h2,h1,span,button{
     font-weight: 400;
     opacity: 1; /* Firefox */
 }
-.container{
-    /* width: 2000px;
-    height:1000px; */
-}
 #container{
-	position:relative;
-	/* width:100%; */	
+    position:relative;
+	height: 100%;
 }
 .main{
 	width: -webkit-fill-available;
+	height: 100%;
 }
 
 #wrap{
 	min-width:1120px;
+	height: 100%;
 }
+/*  */
 .header{
 	
     /* min-width:700px; */
@@ -52,18 +51,50 @@ p,h4,h3,h2,h1,span,button{
 	display: flex;
 	justify-content:space-around;
 	align-items: center;
-	
+	padding: 20px;
+	margin: 20px;
+	border: 0.5px solid lightgrey;
 }
 .input-group{
-	width: 80%  !important;
+	width: 60% !important;
+}
+.table-layout{
+	padding: 20px;
+	border: 1px solid #adb5bd;
+	margin-right: 20px;
+    margin-left: 20px;
+	display: block;
+	
+}
+.second-size{
+	width:42% !important;
+}
+.inout-table, .cal-table{
+	border: 1px solid #ABBAE1;
+	background-color: #E1E6F4;
+	height: 500px;
+	width:100% !important;
+	text-align: center;
+}
+
+.btn-toolbar{
+	justify-content: center;
 }
 .mem-name{
-	
+	padding:10px;
+	border:1px solid #ced4da;
+	font: bold;
+	width: 100px;
+    text-align: center;
 }
-.tab-content{
-	
-	height: 1000px;
-	
+.mem-num{
+	padding:10px;
+	border:1px solid #ced4da;
+	font: bold;
+	width: 100px;
+    text-align: center;
+}
+.tab-pane{
 }
 .inout-table{
 	
@@ -87,13 +118,13 @@ p,h4,h3,h2,h1,span,button{
 }
 #nav-inout-tab{
 	letter-spacing: -2px;
-	font-size: small;
+	font-size: medium;
 
 }
 #nav-overtime-tab{
 	letter-spacing: -1px;
 	word-spacing: 3px;
-    font-size: small;
+    font-size: medium;
 }
 .nav-link{
 	color: black !important;
@@ -101,6 +132,9 @@ p,h4,h3,h2,h1,span,button{
 .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active{
 	color: blue !important;
 	border-color: #5e7a93 #5e7a93 #f0f6f9;
+}
+.nav-tabs{
+	padding-top: 20px;
 }
 
 
@@ -140,7 +174,7 @@ p,h4,h3,h2,h1,span,button{
     height:500px;
 }
 .form-control{
-	font-size:small !important
+	
 }
 .form-select{
 	font-size:small !important

@@ -8,6 +8,7 @@ router.get('/login',function(req, res){
     세션은 M분의 시간이 지나면 만료되게 설정
     이후 '/'로 redirect
   */
+  res.render('test',{data:{name:'박소현',emp_id:'20224002'}})
 });
 
 router.get('/main', function(req, res) { //
