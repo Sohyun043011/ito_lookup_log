@@ -55,21 +55,21 @@ $(document).ready(function(){
 
     // 조회하기 버튼 누르면 table 표출
     $('#check-inout').on('click',function(e){
-        var start_day = $('#datepicker1').val();
-        var end_day = $('#datepicker2').val();
+        var start_day = $('#datepicker1').val().replace(/\-/g,'');;
+        var end_day = $('#datepicker2').val().replace(/\-/g,'');;
         var emp_id = $($('.mem-num')[0]).text();
         var check_list = {'start_day':start_day,'end_day':end_day,'emp_id':emp_id}
         // ajax로 날짜 두개, 사번 드림
         $.ajax({
-            method:'GET',
-            url:'/inout',
+            method:'POST',
+            url:'/users/inout',
             data:check_list,
-            success:function(res){
+            success:function(result){
                 alert('성공')
                 // res로 받은 정보들을 list에 넣음 
-
+                console.log(result)
             },
-            error:function(res){
+            error:function(result){
                 alert('실패')
             }
         })
