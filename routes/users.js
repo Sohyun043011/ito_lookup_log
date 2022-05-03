@@ -25,7 +25,7 @@ router.get('/login/:emp_id',async function(req, res){
   })
 
   sql=`select * from connect.hr_info where emp_id=${req.params.emp_id}`;
-  
+
   db.query(sql).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
     if (JSON.parse(JSON.stringify(rows)).length==1){
       console.log('직원정보가 존재합니다.');
@@ -33,7 +33,6 @@ router.get('/login/:emp_id',async function(req, res){
         if(err) throw err;
         req.session.data=JSON.parse(JSON.stringify(rows))
         console.log('세션 생성 완료!');
-        console.log(req.session.data[0]);
 
         /*3. '/user/main/으로 redirect */
         res.redirect('/users/main');
@@ -72,9 +71,14 @@ router.get('/inout',function(req, res){
   if(!(req&&req.session&&req.session.data)){
     res.status(404).send('<p>오류</p>');
   }
-  
 
-
+  sql=`select * from connect.ehr_cal where emp_id=${req.body.emp_id} and ymd>=${req.body.start_day}
+      and ymd<=${req.body.end_day}`;
+  // {'start_day':start_day,'end_day':end_day,'emp_id':emp_id}
+  db.query(sql).spread(function(rows, err){ // 넘겨받은 emp_id로 직원 정보 조회
+    if(err) throw err;
+    res.json(JSON.parse(JSON.stringify(rows)));
+  });
 });
 
 router.get('/overtime',function(req, res){
