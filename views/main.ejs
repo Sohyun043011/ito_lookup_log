@@ -101,6 +101,8 @@
                                 <div class="mem-name fw-bold"><%= list['EMP_NM']%></div>
                                 <span class="input-group-text" id="basic-addon1">사번</span>
                                 <div class="mem-num fw-bold"  ><%= list['EMP_ID'] %></div>
+                                <span class="input-group-text" id="basic-addon1">부서</span>
+                                <div class="mem-dept fw-bold"  ><%= list['ORG_NM'] %></div>
                                 <span class="input-group-text no-border" id="basic-addon1">기간</span>
                                 <input type="text" id="monthpicker1" class="form-control no-border" style="width:20px;" placeholder="날짜를 선택해주세요"  dir="rtl">
                                 <button type="button" class="btn btn-secondary" id="check-overtime">조회하기</button>
@@ -112,14 +114,7 @@
                                
                             </div>
                         </div>
-                        <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
-                            <div class="btn-group me-2" role="group" aria-label="First group">
-                              <button type="button" class="btn btn-secondary">1</button>
-                              <button type="button" class="btn btn-secondary">2</button>
-                              <button type="button" class="btn btn-secondary">3</button>
-                              <button type="button" class="btn btn-secondary">4</button>
-                            </div>
-                          </div>
+                        
                     </div>
                 </div>
                 

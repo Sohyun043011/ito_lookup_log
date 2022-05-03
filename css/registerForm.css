@@ -66,17 +66,16 @@ p,h4,h3,h2,h1,span,button,div{
 	display: block;
 	
 }
-.second-size{
-	width:42% !important;
-}
 .inout-table, .cal-table{
 	border: 1px solid #ABBAE1;
 	background-color: #E1E6F4;
-	height: 500px;
+	height: 500px !important;
 	width:100% !important;
 	text-align: center;
 }
-
+.ui-datepicker{
+	left:1027.782px !important;
+}
 .btn-toolbar{
 	justify-content: center;
 }

@@ -54,18 +54,57 @@ $(document).ready(function(){
     }
 
     // 조회하기 버튼 누르면 table 표출
-    $('#check-inout').on('click',function(e){
-        var start_day = $('#datepicker1').val();
-        var end_day = $('#datepicker2').val();
+    $('#check-inout').on('click',function(){
+        var start_day = $("#datepicker1").val().replace(/\-/g,'');
+        var end_day = $("#datepicker2").val().replace(/\-/g,'');
         var emp_id = $($('.mem-num')[0]).text();
         var check_list = {'start_day':start_day,'end_day':end_day,'emp_id':emp_id}
         // ajax로 날짜 두개, 사번 드림
+       
         $.ajax({
             method:'GET',
             url:'/inout',
             data:check_list,
             success:function(res){
                 alert('성공')
+                console.log(res)
+                var list = [
+                    { 
+                        "No": 1, 
+                        "사번": "20224002", 
+                        "이름": "박소현", 
+                        "날짜": "2022-05-03", 
+                        "요일": "화요일",
+                        "근무유형":'시차출퇴근',
+                        "출입시각":'0900-1800',
+                        "확정시각":'0900-1800',
+                        "계획시간":'0900-1800'
+                    },
+        
+                ];
+             
+             
+                $(".inout-table").jsGrid({
+                    width: "100%",
+                    height: "100%",
+                    sorting: true,
+                    paging: true,
+                    data: list,
+                    pageSize: 15,
+                    pageButtonCount: 5,
+                    fields: [
+                        { name: "No", type: "text",width:"35px"},
+                        { name: "사번", type: "text"},
+                        { name: "이름", type: "text"},
+                        { name: "날짜", type: "text"},
+                        { name: "요일", type: "text"},
+                        { name:"근무유형", type:"text"},
+                        { name:"출입시각", type:"text"},
+                        { name:"확정시각", type:"text"},
+                        { name:"계획시간", type:"text"}
+        
+                    ]
+                });
                 // res로 받은 정보들을 list에 넣음 
 
             },
@@ -75,29 +114,6 @@ $(document).ready(function(){
         })
         // db에서 받은 정보를 list에 넣을 것
         
-     
-     
-        $(".inout-table").jsGrid({
-            width: "100%",
-            height: "100%",
-            sorting: true,
-            paging: true,
-            data: list,
-            pageSize: 15,
-            pageButtonCount: 5,
-            fields: [
-                { name: "No", type: "text",width:"35px"},
-                { name: "사번", type: "text"},
-                { name: "이름", type: "text"},
-                { name: "날짜", type: "text"},
-                { name: "요일", type: "text"},
-                { name:"근무유형", type:"text"},
-                { name:"출입시각", type:"text"},
-                { name:"확정시각", type:"text"},
-                { name:"계획시간", type:"text"}
-
-            ]
-        });
     });
 });
 
