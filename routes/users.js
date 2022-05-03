@@ -4,11 +4,11 @@ var router = express.Router();
 var db=require('mysql2-promise')();
 var db_config=require('../db_config');
 
-async function getSessionData(req){
-  return new Promise((resolve, reject)=>{
-    var temp=req.session.data
-    console.log(temp)
-    resolve(temp)
+function getSessionData(req){
+  return new Promise((resolve)=>{
+    setTimeout(()=>{
+      resolve(req.session.data)
+    },1000)
   });
 }
 
@@ -30,7 +30,6 @@ router.get('/login/:emp_id',async function(req, res){
     if (JSON.parse(JSON.stringify(rows)).length==1){
       console.log('직원정보가 존재합니다.');
       req.session.save(err=>{
-        if(err) throw err;
         req.session.data=JSON.parse(JSON.stringify(rows))
         console.log('세션 생성 완료!');
 
@@ -46,7 +45,12 @@ router.get('/login/:emp_id',async function(req, res){
 
 router.get('/main', function(req, res) { //
 
-  getSessionData(req).then(value => console.log(value));
+  const data= async()=>{
+    const result=getSessionData(req);
+    result.then(console.log);
+    console.log()
+  }
+  // getSessionData(req).then(value => console.log(value));
 
   if(req&&req.session&&req.session.data){
     res.render('main',{list:req.session.data[0]})
@@ -62,23 +66,24 @@ router.get('/main', function(req, res) { //
 });
 
 
-router.get('/inout',function(req, res){
+router.post('/inout',function(req, res){
   /*
     출퇴근 기록 조회 
     filter 안에 있는 내용(사번, 부서, interval)을 기반으로 중계DB의 connect.ehr_cal에서 값을 가져오는 쿼리를 실행
     이후 res.json으로 리턴
   */
-  if(!(req&&req.session&&req.session.data)){
+  if(!req.session.data){
     res.status(404).send('<p>오류</p>');
   }
+  const {emp_id, start_day, end_day}=req.body;
 
-  sql=`select * from connect.ehr_cal where emp_id=${req.body.emp_id} and ymd>=${req.body.start_day}
-      and ymd<=${req.body.end_day}`;
-  // {'start_day':start_day,'end_day':end_day,'emp_id':emp_id}
-  db.query(sql).spread(function(rows, err){ // 넘겨받은 emp_id로 직원 정보 조회
-    if(err) throw err;
+  db.configure(db_config['mysql']);
+  sql=`select * from connect.ehr_cal where emp_id=${emp_id} and ymd>=${start_day} and ymd<=${end_day}`;
+
+  db.query(sql).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
     res.json(JSON.parse(JSON.stringify(rows)));
   });
+
 });
 
 router.get('/overtime',function(req, res){
