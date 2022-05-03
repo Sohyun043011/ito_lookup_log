@@ -81,7 +81,7 @@ $(document).ready(function(){
                         "이름": result[i].NAME,
                         "날짜": result[i].YMD, 
                         "요일": dayOfWeek,
-                        "근무유형":calShiftWorkDict3[`${result[i].SHIFT_CD}`],
+                        "근무유형":calShiftWorkDict3[`${result[i].WORK_TYPE}`],
                         "출입시각":result[i].INOUT,
                         "확정시각":result[i].FIX1,
                         "계획시간":result[i].PLAN1
