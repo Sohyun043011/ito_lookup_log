@@ -6,18 +6,28 @@ var db_config=require('../db_config')
 router.get('/login/:emp_id',async function(req, res){
   /*1. 넘겨받은 사번정보 조회 후 있으면 세션 생성 단계 진입*/
   /*2. 세션 생성 (최대 N개, M분 만료) */
-  
-  sql=`select count(*) as count from connect.hr_info where emp_id=${req.params.emp_id}`;
   db.configure(db_config['mysql']);
-  db.query(sql).spread(function(rows){
-    if (JSON.parse(JSON.stringify(rows))[0]['count']=='1'){
+  sql='select count(*) as session_num from good.session_lookup_log'
+  db.query(sql).spread(function(rows){ //세션 수 조회
+    if(JSON.parse(JSON.stringify(rows))[0]['session_num']>=5){
+      console.log('접속 중인 사용자가 너무 많습니다. 잠시 후에 시도해주세요.');
+      res.send('<p>접속 중인 사용자가 너무 많습니다. 잠시 후에 시도해주세요.</p>');
+    }
+  })
+
+  sql=`select * from connect.hr_info where emp_id=${req.params.emp_id}`;
+  db.configure(db_config['mysql']);
+  db.query(sql).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
+    if (JSON.parse(JSON.stringify(rows)).length==1){
       console.log('직원정보가 존재합니다.');
       req.session.save(err=>{
         if(err) throw err;
-        req.session.user=req.params.emp_id
+        req.session.data=JSON.parse(JSON.stringify(rows))
         console.log('세션 생성 완료!');
+        console.log(req.session.data[0])
+
         /*3. '/user/main/으로 redirect */
-        res.redirect('/main');
+        res.redirect('/users/main');
     })
     } else{
       console.log('직원정보가 존재하지 않습니다.');
@@ -27,6 +37,10 @@ router.get('/login/:emp_id',async function(req, res){
 });
 
 router.get('/main', function(req, res) { //
+  if(req&&req.session&&req.session.data){
+    res.render('main',{list:req.session.data})
+  }
+  else res.status(404).send('<p>오류</p>');
   /*
     메인 페이지
     1. 세션 수 확인 후 N개 미만일 때만 페이지 넘겨주기
