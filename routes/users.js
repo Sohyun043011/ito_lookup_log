@@ -94,6 +94,17 @@ router.get('/overtime',function(req, res){
     각 주차별로 초과근무, 급량비 내역 표출 및 월별 합산해서 표출할 수 있는 데이터 set 생성
     이후 res.json으로 리턴
   */
+    if(!req.session.data){
+      res.status(404).send('<p>오류</p>');
+    }
+    const {emp_id, start_day, end_day}=req.body;
+  
+    db.configure(db_config['mysql']);
+    sql=`select * from connect.ehr_cal where emp_id=${emp_id} and ymd>=${start_day} and ymd<=${end_day}`;
+  
+    db.query(sql).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
+      res.json(JSON.parse(JSON.stringify(rows)));
+    });
 });
 
 module.exports=router;
