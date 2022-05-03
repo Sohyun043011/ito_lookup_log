@@ -3,16 +3,6 @@ var router = express.Router();
 var db=require('mysql2-promise')();
 var db_config=require('../db_config')
 
-<<<<<<< HEAD
-router.get('/login',function(req, res){
-  /*
-    최초 로그인 메소드
-    그룹웨어에서 '출퇴근기록 조회' 버튼 누르면 받아온 유저 데이터 정보와 hr_info를 대조하여 세션 생성 (N개 제한)
-    세션은 M분의 시간이 지나면 만료되게 설정
-    이후 '/'로 redirect
-  */
-  res.render('test',{data:{name:'박소현',emp_id:'20224002'}})
-=======
 router.get('/login/:emp_id',async function(req, res){
   /*1. 넘겨받은 사번정보 조회 후 있으면 세션 생성 단계 진입*/
   /*2. 세션 생성 (최대 N개, M분 만료) */
@@ -34,7 +24,6 @@ router.get('/login/:emp_id',async function(req, res){
       res.send('<p>만료된 페이지<p>');
     };
   })
->>>>>>> 4d9f023b9ad49936aa51defe07a1831323988a5d
 });
 
 router.get('/main', function(req, res) { //
