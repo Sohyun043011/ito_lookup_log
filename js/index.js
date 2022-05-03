@@ -67,22 +67,24 @@ $(document).ready(function(){
             data:check_list,
             success:function(result){
                 alert('성공')
-                console.log(res)
-                var list = [
-                    { 
-                        "No": 1, 
-                        "사번": "20224002", 
-                        "이름": "박소현", 
-                        "날짜": "2022-05-03", 
+                console.log(result.length);
+                var list =[];
+                for(var i=0;i<result.length;i++)
+                {
+                    
+                    list.push({
+                        "No":`${i+1}`,
+                        "사번":result[i]['EMP_ID'],
+                        "이름": result[i].NAME,
+                        "날짜": result[i].YMD, 
                         "요일": "화요일",
-                        "근무유형":'시차출퇴근',
-                        "출입시각":'0900-1800',
-                        "확정시각":'0900-1800',
-                        "계획시간":'0900-1800'
-                    },
-        
-                ];
-             
+                        "근무유형":result[i].SHIFT_CD,
+                        "출입시각":result[i].INOUT,
+                        "확정시각":result[i].FIX1,
+                        "계획시간":result[i].PLAN1
+                    })
+                }
+                console.log(list)
              
                 $(".inout-table").jsGrid({
                     width: "100%",
