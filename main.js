@@ -26,7 +26,7 @@ app.set('view engine','ejs');
 app.use(cookieParser());
 app.use(session({
     secret:'kjwlakwf@$#!',
-    resave:true,
+    resave:false,
     saveUninitialized: false,
     cookie:{
         path:'/',

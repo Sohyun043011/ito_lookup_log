@@ -1,7 +1,16 @@
 var express = require('express');
+const { resolve } = require('url');
 var router = express.Router();
 var db=require('mysql2-promise')();
-var db_config=require('../db_config')
+var db_config=require('../db_config');
+
+async function getSessionData(req){
+  return new Promise((resolve, reject)=>{
+    var temp=req.session.data
+    console.log(temp)
+    resolve(temp)
+  });
+}
 
 router.get('/login/:emp_id',async function(req, res){
   /*1. 넘겨받은 사번정보 조회 후 있으면 세션 생성 단계 진입*/
@@ -16,7 +25,7 @@ router.get('/login/:emp_id',async function(req, res){
   })
 
   sql=`select * from connect.hr_info where emp_id=${req.params.emp_id}`;
-  db.configure(db_config['mysql']);
+  
   db.query(sql).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
     if (JSON.parse(JSON.stringify(rows)).length==1){
       console.log('직원정보가 존재합니다.');
@@ -36,6 +45,9 @@ router.get('/login/:emp_id',async function(req, res){
 });
 
 router.get('/main', function(req, res) { //
+
+  getSessionData(req).then(value => console.log(value));
+
   if(req&&req.session&&req.session.data){
     res.render('main',{list:req.session.data[0]})
   }
@@ -49,12 +61,19 @@ router.get('/main', function(req, res) { //
   */
 });
 
+
 router.get('/inout',function(req, res){
   /*
     출퇴근 기록 조회 
     filter 안에 있는 내용(사번, 부서, interval)을 기반으로 중계DB의 connect.ehr_cal에서 값을 가져오는 쿼리를 실행
     이후 res.json으로 리턴
   */
+  if(!(req&&req.session&&req.session.data)){
+    res.status(404).send('<p>오류</p>');
+  }
+  
+
+
 });
 
 router.get('/overtime',function(req, res){
