@@ -10,7 +10,7 @@ div{
 html{
     height:100%;
 }
-p,h4,h3,h2,h1,span{
+p,h4,h3,h2,h1,span,button{
 	transform : rotate(0.04deg); 
 }
 ::placeholder {
@@ -27,39 +27,82 @@ p,h4,h3,h2,h1,span{
 	position:relative;
 	/* width:100%; */	
 }
+.main{
+	width: -webkit-fill-available;
+}
 
 #wrap{
-	/* overflow:auto; */
 	min-width:1120px;
-	
-	/* min-height:3000px; */
-	
-    /* width: 2000px;
-    height:1000px; */
 }
 .header{
 	
     /* min-width:700px; */
-    height:160px;
+    /* height:160px; */
     /* width:500px; */
     align-items: center;
     text-align:center;
     margin:5px;
-
+	padding: 20px;
     display:flex;
 	flex-direction:row;
 	/* 	border:0.5px solid grey; */
 	/* border-radius : 20px; */
 }
+.header-info{
+	display: flex;
+	justify-content:space-around;
+	align-items: center;
+	
+}
+.input-group{
+	width: 80%  !important;
+}
+.mem-name{
+	
+}
+.tab-content{
+	
+	height: 1000px;
+	
+}
+.inout-table{
+	
+}
+.nav-link{
+	color: white !important;
+}
 .title{
 	display:table;
 	/* width:800px; */
+	padding-left: 25px;
 	margin:0 auto;
 	/* text-align:center; */
 	text-align:left;
 	flex:5;
 	letter-spacing:-1px;
 }
+.nav-tab{
+	padding: 20px;
+	padding-bottom: 5px;
+}
+#nav-inout-tab{
+	letter-spacing: -2px;
+	font-size: small;
+
+}
+#nav-overtime-tab{
+	letter-spacing: -1px;
+	word-spacing: 3px;
+    font-size: small;
+}
+.nav-link{
+	color: black !important;
+}
+.nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active{
+	color: blue !important;
+	border-color: #5e7a93 #5e7a93 #f0f6f9;
+}
+
 
 #top_title{
 	/* display:table-cell;
@@ -68,7 +111,12 @@ p,h4,h3,h2,h1,span{
 	vertical-align:middle;	 */
 	margin:0px;
 	min-width: 263px;
-	color:black;
+	color:#0b2e4e;
+}
+#top_title_img{
+	float:left;
+	margin-left: -3px;
+	width:180px;
 }
 .no-border{
     border-radius: 0px;
@@ -87,7 +135,7 @@ p,h4,h3,h2,h1,span{
     border-radius: 10px;
     padding:20px;
     margin:5px;
-    width:250px;
+    width:300px;
     min-width: 200px;
     height:500px;
 }
@@ -95,17 +143,13 @@ p,h4,h3,h2,h1,span{
 	font-size:small !important
 }
 .form-select{
-	font-size:x-small !important
+	font-size:small !important
 }
 .right-container{
     float:right;
-    
     height: 500px;
-    
     /* height:100%; */
-    position:absolute;
-    left:255px;
-    width: 80%;
+    width:-webkit-fill-available;
     padding:10px;
     margin:5px;
    /*  margin-right: 0px; */
@@ -160,11 +204,6 @@ p,h4,h3,h2,h1,span{
 	display: flex;
     align-items: center;
 }
-.main{
-	display:flex;
-	flex-direction:row;
-}
-
 .lookup{
 	border-collapse:collapse;
 	border-top:3px solid #168;
