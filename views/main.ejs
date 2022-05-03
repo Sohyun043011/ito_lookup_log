@@ -46,7 +46,7 @@
                         <%= list['EMP_NM'] %> 님
                     </div>
                     <hr>
-                    <button class="btn btn-outline-secondary fw-bold">관리자 로그인</button>
+                    <button class="btn btn-outline-secondary fw-bold" id="admin-button">관리자 로그인</button>
                 </div>
                 
                 
@@ -74,6 +74,8 @@
                                 <div class="mem-name fw-bold"><%= list['EMP_NM'] %></div>
                                 <span class="input-group-text" id="basic-addon1">사번</span>
                                 <div class="mem-num fw-bold"  ><%= list['EMP_ID'] %></div>
+                                <span class="input-group-text" id="basic-addon1">부서</span>
+                                <div class="mem-dept fw-bold"  ><%= list['ORG_NM'] %></div>
                                 <span class="input-group-text no-border" id="basic-addon1">기간</span>
                                 <input type="text" id="datepicker1" class="form-control no-border" style="width:20px;" placeholder="시작 날짜를 선택해주세요"  dir="rtl">
                                 <input type="text" id="datepicker2" class="form-control no-border"  placeholder="끝 날짜를 선택해주세요"  dir="rtl">
