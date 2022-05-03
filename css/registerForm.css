@@ -80,24 +80,12 @@ p,h4,h3,h2,h1,span,button,div{
 .btn-toolbar{
 	justify-content: center;
 }
-.mem-name{
+.mem-name, .mem-num, .mem-dept{
 	padding:10px;
 	border:1px solid #ced4da;
 	font: bold;
 	width: 100px;
     text-align: center;
-}
-.mem-num{
-	padding:10px;
-	border:1px solid #ced4da;
-	font: bold;
-	width: 100px;
-    text-align: center;
-}
-.tab-pane{
-}
-.inout-table{
-	
 }
 .nav-link{
 	color: white !important;

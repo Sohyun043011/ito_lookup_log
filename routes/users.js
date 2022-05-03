@@ -33,6 +33,7 @@ router.get('/login/:emp_id',async function(req, res){
         if(err) throw err;
         req.session.data=JSON.parse(JSON.stringify(rows))
         console.log('세션 생성 완료!');
+        console.log(req.session.data[0]);
 
         /*3. '/user/main/으로 redirect */
         res.redirect('/users/main');
