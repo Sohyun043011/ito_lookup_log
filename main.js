@@ -27,7 +27,7 @@ app.use(cookieParser());
 app.use(session({
     secret:'kjwlakwf@$#!',
     resave:true,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie:{
         path:'/',
         maxAge:60000,
