@@ -53,6 +53,7 @@ $(document).ready(function(){
         });
     }
 
+
     // 조회하기 버튼 누르면 table 표출
     $('#check-inout').on('click',function(e){
         var start_day = $('#datepicker1').val().replace(/\-/g,'');;
@@ -119,6 +120,44 @@ $(document).ready(function(){
         // db에서 받은 정보를 list에 넣을 것
         
     });
+
+
+    // 초과근무 및 급량비 산정 확인 버튼
+    $('#check-overtime').on('click',function(e){
+        var emp_id = $($('.mem-num')[0]).text();
+        
+        var date = $('#monthpicker1').val();
+        // date = '2022-05'
+        const words = date.split('-');
+        const year = words[0];
+        const month = words[1];
+        words.push('01');
+        const start_day = words.join('');   //시작날짜
+
+        end_date = new Date(year,month,0);
+        var end_year = end_date.getFullYear();
+        var end_month = ("0"+(1+end_date.getMonth())).slice(-2);
+        var e_day = ("0"+end_date.getDate()).slice(-2);
+        var end_day = end_year+end_month+e_day;     //끝날짜
+        
+        $.ajax({
+            method:'POST',
+            url:'/users/overtime',
+            data:{'emp_id':emp_id,'start_day':start_day,'end_day':end_day},
+            success:function(result){
+                alert('성공')
+                // result로 오는 정보 : 각 월에 해당하는 초과근무 및 급량비 산정 기록 
+                // 
+                $('.summary-table').css('display','inline-table');
+                $('.date').html(`${year}년 ${month}월`);
+
+            },
+            error:function(result){
+                alert('실패')
+            }
+        })
+    })
+
 });
 
 

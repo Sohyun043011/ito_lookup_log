@@ -83,10 +83,10 @@ div::-webkit-scrollbar-track {
 }
 .inout-table, .cal-table{
 	border: 1px solid #ABBAE1;
-	background-color: #E1E6F4;
 	height: 500px !important;
 	width:100% !important;
 	text-align: center;
+	padding-top:20px;
 }
 .ui-datepicker{
 	left:1027.782px !important;
@@ -175,7 +175,8 @@ div::-webkit-scrollbar-track {
     min-width: 200px;
     height:500px;
 }
-.form-control{
+.summary-table{
+	width: 70%;
 	
 }
 .form-select{
