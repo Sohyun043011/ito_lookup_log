@@ -8,14 +8,6 @@ var moment=require('moment');
 const weekOfMonth = (m) => m.week() - moment(m).startOf('month').week() + 1;
 // const nowDate = moment(target_day).utc(true);
 
-function getSessionData(req){
-  return new Promise((resolve)=>{
-    setTimeout(()=>{
-      resolve(req.session.data)
-    },1000)
-  });
-}
-
 router.get('/login/:emp_id',async function(req, res){
   /*1. 넘겨받은 사번정보 조회 후 있으면 세션 생성 단계 진입*/
   /*2. 세션 생성 (최대 N개, M분 만료) */
@@ -94,9 +86,9 @@ router.get('/overtime',function(req, res){
   if(!req.session.data){
     res.status(404).send('<p>오류</p>');
   }
-  // const {emp_id, start_day, end_day}=req.body;
-  const {emp_id, start_day, end_day}=req.body;
 
+  const {emp_id, start_day, end_day}=req.body;
+  console.log(req.body);
   db.configure(db_config['mysql']);
   sql='select EMP_ID, `NAME`, YMD, CAL_OVERTIME, CAL_MEAL from connect.ehr_cal where emp_id=? and ymd>=? and ymd<=?';
 
@@ -106,7 +98,8 @@ router.get('/overtime',function(req, res){
       result[row]['WEEK']=weekOfMonth(moment(result[row]['YMD']).utc(true));
       
     }
-    res.json(JSON.parse(JSON.stringify(rows)));
+    console.log(result);
+    res.json(result);
   });
 });
 

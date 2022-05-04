@@ -148,6 +148,7 @@ $(document).ready(function(){
                 alert('성공')
                 // result로 오는 정보 : 각 월에 해당하는 초과근무 및 급량비 산정 기록 
                 // 
+                console.log(result);
                 $('.summary-table').css('display','inline-table');
                 $('.date').html(`${year}년 ${month}월`);
 
