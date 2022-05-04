@@ -74,7 +74,7 @@ router.post('/inout',function(req, res){
 
 });
 
-router.get('/overtime',function(req, res){
+router.post('/overtime',function(req, res){
   
   /*
     급량비 및 초과근무 기록 조회
