@@ -5,7 +5,7 @@ var db=require('mysql2-promise')();
 var db_config=require('../db_config');
 var moment=require('moment');
 
-const weekOfMonth = (m) => m.week() - moment(m).startOf('month').week() + 1;
+
 // const nowDate = moment(target_day).utc(true);
 
 router.get('/login/:emp_id',async function(req, res){
@@ -75,7 +75,14 @@ router.post('/inout',function(req, res){
 });
 
 router.post('/overtime',function(req, res){
-  
+  const weekOfMonth = function(target_day){
+    m=moment(target_day).utc(true);
+    target_week= m.week() - moment(m).startOf('month').week() + 1;
+    if (m.day()==0 && target_week!=1){
+        target_week=target_week-1;
+    }
+    return target_week;
+  }
   /*
     급량비 및 초과근무 기록 조회
     filter 안에 있는 내용(사번, 부서, 연월 정보)을 기반으로 중계DB의 connect.ehr_cal에서 값을 가져오는 쿼리를 실행
@@ -95,8 +102,8 @@ router.post('/overtime',function(req, res){
   db.query(sql,[emp_id, start_day, end_day]).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
     result=JSON.parse(JSON.stringify(rows));
     for (row in result){
-      result[row]['WEEK']=weekOfMonth(moment(result[row]['YMD']).utc(true));
-      
+      console.log(result[row]['YMD'])
+      result[row]['WEEK']=weekOfMonth(result[row]['YMD']);
     }
     console.log(result);
     res.json(result);
