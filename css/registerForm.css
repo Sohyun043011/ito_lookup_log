@@ -4,6 +4,7 @@ body{
     margin:0;
     height:100%;
 }
+
 div{
     box-sizing: border-box;
 }
@@ -12,6 +13,20 @@ html{
 }
 p,h4,h3,h2,h1,span,button,div{
 	transform: skew(-0.1deg);
+}
+div::-webkit-scrollbar {
+    width: 8px;  /* 스크롤바의 너비 */
+}
+
+div::-webkit-scrollbar-thumb {
+    height: 30%; /* 스크롤바의 길이 */
+    background: #77a1dd; /* 스크롤바의 색상 */
+    
+    border-radius: 10px;
+}
+
+div::-webkit-scrollbar-track {
+    background: rgba(33, 122, 244, .1);  /*스크롤바 뒷 배경 색상*/
 }
 ::placeholder {
     color: black;
