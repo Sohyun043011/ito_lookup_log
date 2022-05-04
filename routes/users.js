@@ -90,9 +90,9 @@ router.post('/overtime',function(req, res){
     각 주차별로 초과근무, 급량비 내역 표출 및 월별 합산해서 표출할 수 있는 데이터 set 생성
     이후 res.json으로 리턴
   */ 
-  if(!req.session.data){
-    res.status(404).send('<p>오류</p>');
-  }
+  // if(!req.session.data){
+  //   res.status(404).send('<p>오류</p>');
+  // }
 
   const {emp_id, start_day, end_day}=req.body;
   console.log(req.body);
@@ -101,12 +101,17 @@ router.post('/overtime',function(req, res){
 
   db.query(sql,[emp_id, start_day, end_day]).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
     result=JSON.parse(JSON.stringify(rows));
+    new_result={
+      "empInfo":[], // 일별 데이터
+      "endOfWeek": weekOfMonth(end_day) // 마지막 주 정보
+    }
     for (row in result){
-      console.log(result[row]['YMD'])
       result[row]['WEEK']=weekOfMonth(result[row]['YMD']);
     }
-    console.log(result);
-    res.json(result);
+    new_result["empInfo"]=result
+    new_result=JSON.parse(JSON.stringify(new_result));
+    console.log(new_result);
+    res.json(new_result);
   });
 });
 
