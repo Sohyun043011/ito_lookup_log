@@ -1,3 +1,4 @@
+
 document.write("<script src='../ajax.js'></script>");
 $(document).ready(function(){
     $.datepicker.setDefaults({
@@ -139,7 +140,7 @@ $(document).ready(function(){
         var end_month = ("0"+(1+end_date.getMonth())).slice(-2);
         var e_day = ("0"+end_date.getDate()).slice(-2);
         var end_day = end_year+end_month+e_day;     //끝날짜
-        
+       
         $.ajax({
             method:'POST',
             url:'/users/overtime',
@@ -148,10 +149,22 @@ $(document).ready(function(){
                 alert('성공')
                 // result로 오는 정보 : 각 월에 해당하는 초과근무 및 급량비 산정 기록 
                 // 
-                console.log(result);
+                console.log(result.endOfWeek);
+                console.log(result.empInfo);
                 $('.summary-table').css('display','inline-table');
+               
+                // col생성 (end_of_week에 따라서)
+                
+                
+                $('.week-tr').html('');
+                for(var i=0;i<result.endOfWeek;i++)
+                {
+                    
+                    $('.week-tr').append(`<th scope="col" class="${i+1}-week">${i+1}주차</th>`)
+                }
+                $('.week-tr').append(`<th scope="col">합산</th>`)
+                $('.1-week').before(`<th scope="col" class="date"></th>`)
                 $('.date').html(`${year}년 ${month}월`);
-
             },
             error:function(result){
                 alert('실패')
