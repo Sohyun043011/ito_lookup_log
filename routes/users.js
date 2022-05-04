@@ -24,18 +24,17 @@ router.get('/login/:emp_id',async function(req, res){
     }
   })
 
-  sql=`select * from connect.hr_info where emp_id=${req.params.emp_id}`;
+  sql=`select EMP_ID, EMP_NM, ORG_NM from connect.hr_info where emp_id=${req.params.emp_id}`;
 
   db.query(sql).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
     if (JSON.parse(JSON.stringify(rows)).length==1){
       console.log('직원정보가 존재합니다.');
-      req.session.save(err=>{
-        req.session.data=JSON.parse(JSON.stringify(rows))
+      req.session.data=JSON.parse(JSON.stringify(rows))
+      req.session.save(()=>{
         console.log('세션 생성 완료!');
-
         /*3. '/user/main/으로 redirect */
         res.redirect('/users/main');
-    })
+    });
     } else{
       console.log('직원정보가 존재하지 않습니다.');
       res.send('<p>만료된 페이지<p>');
@@ -44,11 +43,11 @@ router.get('/login/:emp_id',async function(req, res){
 });
 
 router.get('/main', function(req, res) { //
-
+  console.log(req.session.data)
   const data= async()=>{
     const result=getSessionData(req);
     result.then(console.log);
-    console.log()
+    console.log(result)
   }
   // getSessionData(req).then(value => console.log(value));
 
@@ -78,9 +77,10 @@ router.post('/inout',function(req, res){
   const {emp_id, start_day, end_day}=req.body;
 
   db.configure(db_config['mysql']);
-  sql=`select * from connect.ehr_cal where emp_id=${emp_id} and ymd>=${start_day} and ymd<=${end_day}`;
+  sql='select EMP_ID, NAME, YMD, WORK_TYPE, FIX1, `INOUT`, PLAN1 from connect.ehr_cal where emp_id=? and ymd>=? and ymd<=?';
 
-  db.query(sql).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
+  db.query(sql,[emp_id, start_day, end_day]).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
+    console.log(JSON.parse(JSON.stringify(rows)));
     res.json(JSON.parse(JSON.stringify(rows)));
   });
 
@@ -94,17 +94,6 @@ router.get('/overtime',function(req, res){
     각 주차별로 초과근무, 급량비 내역 표출 및 월별 합산해서 표출할 수 있는 데이터 set 생성
     이후 res.json으로 리턴
   */
-    if(!req.session.data){
-      res.status(404).send('<p>오류</p>');
-    }
-    const {emp_id, start_day, end_day}=req.body;
-  
-    db.configure(db_config['mysql']);
-    sql=`select * from connect.ehr_cal where emp_id=${emp_id} and ymd>=${start_day} and ymd<=${end_day}`;
-  
-    db.query(sql).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
-      res.json(JSON.parse(JSON.stringify(rows)));
-    });
 });
 
 module.exports=router;
