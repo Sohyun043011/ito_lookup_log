@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 
-router.get('/login',function(req, res){
+router.post('/login',function(req, res){
   /*
     관리자 페이지 로그인
     메인 페이지의 '관리자 로그인' 버튼 클릭, 암호 입력해서 서버 정보와 일치한다면 특수한 관리자 세션 생성

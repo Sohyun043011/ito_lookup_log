@@ -3,8 +3,7 @@
 node_modules/*
 package-lock.json
 package.json
-
 test.js
-
 package-lock.json
 package.json
+db_config.js
