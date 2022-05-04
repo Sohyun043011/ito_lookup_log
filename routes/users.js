@@ -24,7 +24,7 @@ router.get('/login/:emp_id',async function(req, res){
 
   db.query(sql).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
     if (JSON.parse(JSON.stringify(rows)).length==1){
-      console.log('직원정보가 존재합니다.');
+      console.log(req.params.emp_id+'님의 직원정보가 존재합니다.');
       req.session.data=JSON.parse(JSON.stringify(rows))
       req.session.save(()=>{
         console.log('세션 생성 완료!');
@@ -33,7 +33,7 @@ router.get('/login/:emp_id',async function(req, res){
     });
     } else{
       console.log('직원정보가 존재하지 않습니다.');
-      res.send('<p>만료된 페이지<p>');
+      res.send('<p>만료된 페이지<p>'); // 추후 수정
     };
   })
 });
@@ -49,7 +49,7 @@ router.get('/main', function(req, res) { //
   if(req&&req.session&&req.session.data){ // request, session, session data 유효성 검사
     res.render('main',{list:req.session.data[0]}) // 세션 정보를 ejs에 보내줌
   }
-  else res.status(404).send('<p>오류</p>');
+  else res.status(404).send('<p>오류</p>'); //추후 수정
 });
 
 
@@ -60,7 +60,7 @@ router.post('/inout',function(req, res){
     이후 res.json으로 리턴
   */
   if(!req.session.data){
-    res.status(404).send('<p>오류</p>');
+    res.status(404).send('<p>오류</p>'); //추후 수정
   }
   const {emp_id, start_day, end_day}=req.body; // 사번, 시작일시, 종료일시
 
@@ -90,9 +90,9 @@ router.post('/overtime',function(req, res){
     각 주차별로 초과근무, 급량비 내역 표출 및 월별 합산해서 표출할 수 있는 데이터 set 생성
     이후 res.json으로 리턴
   */ 
-  // if(!req.session.data){
-  //   res.status(404).send('<p>오류</p>');
-  // }
+  if(!req.session.data){
+    res.status(404).send('<p>오류</p>');
+  }
 
   const {emp_id, start_day, end_day}=req.body;
   console.log(req.body);
