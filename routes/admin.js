@@ -8,7 +8,6 @@ router.post('/login',function(req, res){
     별도의 세션 테이블을 유지하거나 세션 정보에 관리자임을 식별할 수 있는 정보를 넣기
     이후 '/admin'으로 redirect
   */
-  password=
 });
 
 router.get('/main', function(req, res) { //
