@@ -26,5 +26,8 @@ module.exports={
             }
     
         }
+    },
+    "adminPageInfo":{
+        password:'awefawe'
     }
 }
