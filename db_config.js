@@ -1,4 +1,3 @@
-
 module.exports={
     "mysql":{
         host:"192.168.20.19",
@@ -24,7 +23,9 @@ module.exports={
                 expires: 'expires',
                 data: 'data'
             }
-    
         }
+    },
+    "adminPageInfo":{
+        password:'ito1234!@#'
     }
 }
