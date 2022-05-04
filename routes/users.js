@@ -95,7 +95,7 @@ router.get('/overtime',function(req, res){
     res.status(404).send('<p>오류</p>');
   }
   // const {emp_id, start_day, end_day}=req.body;
-  const {emp_id, start_day, end_day}={emp_id:'20200002', start_day:'20220401', end_day:'20220430'}
+  const {emp_id, start_day, end_day}=req.body;
 
   db.configure(db_config['mysql']);
   sql='select EMP_ID, `NAME`, YMD, CAL_OVERTIME, CAL_MEAL from connect.ehr_cal where emp_id=? and ymd>=? and ymd<=?';
@@ -106,8 +106,7 @@ router.get('/overtime',function(req, res){
       result[row]['WEEK']=weekOfMonth(moment(result[row]['YMD']).utc(true));
       
     }
-    console.log(result);
-    // res.json(JSON.parse(JSON.stringify(rows)));
+    res.json(JSON.parse(JSON.stringify(rows)));
   });
 });
 
