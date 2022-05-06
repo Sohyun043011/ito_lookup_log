@@ -1,3 +1,4 @@
+
 document.write("<script src='../ajax.js'></script>");
 $(document).ready(function(){
     $.datepicker.setDefaults({
@@ -139,7 +140,7 @@ $(document).ready(function(){
         var end_month = ("0"+(1+end_date.getMonth())).slice(-2);
         var e_day = ("0"+end_date.getDate()).slice(-2);
         var end_day = end_year+end_month+e_day;     //끝날짜
-        
+       
         $.ajax({
             method:'POST',
             url:'/users/overtime',
@@ -148,10 +149,51 @@ $(document).ready(function(){
                 alert('성공')
                 // result로 오는 정보 : 각 월에 해당하는 초과근무 및 급량비 산정 기록 
                 // 
-                console.log(result);
+                console.log(result.endOfWeek);
+                console.log(result.empInfo);
+                console.log(result.empInfo.length);
+                console.log(result.empInfo[0].WEEK);
                 $('.summary-table').css('display','inline-table');
+               
+                // table생성 (end_of_week에 따라서)
+                $('.week-tr').html('');
+                $('.week-overtime').html('');
+                $('.week-cal').html('');
+                for(var i=0;i<result.endOfWeek;i++)
+                {
+                    $('.week-tr').append(`<th scope="col" class="${i+1}-week">${i+1}주차</th>`)
+                    $('.week-overtime').append(`<th scope="col" class="${i+1}-overtime">${i+1}주차</th>`)
+                    $('.week-cal').append(`<th scope="col" class="${i+1}-cal">${i+1}주차</th>`)
+                }
+                $('.week-tr').append(`<th scope="col">합산</th>`)
+                $('.week-overtime').append(`<th scope="col">초과근무합산</th>`)
+                $('.week-cal').append(`<th scope="col">급량비합산</th>`)
+                $('.1-week').before(`<th scope="col" class="date"></th>`)
                 $('.date').html(`${year}년 ${month}월`);
+                $('.1-overtime').before(`<th scope="row" >초과근무</th>`)
+                $('.1-cal').before(`<th scope="row">급량비</th>`)
 
+                //각 주차에 대해 overtime 계산
+                //0344: 3시간 44분
+                
+                var overtime = {1:[],2:[],3:[],4:[],5:[],6:[]}
+                console.log(overtime['1']);
+                var now_week = result.empInfo[0].WEEK;  //1주차에 대해서
+                for(var m=0;m<result.empInfo.length-1;m++)
+                {
+                    // WEEK에 따라서 나누기
+                    //급량비가 1주에 급량비 True몇개인지 * 8000
+                    
+                    if (result.empInfo[m].WEEK==now_week){
+                        overtime[`${now_week}`].push(result.empInfo[m].CAL_OVERTIME);
+                    }
+                    else{
+                        now_week = result.empInfo[m].WEEK;
+                        overtime[`${now_week}`].push(result.empInfo[m].CAL_OVERTIME);
+                       
+                    }
+                }
+                console.log(overtime)
             },
             error:function(result){
                 alert('실패')
