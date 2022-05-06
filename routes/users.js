@@ -1,10 +1,10 @@
 var express = require('express');
-const { resolve } = require('url');
 var router = express.Router();
 var db=require('mysql2-promise')();
 var db_config=require('../db_config');
 var moment=require('moment');
 
+var serverCache; // 
 
 // const nowDate = moment(target_day).utc(true);
 

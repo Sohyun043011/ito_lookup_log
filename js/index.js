@@ -34,7 +34,7 @@ $(document).ready(function(){
 
     };
     $('#monthpicker1').monthpicker(options);
-
+`1`
     //미래 월은 비활성화시키기
     var months=[];
     for(var i=currentMonth+2,j=0;i<=12;i++){

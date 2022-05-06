@@ -112,7 +112,7 @@ function commuteLog(){ // 출퇴근기록 조회
 	}
 	
 	
-	
+
 	$.ajax({
 		type:"post",
 		url:"registerForm_json.jsp",
