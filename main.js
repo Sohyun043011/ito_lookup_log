@@ -41,6 +41,7 @@ app.use(express.static(path.join(__dirname+'/css')));
 app.use(express.static(path.join(__dirname+'/node_modules')));
 app.use(express.static(path.join(__dirname+'/views')));
 app.use(express.static(path.join(__dirname+'/lib')));
+app.use(express.static(path.join(__dirname+'/data')));
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 app.use(bodyParser.json()); // for parsing application/json
 app.use('/users', UserRouter)
