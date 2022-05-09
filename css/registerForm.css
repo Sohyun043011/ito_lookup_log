@@ -83,7 +83,7 @@ div::-webkit-scrollbar-track {
 }
 .inout-table, .cal-table{
 	border: 1px solid #ABBAE1;
-	height: 500px !important;
+	height: 550px !important;
 	width:100% !important;
 	text-align: center;
 	padding-top:20px;
@@ -130,9 +130,9 @@ div::-webkit-scrollbar-track {
 	word-spacing: 3px;
     font-size: medium;
 }
-.overtime-table{
+.overtime-table, .team-overtime-table{
 	width: 100% !important;
-	height:70% !important;
+	/* height:100% !important; */
 	padding: 20px;
 }
 .nav-link{
@@ -186,7 +186,7 @@ div::-webkit-scrollbar-track {
     min-width: 200px;
     height:500px;
 }
-.summary-table{
+.summary-table, .team-summary-table{
 	width: 70%;
 	
 }
