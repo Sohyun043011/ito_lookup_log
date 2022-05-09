@@ -1,4 +1,4 @@
-document.write("<script src='../js/lib.js'></script>");
+document.write("<script src='../js/index_lib.js'></script>");
 $(document).ready(function(){
     $.datepicker.setDefaults({
         dateFormat: 'yy-mm-dd'
@@ -158,7 +158,6 @@ $(document).ready(function(){
                 alert('성공')
                 // result로 오는 정보 : 각 월에 해당하는 초과근무 및 급량비 산정 기록 
                 // 
-                console.log(result.endOfWeek);
                 console.log(result.empInfo);
                 console.log(result.empInfo.length);
                 console.log(result.empInfo[0].WEEK);
@@ -175,18 +174,16 @@ $(document).ready(function(){
                     $('.week-cal').append(`<th scope="col" class="${i+1}-cal">${i+1}주차</th>`)
                 }
                 $('.week-tr').append(`<th scope="col">합산</th>`)
-                $('.week-overtime').append(`<th scope="col">초과근무합산</th>`)
+                $('.week-overtime').append(`<th scope="col" class="over-sum">초과근무합산</th>`)
                 $('.week-cal').append(`<th scope="col">급량비합산</th>`)
                 $('.1-week').before(`<th scope="col" class="date"></th>`)
                 $('.date').html(`${year}년 ${month}월`);
                 $('.1-overtime').before(`<th scope="row" >초과근무</th>`)
                 $('.1-cal').before(`<th scope="row">급량비</th>`)
 
-                //각 주차에 대해 overtime 계산
-                //0344: 3시간 44분
+                //각 주차에 대해 overtime,급량비 계산
                 
                 var overtime = {1:[],2:[],3:[],4:[],5:[],6:[]}
-                console.log(overtime['1']);
                 var now_week = result.empInfo[0].WEEK;  //1주차에 대해서
                 for(var m=0;m<result.empInfo.length-1;m++)
                 {
@@ -202,7 +199,17 @@ $(document).ready(function(){
                        
                     }
                 }
-                console.log(overtime)
+                const overTimeTotal = addOverTimeTotal(overtime);   //분으로 나타내짐
+                var over_sum = 0;    
+                Object.values(overTimeTotal).forEach(function(ele,idx){
+                    over_sum=over_sum+parseInt(ele);
+                    ele_overtime =  hhmmToString(ele);
+                    console.log(ele_overtime);
+                    console.log(`${idx+1}-overtime`);
+                    $(`.${idx+1}-overtime`).html(ele_overtime);
+                });
+                over_sum = hhmmToString(over_sum);
+                $('.over-sum').html(over_sum);
             },
             error:function(result){
                 alert('실패')
