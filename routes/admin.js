@@ -50,29 +50,32 @@ router.get('/ehr/:type', function(req, res){
     type : inout -> 출퇴근시각관리 form | cal_meal -> 급량비 form | edit -> 개인별근무일정변경 form
     이후 form 정보 리턴
   */
-  if (!lib.isSession(req,admin)){ // request, session, session data 유효성 검사
-    res.status(404).send('<p>오류</p>'); //추후 수정
-  }
-  
+  // if (!lib.isSession(req,admin)){ // request, session, session data 유효성 검사
+  //   res.status(404).send('<p>오류</p>'); //추후 수정
+  // }
   var {emp_name, emp_id, org_nm, start_day, end_day}= req.query;
-
+  console.log(req.query)
   var sql=``;
   
   switch(req.params.type){
     case 'inout': // 출퇴근 시각관리
     case 'cal_meal': // 급량비
-      sql='select * from connect.ehr_cal where emp_name=? and emp_id=? and org_nm=? amd ymd>=? and ymd<=?'
+      sql=`select * from connect.ehr_cal where name=${emp_name} and emp_id=${emp_id} 
+      and org_nm=${org_nm} and ymd>=${start_day} and ymd<=${end_day}`
+      
       break;
     case 'edit': // 개인별근무일정변경
       break;
     default:
       res.status(404).send('<p>오류</p>'); //추후 수정
   }
+  console.log(sql)
   db.configure(db_config['mysql']);
   db.query(sql).spread(function(rows){ //세션 수 조회
     result=JSON.parse(JSON.stringify(rows));
     //lib 특정 함수에 result 인수로 보내서 전처리 후 serverCache에 저장
-    result=lib.makeInoutUploadForm(result);
+    return lib.makeInoutUploadForm(result);
+  }).then((result)=>{
   })
   
 })
@@ -83,6 +86,58 @@ router.get('/download/:type', function(req, res){
     type : inout -> 출퇴근시각관리 form | cal_meal -> 급량비 form | edit -> 개인별근무일정변경 form
     이후 csv file download 유도
   */
+
+  var {emp_name, emp_id, org_nm, start_day, end_day}= req.query;
+  const xl = require('excel4node');
+  const wb = new xl.Workbook();
+  const ws = wb.addWorksheet('Worksheet Name');
+  const headingColumnNames=[
+    "NO","YMD","EMP_ID","NAME","ORG_NM","SHIFT_CD","WORK_TYPE","PLAN1","INOUT","FIX1","ERROR_INFO","DAYOFF1_TIME",
+    "DAYOFF1_ID","DAYOFF2_TIME","DAYOFF2_ID","OVER1_TIME","OVER1_ID","BUSI_TRIP1_TIME","BUSI_TRIP1_ID","BUSI_TRIP2_TIME","BUSI_TRIP2_ID",
+    "HOME_ID","ETC_INFO","ETC_ID","REWARD_TIME","REWARD_ID","CAL_OVERTIME","CAL_MEAL","RSN","No","date","COMMUTE_TYPE","DEL_YN"
+  ]
+  
+  console.log(req.query)
+  var sql=``;
+  
+  switch(req.params.type){
+    case 'inout': // 출퇴근 시각관리
+    case 'cal_meal': // 급량비
+      sql=`select * from connect.ehr_cal where name=${emp_name} and emp_id=${emp_id} 
+      and org_nm=${org_nm} and ymd>=${start_day} and ymd<=${end_day}`
+      break;
+    case 'edit': // 개인별근무일정변경
+      break;
+    default:
+      res.status(404).send('<p>오류</p>'); //추후 수정
+  }
+  console.log(sql)
+  db.configure(db_config['mysql']);
+  db.query(sql).spread(function(rows){ //세션 수 조회
+    result=JSON.parse(JSON.stringify(rows));
+    //lib 특정 함수에 result 인수로 보내서 전처리 후 serverCache에 저장
+    return lib.makeInoutUploadForm(result);
+  }).then((result)=>{
+    let headingColumnIndex = 1;
+    headingColumnNames.forEach(heading => {
+      ws.cell(1, headingColumnIndex++)
+        .string(heading)
+    });
+    let rowIndex = 2;
+    
+    result.forEach( record => {
+      let columnIndex = 1;
+      Object.keys(record ).forEach(columnName =>{
+        ws.cell(rowIndex,columnIndex++)
+          .string(record[columnName])
+      });
+      rowIndex++;
+    }); 
+    fileName=lib.getNow()
+    wb.write(`data/${fileName}.xlsx`);
+    res.sendFile(__dirname+'/../'+fileName+'.xlsx')
+  }).catch(error => console.log(error))
+  
 })
 
 module.exports=router;

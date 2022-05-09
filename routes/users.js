@@ -26,7 +26,7 @@ router.get('/login/:emp_id',async function(req, res){
 
   db.query(sql).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
     if (JSON.parse(JSON.stringify(rows)).length==1){
-      console.log(req.params.emp_id+'('+''+')님의 직원정보가 존재합니다.');
+      console.log(`${req.params.emp_id}님의 직원정보가 존재합니다.`);
       req.session.data=JSON.parse(JSON.stringify(rows))
       req.session.save(()=>{
         console.log('세션 생성 완료!');
@@ -90,6 +90,38 @@ router.post('/overtime',function(req, res){
   console.log(req.body);
   db.configure(db_config['mysql']);
   sql='select EMP_ID, `NAME`, YMD, CAL_OVERTIME, CAL_MEAL from connect.ehr_cal where emp_id=? and ymd>=? and ymd<=?';
+
+  db.query(sql,[emp_id, start_day, end_day]).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
+    result=JSON.parse(JSON.stringify(rows));
+    new_result={
+      "empInfo":[], // 일별 데이터
+      "endOfWeek": lib.weekOfMonth(end_day) // 마지막 주 정보
+    }
+    for (row in result){
+      result[row]['WEEK']=lib.weekOfMonth(result[row]['YMD']);
+    }
+    new_result["empInfo"]=result
+    new_result=JSON.parse(JSON.stringify(new_result));
+    console.log(new_result);
+    res.json(new_result);
+  });
+});
+
+router.post('/cal_meal',function(req, res){
+  /*
+    급량비 및 초과근무 기록 조회
+    filter 안에 있는 내용(사번, 부서, 연월 정보)을 기반으로 중계DB의 connect.ehr_cal에서 값을 가져오는 쿼리를 실행
+    최초에 해당 연월에 해당하는 ehr_cal 데이터 행 수와 날짜를 기준으로 몇주차까지 완전하게 계산가능한지 판별하고
+    각 주차별로 초과근무, 급량비 내역 표출 및 월별 합산해서 표출할 수 있는 데이터 set 생성
+    이후 res.json으로 리턴
+  */ 
+  if(!lib.isSession(req, users)){ //세션 정보 존재하지 않으면
+    res.status(404).send('<p>오류</p>');
+  }
+  const {dept_name, start_day, end_day}=req.body;
+  console.log(req.body);
+  db.configure(db_config['mysql']);
+  sql='select EMP_ID, `NAME`, ORG_NM YMD, CAL_MEAL from connect.ehr_cal where org_nm=? and ymd>=? and ymd<=?';
 
   db.query(sql,[emp_id, start_day, end_day]).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
     result=JSON.parse(JSON.stringify(rows));
