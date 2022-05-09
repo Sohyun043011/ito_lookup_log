@@ -32,6 +32,7 @@ $(document).ready(function(){
 
     };
     $('#monthpicker1').monthpicker(options);
+    $('#monthpicker2').monthpicker(options);
 
     //미래 월은 비활성화시키기
     var months=[];
@@ -40,7 +41,17 @@ $(document).ready(function(){
     }
     for(var i=0;i<$('#monthpicker1').length;i++){
         $($('#monthpicker1')[i]).monthpicker("disableMonths",months);
+        $($('#monthpicker2')[i]).monthpicker("disableMonths",months);
         $($('#monthpicker1')[i]).monthpicker().bind('monthpicker-change-year',function(e,year){
+            var item = $(e.currentTarget);
+            if(year==currentYear){
+                $(item).monthpicker('disableMonths',months);
+            }
+            else{
+                $(item).monthpicker('disableMonths',[]);
+            }
+        });
+        $($('#monthpicker2')[i]).monthpicker().bind('monthpicker-change-year',function(e,year){
             var item = $(e.currentTarget);
             if(year==currentYear){
                 $(item).monthpicker('disableMonths',months);
@@ -135,20 +146,13 @@ $(document).ready(function(){
     // 초과근무 및 급량비 산정 확인 버튼
     $('#check-overtime').on('click',function(e){
         $('#check-overtime').prop('disabled', true);
+        
         var emp_id = $($('.mem-num')[0]).text();
         var date = $('#monthpicker1').val();
         // date = '2022-05'
-        const words = date.split('-');
-        const year = words[0];
-        const month = words[1];
-        words.push('01');
-        const start_day = words.join('');   //시작날짜
-
-        end_date = new Date(year,month,0);
-        var end_year = end_date.getFullYear();
-        var end_month = ("0"+(1+end_date.getMonth())).slice(-2);
-        var e_day = ("0"+end_date.getDate()).slice(-2);
-        var end_day = end_year+end_month+e_day;     //끝날짜
+        const year = date.split('-')[0];
+        const month = date.split('-')[1];
+        var [start_day,end_day] = monthPicktoString(date);
        
         $.ajax({
             method:'POST',
@@ -258,7 +262,7 @@ $(document).ready(function(){
                 console.log(over_list);
 
                 $('.overtime-table').jsGrid({
-                    height:"60%",
+                    height:"70%",
                     sorting: true,
                     paging:true,
                     pageSize: 15,
@@ -279,6 +283,27 @@ $(document).ready(function(){
             },
             error:function(result){
                 alert('실패')
+            }
+        })
+    })
+
+    //팀별 급량비 조회하기 버튼
+    $('#check-team-overtime').on('click',function(e){
+        $('check-team-overtime').prop('disabled', true);
+        var emp_id = $($('.mem-num')[0]).text();
+        var dept_name = $($('.mem-dept')[0]).text();
+        console.log(dept_name);
+        var date = $('#monthpicker2').val();
+        // date = '2022-05'
+        var [start_day,end_day] = monthPicktoString(date);
+        console.log(start_day,end_day);
+
+        $.ajax({
+            method:'POST',
+            url:'/users/cal_meal',
+            data:{'dept_name':dept_name,'start_day':start_day,'end_day':end_day},
+            success:function(result){
+                console.log(result);
             }
         })
     })
