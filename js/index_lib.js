@@ -46,3 +46,19 @@ function calMeal(dict){
     return dict;
 
 }
+
+function monthPicktoString(date){
+    const words = date.split('-');
+    const year = words[0];
+    const month = words[1];
+    words.push('01');
+    const start_day = words.join('');   //시작날짜
+
+    end_date = new Date(year,month,0);
+    var end_year = end_date.getFullYear();
+    var end_month = ("0"+(1+end_date.getMonth())).slice(-2);
+    var e_day = ("0"+end_date.getDate()).slice(-2);
+    var end_day = end_year+end_month+e_day;     //끝날짜
+    
+    return [start_day,end_day];
+}
