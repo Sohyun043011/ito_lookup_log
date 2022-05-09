@@ -123,12 +123,13 @@ router.post('/cal_meal',function(req, res){
   db.configure(db_config['mysql']);
   sql='select EMP_ID, `NAME`, ORG_NM YMD, CAL_MEAL from connect.ehr_cal where org_nm=? and ymd>=? and ymd<=?';
 
-  db.query(sql,[emp_id, start_day, end_day]).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
+  db.query(sql,[dept_name, start_day, end_day]).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
     result=JSON.parse(JSON.stringify(rows));
     new_result={
       "empInfo":[], // 일별 데이터
       "endOfWeek": lib.weekOfMonth(end_day) // 마지막 주 정보
     }
+    console.log(new_result)
     for (row in result){
       result[row]['WEEK']=lib.weekOfMonth(result[row]['YMD']);
     }

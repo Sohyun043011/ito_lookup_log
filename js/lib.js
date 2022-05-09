@@ -180,9 +180,6 @@ async function makeInoutUploadForm(result){ // 출퇴근시각관리 양식 생�
         .then(function(ymdResult){
             delete result.NO; // NO 제거
             i["No"]=String(noCount++); // 연번
-            //사번 : i["emp_id"]
-            //성명 : i["emp_name"]
-            //조직 : i["org_nm"]
             i["date"]=getDate(ymdResult);
             i["COMMUTE_TYPE"]=commuteTypeDict[i["SHIFT_CD"]];
             i["SHIFT_CD"]=shiftCdDict[i["SHIFT_CD"]];
