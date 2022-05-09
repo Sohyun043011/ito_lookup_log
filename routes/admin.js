@@ -1,13 +1,35 @@
 var express = require('express');
 var router = express.Router();
+var db=require('mysql2-promise')();
+var db_config=require('../db_config');
+var lib=require('../js/lib');
 
-router.post('/login',function(req, res){
+var serverNavCache;
+var serverQueryCache; // db조회 시 임시로 보유, 추후에 excel download 기능 구현 시 사용할 예정
+var admin='admin';
+var users='users';
+
+router.post('/login',function(req, res){ //data 키값 중 password라는 항목 받아오기
   /*
     관리자 페이지 로그인
     메인 페이지의 '관리자 로그인' 버튼 클릭, 암호 입력해서 서버 정보와 일치한다면 특수한 관리자 세션 생성
     별도의 세션 테이블을 유지하거나 세션 정보에 관리자임을 식별할 수 있는 정보를 넣기
     이후 '/admin'으로 redirect
   */
+  if (!lib.isSession(req,users)){ // request, session, session data 유효성 검사
+    res.status(404).send('<p>오류</p>'); //추후 수정
+  }
+  password=db_config.adminPageInfo; // 관리자 로그인 암호
+
+  user_pw=req.body.password; // 패스워드 입력값
+
+  //user_pw와 password가 일치한다면 세션 data에 isAdmin:true로 추가해주고 /admin/main페이지로 redirect
+  if(user_pw==password){
+    req.session.data['isAdmin']=true;
+    res.redirect('/admin/main');
+  }else{
+    res.status(404).send('<p>비밀번호가 틀렸습니다.</p>');
+  }
 });
 
 router.get('/main', function(req, res) { //
@@ -16,6 +38,10 @@ router.get('/main', function(req, res) { //
     1. 세션 수 확인 후 N개 미만일 때만 페이지 넘겨주기
     2. 세션 정보를 페이지단으로 넘겨주기(ejs) 또는 세션정보를 바탕으로 페이지 내부(client)에서 처리
   */
+  if(lib.isSession(req,admin)){ // request, session, session data 유효성 검사
+    res.render('admin',{list:req.session.data[0]}) // 세션 정보를 ejs에 보내줌
+  }else res.status(404).send('<p>오류</p>'); //추후 수정
+
 });
 
 router.get('/ehr/:type', function(req, res){
@@ -24,6 +50,31 @@ router.get('/ehr/:type', function(req, res){
     type : inout -> 출퇴근시각관리 form | cal_meal -> 급량비 form | edit -> 개인별근무일정변경 form
     이후 form 정보 리턴
   */
+  if (!lib.isSession(req,admin)){ // request, session, session data 유효성 검사
+    res.status(404).send('<p>오류</p>'); //추후 수정
+  }
+  
+  var {emp_name, emp_id, org_nm, start_day, end_day}= req.query;
+
+  var sql=``;
+  
+  switch(req.params.type){
+    case 'inout': // 출퇴근 시각관리
+    case 'cal_meal': // 급량비
+      sql='select * from connect.ehr_cal where emp_name=? and emp_id=? and org_nm=? amd ymd>=? and ymd<=?'
+      break;
+    case 'edit': // 개인별근무일정변경
+      break;
+    default:
+      res.status(404).send('<p>오류</p>'); //추후 수정
+  }
+  db.configure(db_config['mysql']);
+  db.query(sql).spread(function(rows){ //세션 수 조회
+    result=JSON.parse(JSON.stringify(rows));
+    //lib 특정 함수에 result 인수로 보내서 전처리 후 serverCache에 저장
+    result=lib.makeInoutUploadForm(result);
+  })
+  
 })
 
 router.get('/download/:type', function(req, res){
