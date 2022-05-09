@@ -7,7 +7,6 @@ function validateInterval(start_day, end_day){ // 기간 유효성 검사
         return true;
     }
 }
-
 function addOverTime(list){
     var total=0;
     for(i in list){
@@ -18,7 +17,6 @@ function addOverTime(list){
     }
     return total;
 }
-
 function addOverTimeTotal(dict){ //딕셔너리로 받아온 초과근무내역 합산해서 그대로 리턴
    
     for([key, value] of Object.entries(dict)){
@@ -31,4 +29,14 @@ function hhmmToString(time){ // 초과근무 시간정보를 'hh시간 mm분' �
     hour=Math.floor(time/60);
     minute=time%60;
     return hour+'시간 '+minute+'분'
+}
+function calMeal(dict){
+    cal_dict ={};
+    // week에 따라서 cal_meal 이 true인게 몇개 인지
+    //cal_dict = {'1':1,'2':3,...} 형식으로 만들기
+    for([key, value] of Object.entries(dict)){
+        dict[key]
+    }
+    return dict;
+
 }

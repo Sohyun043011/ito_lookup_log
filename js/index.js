@@ -175,15 +175,17 @@ $(document).ready(function(){
                 }
                 $('.week-tr').append(`<th scope="col">합산</th>`)
                 $('.week-overtime').append(`<th scope="col" class="over-sum">초과근무합산</th>`)
-                $('.week-cal').append(`<th scope="col">급량비합산</th>`)
+                $('.week-cal').append(`<th scope="col" class="cal-sum">급량비합산</th>`)
                 $('.1-week').before(`<th scope="col" class="date"></th>`)
                 $('.date').html(`${year}년 ${month}월`);
                 $('.1-overtime').before(`<th scope="row" >초과근무</th>`)
-                $('.1-cal').before(`<th scope="row">급량비</th>`)
+                $('.1-cal').before(`<th scope="row" >급량비</th>`)
 
                 //각 주차에 대해 overtime,급량비 계산
                 
-                var overtime = {1:[],2:[],3:[],4:[],5:[],6:[]}
+                var overtime = {1:[],2:[],3:[],4:[],5:[],6:[]};
+                var cal_meal = {1:0,2:0,3:0,4:0,5:0,6:0};
+                console.log(result.empInfo);
                 var now_week = result.empInfo[0].WEEK;  //1주차에 대해서
                 for(var m=0;m<result.empInfo.length-1;m++)
                 {
@@ -192,11 +194,19 @@ $(document).ready(function(){
                     
                     if (result.empInfo[m].WEEK==now_week){
                         overtime[`${now_week}`].push(result.empInfo[m].CAL_OVERTIME);
+                        console.log(result.empInfo[m].CAL_MEAL);
+                        if(result.empInfo[m].CAL_MEAL=="TRUE"){
+                            // 트루이면 cal_meal에 넣기
+                            cal_meal[`${now_week}`]=cal_meal[`${now_week}`]+1;
+                        }
                     }
                     else{
                         now_week = result.empInfo[m].WEEK;
                         overtime[`${now_week}`].push(result.empInfo[m].CAL_OVERTIME);
-                       
+                        if(result.empInfo[m].CAL_MEAL=="TRUE"){
+                            // 트루이면 cal_meal에 넣기
+                            cal_meal[`${now_week}`]=cal_meal[`${now_week}`]+1;
+                        }
                     }
                 }
                 const overTimeTotal = addOverTimeTotal(overtime);   //분으로 나타내짐
@@ -208,8 +218,24 @@ $(document).ready(function(){
                     console.log(`${idx+1}-overtime`);
                     $(`.${idx+1}-overtime`).html(ele_overtime);
                 });
+                //초과근무 합산
                 over_sum = hhmmToString(over_sum);
                 $('.over-sum').html(over_sum);
+
+                var cal_sum=0;
+                Object.values(cal_meal).forEach(function(ele,idx){
+                    //{'1':0,'2':3,...}
+                    cal_count = ele*8000;
+                    cal_sum+=cal_count;
+                    console.log(cal_count);
+                    const cal_string = (cal_count).toLocaleString('ko-KR');
+                    $(`.${idx+1}-cal`).html(cal_string);
+                });
+
+                //급량비 합산
+                $('.cal-sum').html(cal_sum.toLocaleString('ko-KR'));
+        
+                
             },
             error:function(result){
                 alert('실패')
