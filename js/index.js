@@ -303,7 +303,7 @@ $(document).ready(function(){
             url:'/users/cal_meal',
             data:{'dept_name':dept_name,'start_day':start_day,'end_day':end_day},
             success:function(result){
-                
+                console.log(result);
             }
         })
     })
