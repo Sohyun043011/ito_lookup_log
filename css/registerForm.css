@@ -87,6 +87,8 @@ div::-webkit-scrollbar-track {
 	width:100% !important;
 	text-align: center;
 	padding-top:20px;
+	overflow: auto;
+	overflow-x: hidden;
 }
 .ui-datepicker{
 	left:1027.782px !important;
@@ -128,6 +130,11 @@ div::-webkit-scrollbar-track {
 	word-spacing: 3px;
     font-size: medium;
 }
+.overtime-table{
+	width: 100% !important;
+	height:70% !important;
+	padding: 20px;
+}
 .nav-link{
 	color: black !important;
 }
@@ -137,6 +144,10 @@ div::-webkit-scrollbar-track {
 }
 .nav-tabs{
 	padding-top: 20px;
+}
+.nav-tabs .nav-link{
+	border:1px solid #6c757d40 !important;
+	border-bottom: none !important;
 }
 
 

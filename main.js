@@ -30,7 +30,7 @@ app.use(session({
     saveUninitialized: false,
     cookie:{
         path:'/',
-        maxAge:60000*5,
+        maxAge:300000,
         httpOnly:false
     },
     store:session_store,
