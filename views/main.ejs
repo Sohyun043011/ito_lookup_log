@@ -60,6 +60,9 @@
                     <li class="nav-item">
                         <button class="nav-link" id="nav-overtime-tab" data-bs-toggle="tab" data-bs-target="#nav-overtime" type="button" role="tab" aria-controls="nav-overtime" aria-selected="false">초과근무 및 급량비 조회</button>
                     </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="nav-team-overtime-tab" data-bs-toggle="tab" data-bs-target="#nav-team-overtime" type="button" role="tab" aria-controls="nav-overtime" aria-selected="false">팀별 초과근무 및 급량비 조회</button>
+                    </li>
                 </ul>
                   
                   <!-- Tab panes -->
@@ -106,6 +109,47 @@
                                 <span class="input-group-text no-border" id="basic-addon1">기간</span>
                                 <input type="text" id="monthpicker1" class="form-control no-border" style="width:20px;" placeholder="날짜를 선택해주세요"  dir="rtl">
                                 <button type="button" class="btn btn-secondary" id="check-overtime">조회하기</button>
+                            </div>
+                        </div>
+                        <div class="table-layout">
+                            <!-- 초과근무 및 급량비 테이블 -->
+                            <div class="cal-table">
+                                <table class="table summary-table" style="display: none;">
+                                    <thead class="thead-dark">
+                                      <tr class="week-tr">
+                                        <th scope="col" class="date"></th>
+                                        
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      <tr class="week-overtime">
+                                        <th scope="row" >초과근무</th>
+
+
+                                      </tr>
+                                      <tr class="week-cal">
+                                        <th scope="row">급량비</th>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <!-- 팀 별 초과근무 및 급량비 조회 TAB -->
+                    <div class="tab-pane" id="nav-team-overtime" role="tabpanel" aria-labelledby="nav-team-overtime-tab">
+                        <div class="header-info">
+                            <!-- 사번,부서, datepicker, 표출  -->
+                            <div class="input-group second-size">
+                                <span class="input-group-text" id="basic-addon1">이름</span>
+                                <div class="mem-name fw-bold"><%= list['EMP_NM']%></div>
+                                <span class="input-group-text" id="basic-addon1">사번</span>
+                                <div class="mem-num fw-bold"  ><%= list['EMP_ID'] %></div>
+                                <span class="input-group-text" id="basic-addon1">부서</span>
+                                <div class="mem-dept fw-bold"  ><%= list['ORG_NM'] %></div>
+                                <span class="input-group-text no-border" id="basic-addon1">기간</span>
+                                <input type="text" id="monthpicker1" class="form-control no-border" style="width:20px;" placeholder="날짜를 선택해주세요"  dir="rtl">
+                                <button type="button" class="btn btn-secondary" id="check-overtime">팀별 초과근무 조회하기</button>
                             </div>
                         </div>
                         <div class="table-layout">

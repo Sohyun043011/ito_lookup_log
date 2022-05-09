@@ -138,6 +138,10 @@ div::-webkit-scrollbar-track {
 .nav-tabs{
 	padding-top: 20px;
 }
+.nav-tabs .nav-link{
+	border:1px solid #6c757d40 !important;
+	border-bottom: none !important;
+}
 
 
 #top_title{
