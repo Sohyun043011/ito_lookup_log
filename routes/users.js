@@ -49,8 +49,9 @@ router.get('/main', function(req, res) { //
     3. 출퇴근 기록 조회 | 급량비 및 초과근무 기록 조회의 2개의 tab으로 구성
     이후 main page 리턴
   */
+  console.log(req.session.data)
   if(lib.isSession(req, users)){ // request, session, session data 유효하면
-    res.render('main',{list:req.session.data}) // 세션 정보를 ejs에 보내줌
+    res.render('main',{list:req.session.data[0]}) // 세션 정보를 ejs에 보내줌
   }else res.status(404).send('<p>오류</p>'); //추후 수정
 });
 

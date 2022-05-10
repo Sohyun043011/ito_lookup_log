@@ -34,7 +34,6 @@ router.post('/login',function(req, res){ //data 키값 중 password라는 항목
     req.session.isAdmin=true;
     req.session.save(()=>{
       // /admin/main/으로 redirect */
-      console.log(req.session.data);
       res.redirect('/admin/main');
     });
   }else{
@@ -58,13 +57,6 @@ router.get('/main', function(req, res) { //
   if(req.session.isAdmin){
     res.render('admin',{list:req.session.data[0]}) // 세션 정보를 ejs에 보내줌
   }else res.status(404).send('<p>세션 오류</p>'); //추후 수정
-  
-  // lib.isSession(req,admin).then(function(result){
-  //   if(result){
-  //     res.render('admin',{list:req.session.data[0]}) // 세션 정보를 ejs에 보내줌
-  //   }else res.status(404).send('<p>세션 오류</p>'); //추후 수정
-  // })
-
 });
 
 router.get('/ehr/:type', function(req, res){
@@ -120,30 +112,50 @@ router.get('/download/:type', function(req, res){
   //   "HOME_ID","ETC_INFO","ETC_ID","REWARD_TIME","REWARD_ID","CAL_OVERTIME","CAL_MEAL","RSN","date","COMMUTE_TYPE","DEL_YN"
   // ]
   
-  console.log(req.query)
   var sql=``;
-  
+
+  db.configure(db_config['mysql']);
+
+  var sqlFilter=[
+    emp_name==undefined||''?'':' and `NAME`=?',
+    emp_id==undefined||''?'':' and `emp_id`=?',
+    org_nm==undefined||''?'':' and `org_nm`=?',
+  ]
+  var sqlList=[start_day, end_day];
+  for(i of [emp_name, emp_id, org_nm]){
+    if (i!=undefined&&i!=''){
+      sqlList.push(i);
+    }
+  }
+  console.log(sqlList)
   switch(req.params.type){
     case 'inout': // 출퇴근 시각관리
+      sql='select YMD, EMP_ID, `NAME`, ORG_NM, SHIFT_CD, WORK_TYPE, PLAN1, `INOUT`, FIX1, CAL_OVERTIME, CAL_MEAL from connect.ehr_cal'+
+      ' where ymd>=? and ymd<=?'
+      for (i of sqlFilter){
+        sql=sql+i;
+      }
+      console.log(sql);
+
+      db.query(sql,sqlList).spread(function(rows){ //세션 수 조회
+        result=JSON.parse(JSON.stringify(rows));
+        //lib 특정 함수에 result 인수로 보내서 전처리 후 serverCache에 저장
+        return lib.makeInoutUploadForm(result);
+      }).then((result)=>{
+        result.write('testExcel.xlsx',res);
+        // res.send('aewfewafw');
+      })
+      // .catch(error => console.log(error))
     case 'cal_meal': // 급량비
-      sql=`select * from connect.ehr_cal where name=${emp_name} and emp_id=${emp_id} 
-      and org_nm=${org_nm} and ymd>=${start_day} and ymd<=${end_day}`
+      
       break;
     case 'edit': // 개인별근무일정변경
       break;
     default:
       res.status(404).send('<p>오류</p>'); //추후 수정
   }
-  console.log(sql)
-  db.configure(db_config['mysql']);
-  db.query(sql).spread(function(rows){ //세션 수 조회
-    result=JSON.parse(JSON.stringify(rows));
-    //lib 특정 함수에 result 인수로 보내서 전처리 후 serverCache에 저장
-    return lib.makeInoutUploadForm(result);
-  }).then((result)=>{
-
-  })
-  .catch(error => console.log(error))
+  
+  
   
 })
 

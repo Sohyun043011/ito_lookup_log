@@ -151,9 +151,92 @@ function getInoutPrototype(){
         ws.cell(1,33,2,33,true).string('비고').style(style); //비고
         ws.cell(1,34,2,34,true).string('수정자').style(style); //수정자
         ws.cell(1,35,2,35,true).string('수정일시').style(style); //수정일시
-        resolve(wb);
+        resolve({wb:wb,ws:ws,style:style});
     });    
 }
+
+async function makeInoutUploadForm(result){ // 출퇴근시각관리 양식 생성
+    var {wb,ws,style}=await getInoutPrototype();
+    var noCount=1;
+    var col = 3;
+    var row = 1;
+    //result에서 직접 전처리 후 리턴
+    for (i of result){
+        delete i.NO;
+        await dayFormatTranslate(i["YMD"])
+        .then(function(ymdResult){
+            i["YMD2"]=ymdResult;
+            i["No"]=String(noCount++); // 연번
+            i["DATE"]=getDate(ymdResult);
+            i["COMMUTE_TYPE"]=commuteTypeDict[i["SHIFT_CD"]];
+            i["SHIFT_CD"]=shiftCdDict[i["SHIFT_CD"]];
+            i["WORK_TYPE"]=workTypeDict[i["WORK_TYPE"]];
+            
+            i["PLAN_START"]=i["PLAN1"].substring(0,4)
+            /* 
+                commute_type:파견직출퇴근(0060), 육아기근로단축(7,6,5시간), 선택출퇴근제, 근로단축(6시간,5시간), 
+                임신기근로단축 외에는 모두 시차출퇴근제로 반영
+            */
+            i["DEL_YN"]="N";
+            return i; 
+        })
+        .then(async function(result){
+            ws.cell(col,row++).string(result["No"]).style(style);
+            ws.cell(col,row++).string(result["EMP_ID"]).style(style);
+            ws.cell(col,row++).string(result["NAME"]).style(style);
+            ws.cell(col,row++).string(result["ORG_NM"]).style(style);
+            ws.cell(col,row++).string(result["YMD2"]).style(style);
+            ws.cell(col,row++).string(result["DATE"]).style(style);
+            ws.cell(col,row++).string(result["COMMUTE_TYPE"]).style(style);
+            ws.cell(col,row++).string(result["SHIFT_CD"]).style(style);
+            ws.cell(col,row++).string(result["WORK_TYPE"]).style(style);
+            ws.cell(col,row++).string(result["DEL_YN"]).style(style);
+            if(result["PLAN1"]=='None'){
+                row=row+4;
+            }else{
+                var [start, end]=result["PLAN1"].split('~');
+                ws.cell(col,row++).string(result["YMD2"]).style(style);
+                ws.cell(col,row++).string(start.substr(0,2)+':'+start.substr(2,2)).style(style);
+                ws.cell(col,row++).string(result["YMD2"]).style(style);
+                ws.cell(col,row++).string(end.substr(0,2)+':'+end.substr(2,2)).style(style);
+            }
+            row=row+10;
+            if(result["INOUT"]=='None'){
+                row=row+4;
+            }else{
+                var [start, end]=result["INOUT"].split('~');
+                if(start){
+                    ws.cell(col,row++).string(result["YMD2"]).style(style);
+                    ws.cell(col,row++).string(start.substr(0,2)+':'+start.substr(2,2)).style(style);
+                }else row=row+2;
+                if(end){
+                    ws.cell(col,row++).string(result["YMD2"]).style(style);
+                    ws.cell(col,row++).string(end.substr(0,2)+':'+end.substr(2,2)).style(style);
+                }else row=row+2;
+            }
+            if(result["FIX1"]=='ERROR'){
+                row=row+4;
+            }else{
+                var [start, end]=result["FIX1"].split('~');
+                if(start){
+                    ws.cell(col,row++).string(result["YMD2"]).style(style);
+                    ws.cell(col,row++).string(start.substr(0,2)+':'+start.substr(2,2)).style(style);
+                }else row=row+2;
+                if(end){
+                    ws.cell(col,row++).string(result["YMD2"]).style(style);
+                    ws.cell(col,row++).string(end.substr(0,2)+':'+end.substr(2,2)).style(style);
+                }else row=row+2;
+            }
+        })
+        .finally(function(){
+            col++;
+            row=1;
+        })
+    }
+    return wb;
+    
+}
+
 
 function addOverTime(list){
     var total=0;
@@ -231,63 +314,7 @@ function getNow(){
 
     // return new Date(+new Date() + 3240 * 10000).toISOString().replace("T", " ").replace(/\..*/, '');
 }
-async function makeInoutUploadForm(result){ // 출퇴근시각관리 양식 생성
-    var wb=await getInoutPrototype();
-    var ws=wb.addWorksheet('Worksheet Name');
-    const style=wb.createStyle({
-        alignment:{
-        horizontal:"center",
-        vertical:"center",
-        wrapText: true
-        }
-    })
-    var noCount=1;
-    var col = 3;
-    var row = 1;
-    //result에서 직접 전처리 후 리턴
-    for (i of result){
-        delete i.NO;
-        await dayFormatTranslate(i["YMD"])
-        .then(function(ymdResult){
-            i["YMD2"]=ymdResult;
-            i["No"]=String(noCount++); // 연번
-            i["DATE"]=getDate(ymdResult);
-            i["COMMUTE_TYPE"]=commuteTypeDict[i["SHIFT_CD"]];
-            i["SHIFT_CD"]=shiftCdDict[i["SHIFT_CD"]];
-            i["WORK_TYPE"]=workTypeDict[i["WORK_TYPE"]];
-            
-            i["PLAN_START"]=i["PLAN1"].substring(0,4)
-            /* 
-                commute_type:파견직출퇴근(0060), 육아기근로단축(7,6,5시간), 선택출퇴근제, 근로단축(6시간,5시간), 
-                임신기근로단축 외에는 모두 시차출퇴근제로 반영
-            */
-            i["DEL_YN"]="N";
-            return result[i]; 
-        })
-        .then(function(result){
-            console.log(result);
-            ws.cell(col,row++).string(result["No"]).style(style);
-            ws.cell(col,row++).string(result["EMP_ID"]).style(style);
-            ws.cell(col,row++).string(result["NAME"]).style(style);
-            ws.cell(col,row++).string(result["ORG_NM"]).style(style);
-            ws.cell(col,row++).string(result["YMD2"]).style(style);
-            ws.cell(col,row++).string(result["DATE"]).style(style);
-            ws.cell(col,row++).string(result["COMMUTE_TYPE"]).style(style);
-            ws.cell(col,row++).string(result["SHIFT_CD"]).style(style);
-            ws.cell(col,row++).string(result["WORK_TYPE"]).style(style);
-            ws.cell(col,row++).string(result["DEL_YN"]).style(style);
-            ws.cell(col,row++).string(result["No"]).style(style);
-            ws.cell(col,row++).string(result["No"]).style(style);
-        })
-        .catch(function(err){
-            console.log(err)
-        })
-    }
-    
 
-    console.log(result);
-    return result;
-}
 
 function makeChitLink(result){ // 시간외전표연동 양식 생성
 
@@ -297,13 +324,13 @@ function makePersonalWorkPlanEdit(result){ // 개인별근무일정변경 양식
 
 }
 
-async function clean(file){
-    fs.unlink(file, function(err){
-      if(err) {
-        console.log("Error : ", err)
-      }
-    })
-  }
+// async function clean(file){
+//     fs.unlink(file, function(err){
+//       if(err) {
+//         console.log("Error : ", err)
+//       }
+//     })
+//   }
 
 module.exports={
     workTypeDict,
@@ -318,6 +345,5 @@ module.exports={
     makePersonalWorkPlanEdit,
     jsonize,
     getNow,
-    clean,
     getInoutPrototype
 }
