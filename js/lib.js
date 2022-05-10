@@ -155,8 +155,6 @@ function getInoutPrototype(){
     });    
 }
 
-
-
 function addOverTime(list){
     var total=0;
     for(i in list){
@@ -230,26 +228,59 @@ function getNow(){
     // return new Date(+new Date() + 3240 * 10000).toISOString().replace("T", " ").replace(/\..*/, '');
 }
 async function makeInoutUploadForm(result){ // 출퇴근시각관리 양식 생성
+    var wb=await getInoutPrototype();
+    var ws=wb.addWorksheet('Worksheet Name');
+    const style=wb.createStyle({
+        alignment:{
+        horizontal:"center",
+        vertical:"center",
+        wrapText: true
+        }
+    })
     var noCount=1;
+    var col = 3;
+    var row = 1;
     //result에서 직접 전처리 후 리턴
-    
     for (i of result){
         delete i.NO;
         await dayFormatTranslate(i["YMD"])
         .then(function(ymdResult){
-            i["NO"]=String(noCount++); // 연번
-            i["date"]=getDate(ymdResult);
+            i["YMD2"]=ymdResult;
+            i["No"]=String(noCount++); // 연번
+            i["DATE"]=getDate(ymdResult);
             i["COMMUTE_TYPE"]=commuteTypeDict[i["SHIFT_CD"]];
             i["SHIFT_CD"]=shiftCdDict[i["SHIFT_CD"]];
             i["WORK_TYPE"]=workTypeDict[i["WORK_TYPE"]];
+            
+            i["PLAN_START"]=i["PLAN1"].substring(0,4)
             /* 
                 commute_type:파견직출퇴근(0060), 육아기근로단축(7,6,5시간), 선택출퇴근제, 근로단축(6시간,5시간), 
                 임신기근로단축 외에는 모두 시차출퇴근제로 반영
             */
-            i["DEL_YN"]="N";      
-            return result[i] 
+            i["DEL_YN"]="N";
+            return result[i]; 
+        })
+        .then(function(result){
+            console.log(result);
+            ws.cell(col,row++).string(result["No"]).style(style);
+            ws.cell(col,row++).string(result["EMP_ID"]).style(style);
+            ws.cell(col,row++).string(result["NAME"]).style(style);
+            ws.cell(col,row++).string(result["ORG_NM"]).style(style);
+            ws.cell(col,row++).string(result["YMD2"]).style(style);
+            ws.cell(col,row++).string(result["DATE"]).style(style);
+            ws.cell(col,row++).string(result["COMMUTE_TYPE"]).style(style);
+            ws.cell(col,row++).string(result["SHIFT_CD"]).style(style);
+            ws.cell(col,row++).string(result["WORK_TYPE"]).style(style);
+            ws.cell(col,row++).string(result["DEL_YN"]).style(style);
+            ws.cell(col,row++).string(result["No"]).style(style);
+            ws.cell(col,row++).string(result["No"]).style(style);
+        })
+        .catch(function(err){
+            console.log(err)
         })
     }
+    
+
     console.log(result);
     return result;
 }

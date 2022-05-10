@@ -97,11 +97,11 @@ router.get('/download/:type', function(req, res){
   const xl = require('excel4node');
   const wb = new xl.Workbook();
   const ws = wb.addWorksheet('Worksheet Name');
-  const headingColumnNames=[
-    "NO","YMD","EMP_ID","NAME","ORG_NM","SHIFT_CD","WORK_TYPE","PLAN1","INOUT","FIX1","ERROR_INFO","DAYOFF1_TIME",
-    "DAYOFF1_ID","DAYOFF2_TIME","DAYOFF2_ID","OVER1_TIME","OVER1_ID","BUSI_TRIP1_TIME","BUSI_TRIP1_ID","BUSI_TRIP2_TIME","BUSI_TRIP2_ID",
-    "HOME_ID","ETC_INFO","ETC_ID","REWARD_TIME","REWARD_ID","CAL_OVERTIME","CAL_MEAL","RSN","date","COMMUTE_TYPE","DEL_YN"
-  ]
+  // const headingColumnNames=[
+  //   "NO","YMD","EMP_ID","NAME","ORG_NM","SHIFT_CD","WORK_TYPE","PLAN1","INOUT","FIX1","ERROR_INFO","DAYOFF1_TIME",
+  //   "DAYOFF1_ID","DAYOFF2_TIME","DAYOFF2_ID","OVER1_TIME","OVER1_ID","BUSI_TRIP1_TIME","BUSI_TRIP1_ID","BUSI_TRIP2_TIME","BUSI_TRIP2_ID",
+  //   "HOME_ID","ETC_INFO","ETC_ID","REWARD_TIME","REWARD_ID","CAL_OVERTIME","CAL_MEAL","RSN","date","COMMUTE_TYPE","DEL_YN"
+  // ]
   
   console.log(req.query)
   var sql=``;
@@ -124,35 +124,26 @@ router.get('/download/:type', function(req, res){
     //lib 특정 함수에 result 인수로 보내서 전처리 후 serverCache에 저장
     return lib.makeInoutUploadForm(result);
   }).then((result)=>{
-    let headingColumnIndex = 1;
-    headingColumnNames.forEach(heading => {
-      ws.cell(1, headingColumnIndex++)
-        .string(heading)
-    });
-    let rowIndex = 2;
-    result.forEach( record => {
-      let columnIndex = 1;
+
+    // let headingColumnIndex = 1;
+    // headingColumnNames.forEach(heading => {
+    //   ws.cell(1, headingColumnIndex++)
+    //     .string(heading)
+    // });
+    // let rowIndex = 2;
+    // result.forEach( record => {
+    //   let columnIndex = 1;
       
-      for (column of headingColumnNames){
-        ws.cell(rowIndex,columnIndex++)
-          .string(record[column])
-      }
-      rowIndex++;
+    //   for (column of headingColumnNames){
+    //     ws.cell(rowIndex,columnIndex++)
+    //       .string(record[column])
+    //   }
+    //   rowIndex++;
       // Object.keys(record).forEach(columnName =>{
       //   console.log(columnName);
       //   ws.cell(rowIndex,columnIndex++)
       //     .string(record[columnName])
       // });
-      
-    }); 
-    fileName=lib.getNow()
-    wb.write(`data/${fileName}.xlsx`, function(data){
-      wholeFilename=fileName+'.xlsx';
-      res.setHeader('Content-Disposition', `attachment; filename=${wholeFilename}`); // 이게 핵심 
-      res.sendFile(path.resolve(`./data/${fileName}.xlsx`),function(err){
-        lib.clean(`data/${fileName}.xlsx`);
-      })
-    })
   })
   .catch(error => console.log(error))
   
