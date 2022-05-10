@@ -55,9 +55,27 @@ router.get('/main', function(req, res) { //
     1. 세션 수 확인 후 N개 미만일 때만 페이지 넘겨주기
     2. 세션 정보를 페이지단으로 넘겨주기(ejs) 또는 세션정보를 바탕으로 페이지 내부(client)에서 처리
   */
-  console.log(req.session.isAdmin)
+  
+
+
   if(req.session.isAdmin){
-    res.render('admin',{list:req.session.data[0]}) // 세션 정보를 ejs에 보내줌
+    
+    db.configure(db_config['mysql']);
+    db.query(`select DEPT_NAME from connect.gw_dept_info 
+    where DEPT_NAME not in ('인천관광공사','사장','본부장','테스트팀','전자결재임시조직')`).spread(function(rows){
+      return lib.jsonize(rows);
+    }).then(function(result){
+      var listJSON={
+        session_data:req.session.data[0],
+        dept_info:result
+      }
+      return listJSON.values;
+    }).then(function(listJSON){
+      console.log(listJSON);
+      res.render('admin',{list:listJSON});
+    })
+
+    // 세션 정보를 ejs에 보내줌
   }else res.status(404).send('<p>세션 오류</p>'); //추후 수정
 });
 
