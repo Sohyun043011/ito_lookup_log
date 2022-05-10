@@ -121,7 +121,7 @@ router.post('/cal_meal',function(req, res){
   const {dept_name, start_day, end_day}=req.body;
   console.log(req.body);
   db.configure(db_config['mysql']);
-  sql='select EMP_ID, `NAME`, ORG_NM YMD, CAL_MEAL from connect.ehr_cal where org_nm=? and ymd>=? and ymd<=?';
+  sql='select EMP_ID, `NAME`, ORG_NM, YMD, CAL_MEAL from connect.ehr_cal where org_nm=? and ymd>=? and ymd<=?';
 
   db.query(sql,[dept_name, start_day, end_day]).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
     result=JSON.parse(JSON.stringify(rows));

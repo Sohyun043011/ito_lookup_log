@@ -3,11 +3,17 @@ var router = express.Router();
 var db=require('mysql2-promise')();
 var db_config=require('../db_config');
 var lib=require('../js/lib');
+var path=require('path')
+var fs=require('fs');
+const { head } = require('request');
+const xl = require('excel4node');
 
 var serverNavCache;
 var serverQueryCache; // db조회 시 임시로 보유, 추후에 excel download 기능 구현 시 사용할 예정
 var admin='admin';
 var users='users';
+
+
 
 router.post('/login',function(req, res){ //data 키값 중 password라는 항목 받아오기
   /*
@@ -94,7 +100,7 @@ router.get('/download/:type', function(req, res){
   const headingColumnNames=[
     "NO","YMD","EMP_ID","NAME","ORG_NM","SHIFT_CD","WORK_TYPE","PLAN1","INOUT","FIX1","ERROR_INFO","DAYOFF1_TIME",
     "DAYOFF1_ID","DAYOFF2_TIME","DAYOFF2_ID","OVER1_TIME","OVER1_ID","BUSI_TRIP1_TIME","BUSI_TRIP1_ID","BUSI_TRIP2_TIME","BUSI_TRIP2_ID",
-    "HOME_ID","ETC_INFO","ETC_ID","REWARD_TIME","REWARD_ID","CAL_OVERTIME","CAL_MEAL","RSN","No","date","COMMUTE_TYPE","DEL_YN"
+    "HOME_ID","ETC_INFO","ETC_ID","REWARD_TIME","REWARD_ID","CAL_OVERTIME","CAL_MEAL","RSN","date","COMMUTE_TYPE","DEL_YN"
   ]
   
   console.log(req.query)
@@ -124,20 +130,66 @@ router.get('/download/:type', function(req, res){
         .string(heading)
     });
     let rowIndex = 2;
-    
     result.forEach( record => {
       let columnIndex = 1;
-      Object.keys(record ).forEach(columnName =>{
+      
+      for (column of headingColumnNames){
         ws.cell(rowIndex,columnIndex++)
-          .string(record[columnName])
-      });
+          .string(record[column])
+      }
       rowIndex++;
+      // Object.keys(record).forEach(columnName =>{
+      //   console.log(columnName);
+      //   ws.cell(rowIndex,columnIndex++)
+      //     .string(record[columnName])
+      // });
+      
     }); 
     fileName=lib.getNow()
-    wb.write(`data/${fileName}.xlsx`);
-    res.sendFile(__dirname+'/../'+fileName+'.xlsx')
-  }).catch(error => console.log(error))
+    wb.write(`data/${fileName}.xlsx`, function(data){
+      wholeFilename=fileName+'.xlsx';
+      res.setHeader('Content-Disposition', `attachment; filename=${wholeFilename}`); // 이게 핵심 
+      res.sendFile(path.resolve(`./data/${fileName}.xlsx`),function(err){
+        lib.clean(`data/${fileName}.xlsx`);
+      })
+    })
+  })
+  .catch(error => console.log(error))
   
+})
+
+router.get('/test',function(req,res){
+  lib.getInoutPrototype().then(function(wb){
+    wb.write('testExcel.xlsx',res);
+  });
+  
+//   ws.cell(1, 1)
+//     .number(100)
+//     .style(style);
+ 
+//  // Set value of cell B1 to 200 as a number type styled with 
+
+//   ws.cell(1, 2)
+//     .number(200)
+//     .style(style);
+  
+//   // Set value of cell C1 to a formula styled with paramaters of style
+//   ws.cell(1, 3)
+//     .formula('A1 + B1')
+//     .style(style);
+  
+//   // Set value of cell A2 to 'string' styled with paramaters of style
+//   ws.cell(2, 1)
+//     .string('string')
+//     .style(style);
+  
+//   // Set value of cell A3 to true as a boolean type styled with paramaters of style but with an adjustment to the font size.
+//   ws.cell(3, 1)
+//     .bool(true)
+//     .style(style)
+//     .style({font: {size: 14}});
+//   ws.cell(1,4,2,4,true).string('병합된 셀')
+//   wb.write('testExcel.xlsx',res);
 })
 
 module.exports=router;
