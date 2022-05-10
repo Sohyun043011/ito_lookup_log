@@ -26,7 +26,7 @@ app.set('data','./data');
 app.use(cookieParser());
 app.use(session({
     secret:'kjwlakwf@$#!',
-    resave:false,
+    resave:true,
     saveUninitialized: false,
     cookie:{
         path:'/',

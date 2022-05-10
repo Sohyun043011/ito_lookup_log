@@ -436,7 +436,7 @@ $(document).ready(function(){
                 },
                 success:function(result){
                     console.log(result);
-                    
+                    location.href='/admin/main'
                 },
                 error:function(result){
                     console.log(result);
