@@ -50,7 +50,7 @@ router.get('/main', function(req, res) { //
     이후 main page 리턴
   */
   if(lib.isSession(req, users)){ // request, session, session data 유효하면
-    res.render('main',{list:req.session.data}) // 세션 정보를 ejs에 보내줌
+    res.render('main',{list:req.session.data[0]}) // 세션 정보를 ejs에 보내줌
   }else res.status(404).send('<p>오류</p>'); //추후 수정
 });
 
