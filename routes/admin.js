@@ -25,20 +25,28 @@ router.post('/login',function(req, res){ //data 키값 중 password라는 항목
   if (!lib.isSession(req,users)){ // request, session, session data 유효성 검사
     res.status(404).send('<p>오류</p>'); //추후 수정
   }
-  
   password=db_config.adminPageInfo.password; // 관리자 로그인 암호
-  console.log(password)
+
   user_pw=req.body.password; // 패스워드 입력값
-  console.log(user_pw==password)
+
   //user_pw와 password가 일치한다면 세션 data에 isAdmin:true로 추가해주고 /admin/main페이지로 redirect
   if(user_pw==password){
-    req.session.data['isAdmin']=true;
-    
-    res.redirect('/admin/main');
+    req.session.isAdmin=true;
+    req.session.save(()=>{
+      // /admin/main/으로 redirect */
+      console.log(req.session.data);
+      res.redirect('/admin/main');
+    });
   }else{
     res.status(404).send('<p>비밀번호가 틀렸습니다.</p>');
   }
 });
+router.post('/logout',function(req,res){
+  req.session.isAdmin=false;
+  req.session.save(()=>{
+    req.redirect('/user/main');
+  })
+})
 
 router.get('/main', function(req, res) { //
   /*
@@ -46,13 +54,16 @@ router.get('/main', function(req, res) { //
     1. 세션 수 확인 후 N개 미만일 때만 페이지 넘겨주기
     2. 세션 정보를 페이지단으로 넘겨주기(ejs) 또는 세션정보를 바탕으로 페이지 내부(client)에서 처리
   */
-  console.log("메인페이지 넘어감");
-  lib.isSession(req, admin).then(function(result){
-    console.log(result)
-    if(result){
-      res.render('admin',{list:req.session.data[0]}) // 세션 정보를 ejs에 보내줌
-    }else res.status(404).send('<p>오류</p>'); //추후 수정
-  })
+  console.log(req.session.isAdmin)
+  if(req.session.isAdmin){
+    res.render('admin',{list:req.session.data[0]}) // 세션 정보를 ejs에 보내줌
+  }else res.status(404).send('<p>세션 오류</p>'); //추후 수정
+  
+  // lib.isSession(req,admin).then(function(result){
+  //   if(result){
+  //     res.render('admin',{list:req.session.data[0]}) // 세션 정보를 ejs에 보내줌
+  //   }else res.status(404).send('<p>세션 오류</p>'); //추후 수정
+  // })
 
 });
 
@@ -103,11 +114,11 @@ router.get('/download/:type', function(req, res){
   const xl = require('excel4node');
   const wb = new xl.Workbook();
   const ws = wb.addWorksheet('Worksheet Name');
-  const headingColumnNames=[
-    "NO","YMD","EMP_ID","NAME","ORG_NM","SHIFT_CD","WORK_TYPE","PLAN1","INOUT","FIX1","ERROR_INFO","DAYOFF1_TIME",
-    "DAYOFF1_ID","DAYOFF2_TIME","DAYOFF2_ID","OVER1_TIME","OVER1_ID","BUSI_TRIP1_TIME","BUSI_TRIP1_ID","BUSI_TRIP2_TIME","BUSI_TRIP2_ID",
-    "HOME_ID","ETC_INFO","ETC_ID","REWARD_TIME","REWARD_ID","CAL_OVERTIME","CAL_MEAL","RSN","date","COMMUTE_TYPE","DEL_YN"
-  ]
+  // const headingColumnNames=[
+  //   "NO","YMD","EMP_ID","NAME","ORG_NM","SHIFT_CD","WORK_TYPE","PLAN1","INOUT","FIX1","ERROR_INFO","DAYOFF1_TIME",
+  //   "DAYOFF1_ID","DAYOFF2_TIME","DAYOFF2_ID","OVER1_TIME","OVER1_ID","BUSI_TRIP1_TIME","BUSI_TRIP1_ID","BUSI_TRIP2_TIME","BUSI_TRIP2_ID",
+  //   "HOME_ID","ETC_INFO","ETC_ID","REWARD_TIME","REWARD_ID","CAL_OVERTIME","CAL_MEAL","RSN","date","COMMUTE_TYPE","DEL_YN"
+  // ]
   
   console.log(req.query)
   var sql=``;
@@ -130,35 +141,7 @@ router.get('/download/:type', function(req, res){
     //lib 특정 함수에 result 인수로 보내서 전처리 후 serverCache에 저장
     return lib.makeInoutUploadForm(result);
   }).then((result)=>{
-    let headingColumnIndex = 1;
-    headingColumnNames.forEach(heading => {
-      ws.cell(1, headingColumnIndex++)
-        .string(heading)
-    });
-    let rowIndex = 2;
-    result.forEach( record => {
-      let columnIndex = 1;
-      
-      for (column of headingColumnNames){
-        ws.cell(rowIndex,columnIndex++)
-          .string(record[column])
-      }
-      rowIndex++;
-      // Object.keys(record).forEach(columnName =>{
-      //   console.log(columnName);
-      //   ws.cell(rowIndex,columnIndex++)
-      //     .string(record[columnName])
-      // });
-      
-    }); 
-    fileName=lib.getNow()
-    wb.write(`data/${fileName}.xlsx`, function(data){
-      wholeFilename=fileName+'.xlsx';
-      res.setHeader('Content-Disposition', `attachment; filename=${wholeFilename}`); // 이게 핵심 
-      res.sendFile(path.resolve(`./data/${fileName}.xlsx`),function(err){
-        lib.clean(`data/${fileName}.xlsx`);
-      })
-    })
+
   })
   .catch(error => console.log(error))
   

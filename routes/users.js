@@ -27,12 +27,13 @@ router.get('/login/:emp_id',async function(req, res){
   db.query(sql).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
     if (JSON.parse(JSON.stringify(rows)).length==1){
       console.log(`${req.params.emp_id}님의 직원정보가 존재합니다.`);
-      req.session.data=JSON.parse(JSON.stringify(rows))
+      req.session.data=JSON.parse(JSON.stringify(rows));
+      req.session.isAdmin=false;
       req.session.save(()=>{
         console.log('세션 생성 완료!');
         /*3. '/user/main/으로 redirect */
-        res.redirect('/users/main');
-    });
+        res.redirect('/users/main')
+      });
     } else{
       console.log('직원정보가 존재하지 않습니다.');
       res.send('<p>만료된 페이지<p>'); // 추후 수정
@@ -49,7 +50,7 @@ router.get('/main', function(req, res) { //
     이후 main page 리턴
   */
   if(lib.isSession(req, users)){ // request, session, session data 유효하면
-    res.render('main',{list:req.session.data[0]}) // 세션 정보를 ejs에 보내줌
+    res.render('main',{list:req.session.data}) // 세션 정보를 ejs에 보내줌
   }else res.status(404).send('<p>오류</p>'); //추후 수정
 });
 
