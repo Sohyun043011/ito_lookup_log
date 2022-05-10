@@ -11,6 +11,9 @@ div{
 html{
     height:100%;
 }
+input[type=password]{
+    font-family:"굴림";
+}
 p,h4,h3,h2,h1,span,button,div{
 	transform: skew(-0.1deg);
 }

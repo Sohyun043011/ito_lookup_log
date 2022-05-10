@@ -193,13 +193,16 @@ function hhmmToString(time){ // 초과근무 시간정보를 'hh시간 mm분' �
 }
 
 function isSession(req, type){ //세션 유효한지 검증
-    if(type=='users'){//일반유저
-        return (req&&req.session&&req.session.data);
-    }else if(type=='admin'){//admin유저
-        return (req&&req.session&&req.session.data&&req.session.isAdmin);
-    }else{
-        return false;
-    }
+    return new Promise((resolve, reject)=>{
+        if(type=='users'){//일반유저
+            resolve(req&&req.session&&req.session.data);
+        }else if(type=='admin'){//admin유저
+            resolve(req&&req.session&&req.session.data&&req.session.isAdmin);
+        }else{
+            resolve(false);
+        }
+    })
+    
 }
 
 const weekOfMonth = function(target_day){
