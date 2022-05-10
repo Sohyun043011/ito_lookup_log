@@ -98,7 +98,7 @@ $(document).ready(function(){
                             "No":`${i+1}`,
                             "사번":result[i]['EMP_ID'],
                             "이름": result[i].NAME,
-                            "날짜": result[i].YMD, 
+                            "날짜": day, 
                             "요일": dayOfWeek,
                             "근무유형":calShiftWorkDict3[`${result[i].WORK_TYPE}`],
                             "출입시각":result[i].INOUT,
@@ -131,6 +131,7 @@ $(document).ready(function(){
                     // res로 받은 정보들을 list에 넣음 
                     console.log(result)
                     $('#check-inout').prop('disabled', false);
+                    $('a:contains("1")').click();
                 },
                 error:function(result){
                     alert('실패')
@@ -146,7 +147,7 @@ $(document).ready(function(){
     // 초과근무 및 급량비 산정 확인 버튼
     $('#check-overtime').on('click',function(e){
         $('#check-overtime').prop('disabled', true);
-        
+       
         var emp_id = $($('.mem-num')[0]).text();
         var date = $('#monthpicker1').val();
         // date = '2022-05'
@@ -254,7 +255,7 @@ $(document).ready(function(){
                             "No":`${i+1}`,
                             "사번":result.empInfo[i]['EMP_ID'],
                             "이름": result.empInfo[i].NAME,
-                            "날짜": result.empInfo[i].YMD, 
+                            "날짜": day, 
                             "요일": dayOfWeek,
                             "주차": `${result.empInfo[i].WEEK}주차`,
                             "초과근무시간": hhmmToString2(result.empInfo[i].CAL_OVERTIME),
@@ -267,8 +268,7 @@ $(document).ready(function(){
                     height:"70%",
                     sorting: true,
                     paging:true,
-                    pageSize: 15,
-                    pageButtonCount: 5,
+                    autoload:true,
                     data: over_list,
                     fields: [
                         { name: "No", type: "text",width:"35px"},
@@ -281,7 +281,10 @@ $(document).ready(function(){
                         { name: "급량비유무", type: "text"}
                     ]
                 });
-                
+                // console.log( $('.jsgrid-pager-page:contains("1")'));
+                // $('.jsgrid-pager-page').removeClass('jsgrid-pager-current-page');
+                // $('.jsgrid-pager-page:contains("1")').addClass('jsgrid-pager-current-page');
+                $('a:contains("1")').click();
             },
             error:function(result){
                 alert('실패')
@@ -432,7 +435,7 @@ $(document).ready(function(){
                         { name: "총 급량비", type: "text"}
                     ]
                 });
-
+                $('a:contains("1")').click();
                 
             },
             error:function(result){
