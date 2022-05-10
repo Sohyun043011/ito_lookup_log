@@ -85,7 +85,6 @@ $(document).ready(function(){
                 url:'/users/inout',
                 data:check_list,
                 success:function(result){
-                    console.log(result.length);
                     var list =[];
                     for(var i=0;i<result.length;i++)
                     {
@@ -97,7 +96,7 @@ $(document).ready(function(){
                             "No":`${i+1}`,
                             "사번":result[i]['EMP_ID'],
                             "이름": result[i].NAME,
-                            "날짜": result[i].YMD, 
+                            "날짜": day, 
                             "요일": dayOfWeek,
                             "근무유형":calShiftWorkDict3[`${result[i].WORK_TYPE}`],
                             "출입시각":result[i].INOUT,
@@ -128,8 +127,8 @@ $(document).ready(function(){
                         ]
                     });
                     // res로 받은 정보들을 list에 넣음 
-                    console.log(result)
                     $('#check-inout').prop('disabled', false);
+                    $('a:contains("1")').click();
                 },
                 error:function(result){
                     alert('실패')
@@ -145,7 +144,7 @@ $(document).ready(function(){
     // 초과근무 및 급량비 산정 확인 버튼
     $('#check-overtime').on('click',function(e){
         $('#check-overtime').prop('disabled', true);
-        
+       
         var emp_id = $($('.mem-num')[0]).text();
         var date = $('#monthpicker1').val();
         // date = '2022-05'
@@ -160,9 +159,6 @@ $(document).ready(function(){
             success:function(result){
                 // result로 오는 정보 : 각 월에 해당하는 초과근무 및 급량비 산정 기록 
                 // 
-                console.log(result.empInfo);
-                console.log(result.empInfo.length);
-                console.log(result.empInfo[0].WEEK);
                 $('.summary-table').css('display','inline-table');
                
                 // table생성 (end_of_week에 따라서)
@@ -187,7 +183,6 @@ $(document).ready(function(){
                 
                 var overtime = {1:[],2:[],3:[],4:[],5:[],6:[]};
                 var cal_meal = {1:0,2:0,3:0,4:0,5:0,6:0};
-                console.log(result.empInfo);
                 var now_week = result.empInfo[0].WEEK;  //1주차에 대해서
                 for(var m=0;m<result.empInfo.length;m++)
                 {
@@ -196,10 +191,8 @@ $(document).ready(function(){
                     
                     if (result.empInfo[m].WEEK==now_week){
                         overtime[`${now_week}`].push(result.empInfo[m].CAL_OVERTIME);
-                        console.log(result.empInfo[m].CAL_MEAL);
                         if(result.empInfo[m].CAL_MEAL=="TRUE"){
                             // 트루이면 cal_meal에 넣기
-                            console.log(result.empInfo[m]);
                             cal_meal[`${now_week}`]=cal_meal[`${now_week}`]+1;
                         }
                     }
@@ -208,7 +201,6 @@ $(document).ready(function(){
                         overtime[`${now_week}`].push(result.empInfo[m].CAL_OVERTIME);
                         if(result.empInfo[m].CAL_MEAL=="TRUE"){
                             // 트루이면 cal_meal에 넣기
-                            console.log(result.empInfo[m]);
                             cal_meal[`${now_week}`]=cal_meal[`${now_week}`]+1;
                         }
                     }
@@ -218,8 +210,6 @@ $(document).ready(function(){
                 Object.values(overTimeTotal).forEach(function(ele,idx){
                     over_sum=over_sum+parseInt(ele);
                     ele_overtime =  hhmmToString(ele);
-                    console.log(ele_overtime);
-                    console.log(`${idx+1}-overtime`);
                     $(`.${idx+1}-overtime`).html(ele_overtime);
                 });
                 //초과근무 합산
@@ -231,7 +221,6 @@ $(document).ready(function(){
                     //{'1':0,'2':3,...}
                     cal_count = ele*8000;
                     cal_sum+=cal_count;
-                    console.log(cal_count);
                     const cal_string = (cal_count).toLocaleString('ko-KR');
                     $(`.week-cal>.${idx+1}-cal`).html(cal_string);
                 });
@@ -252,21 +241,19 @@ $(document).ready(function(){
                             "No":`${i+1}`,
                             "사번":result.empInfo[i]['EMP_ID'],
                             "이름": result.empInfo[i].NAME,
-                            "날짜": result.empInfo[i].YMD, 
+                            "날짜": day, 
                             "요일": dayOfWeek,
                             "주차": `${result.empInfo[i].WEEK}주차`,
                             "초과근무시간": hhmmToString2(result.empInfo[i].CAL_OVERTIME),
                             "급량비유무": (result.empInfo[i].CAL_MEAL=="TRUE") ? "O" : "X"
                         });
                 }
-                console.log(over_list);
 
                 $('.overtime-table').jsGrid({
                     height:"70%",
                     sorting: true,
                     paging:true,
-                    pageSize: 15,
-                    pageButtonCount: 5,
+                    autoload:true,
                     data: over_list,
                     fields: [
                         { name: "No", type: "text",width:"35px"},
@@ -279,7 +266,7 @@ $(document).ready(function(){
                         { name: "급량비유무", type: "text"}
                     ]
                 });
-                
+                $('a:contains("1")').click();
             },
             error:function(result){
                 alert('실패')
@@ -292,26 +279,18 @@ $(document).ready(function(){
         $('#check-team-overtime').prop('disabled', true);
         
         var dept_name = $($('.mem-dept')[0]).text();
-        console.log(dept_name);
 
         var date = $('#monthpicker2').val();
         const year = date.split('-')[0];
         const month = date.split('-')[1];
         // date = '2022-05'
         var [start_day,end_day] = monthPicktoString(date);
-        console.log(start_day,end_day);
-        console.log(end_day.substring(6,8));
 
         $.ajax({
             method:'POST',
             url:'/users/cal_meal',
             data:{'dept_name':dept_name,'start_day':start_day,'end_day':end_day},
             success:function(result){
-                console.log(result);
-                console.log(result.empInfo);
-                console.log(result.empInfo.length);
-                console.log(result.endOfWeek);
-
                 // 요약 table 출력
                 $('.team-summary-table').css('display','inline-table');
                 $('.team-week-tr').html('');
@@ -329,14 +308,12 @@ $(document).ready(function(){
                 
                 var team_cal_meal = {1:0,2:0,3:0,4:0,5:0,6:0};
                 var now_week = result.empInfo[0].WEEK;
-                console.log(now_week);
 
                 for(var m=0;m<result.empInfo.length;m++)
                 {
                     if(result.empInfo[m].WEEK==now_week){
                         if(result.empInfo[m].CAL_MEAL=="TRUE"){
                             // 트루이면 cal_meal에 넣기
-                            console.log(result.empInfo[m]);
                             team_cal_meal[`${now_week}`]=team_cal_meal[`${now_week}`]+1;
                         }
                     }
@@ -344,18 +321,15 @@ $(document).ready(function(){
                         now_week = result.empInfo[m].WEEK;
                         if(result.empInfo[m].CAL_MEAL=="TRUE"){
                             // 트루이면 cal_meal에 넣기
-                            console.log(result.empInfo[m]);
                             team_cal_meal[`${now_week}`]=team_cal_meal[`${now_week}`]+1;
                         }
                     }
                 }
-                console.log(team_cal_meal);
                 var cal_sum=0;
                 Object.values(team_cal_meal).forEach(function(ele,idx){
                     //{'1':0,'2':3,...}
                     cal_count = ele*8000;
                     cal_sum+=cal_count;
-                    console.log(cal_count);
                     const cal_string = (cal_count).toLocaleString('ko-KR');
                     $(`.team-week-cal>.${idx+1}-cal`).html(cal_string);
                 });
@@ -369,13 +343,11 @@ $(document).ready(function(){
                 var count_emp = {};  //각 날짜에 해당하는 calmeal=true인 총 인원수
                 var end_d = parseInt(end_day.substring(6,8));
             
-                console.log(end_d);
                 for(var i=0;i<end_d;i++)
                 {  
                     
                     count_emp[parseInt(start_day)+i] = 0;
                 }
-                console.log(count_emp);
                 var count_sum =0;
 
                 for(var i=1;i<result.empInfo.length;i++)
@@ -392,7 +364,6 @@ $(document).ready(function(){
                               //{'1':1.'2':3,...'31':0} 
                     }
                 }
-                console.log(count_emp);
 
                 Object.keys(count_emp).forEach(function(ele,idx){
                     // 각 날짜에 대해서 list에 push
@@ -400,7 +371,6 @@ $(document).ready(function(){
                     var week = ['일', '월', '화', '수', '목', '금', '토'];                 
                     var dayOfWeek = week[new Date(day).getDay()];                       //요일
                     var count_sum = (count_emp[ele]*8000).toLocaleString('ko-KR');
-                    console.log(count_sum + "원");    
                     team_over_list.push({
                         "No":`${idx+1}`,
                         "날짜": day, 
@@ -411,9 +381,6 @@ $(document).ready(function(){
                     });
                 });
 
-                
-                        
-                console.log(team_over_list);
 
                 $('.team-overtime-table').jsGrid({
                     sorting: true,
@@ -430,7 +397,7 @@ $(document).ready(function(){
                         { name: "총 급량비", type: "text"}
                     ]
                 });
-
+                $('a:contains("1")').click();
                 
             },
             error:function(result){
@@ -439,6 +406,50 @@ $(document).ready(function(){
         })
     })
 
+    const login = async()=>{
+        console.log('현재 페이지는 '+document.location.href+'입니다.');
+        const { value: password } = await Swal.fire({
+            title: '비밀번호를 입력하세요',
+            icon:'warning',
+            input: 'password',
+            heightAuto:false,
+            inputPlaceholder: '비밀번호를 입력하세요',
+            inputAttributes: {
+              maxlength: 15,
+              autocapitalize: 'off',
+              autocorrect: 'off'
+            },
+            inputValidator: (value) => {
+                if (!value) {
+                  return '비밀번호를 입력해주세요!'
+                }
+              }
+          });
+          
+          if (password) {
+
+            $.ajax({
+                method:'POST',
+                url:'/admin/login',
+                data : {
+                    password:password,
+                },
+                success:function(result){
+                    console.log(result);
+                    
+                },
+                error:function(result){
+                    console.log(result);
+                }
+            })
+          }
+    
+          
+    }
+    //관리자 로그인 버튼
+    $('#admin-button').on('click',login);
+
+    
 });
 
 
