@@ -302,3 +302,7 @@ div::-webkit-scrollbar-track {
 
 
 
+.inout-download{
+	float:right;
+	display: block;
+}

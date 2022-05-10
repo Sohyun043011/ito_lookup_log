@@ -1,8 +1,9 @@
 document.write("<script src='../js/index_lib.js'></script>");
 $(document).ready(function(){
-    $.datepicker.setDefaults({
-        dateFormat: 'yy-mm-dd'
-        ,showOtherMonths : true
+    $.datepicker.setDefaults($.datepicker.regional['ko']);
+    $('#datepicker1').datepicker({
+        dateFormat : 'yy-mm-dd',
+        showOtherMonths : true
         ,changeYear:true
         ,changeMonth:true
         ,minDate:"-6M",
@@ -18,9 +19,26 @@ $(document).ready(function(){
         showMonthAfterYear: true,
         yearSuffix: '년'
     });
-    $(function() {
-        $("#datepicker1, #datepicker2").datepicker();
+    $('#datepicker2').datepicker({
+        dateFormat : 'yy-mm-dd',
+        showOtherMonths : true
+        ,changeYear:true
+        ,changeMonth:true
+        ,minDate:"-6M",
+        maxDate:"+0D",
+        currentText: '오늘 날짜',
+        prevText: '이전 달',
+        nextText: '다음 달',
+        monthNames: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+        monthNamesShort: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+        dayNames: ['일', '월', '화', '수', '목', '금', '토'],
+        dayNamesShort: ['일', '월', '화', '수', '목', '금', '토'],
+        dayNamesMin: ['일', '월', '화', '수', '목', '금', '토'],
+        showMonthAfterYear: true,
+        yearSuffix: '년'
     });
+
+
     var currentYear = (new Date()).getFullYear();
     var currentMonth = (new Date()).getMonth();
     var startYear = currentYear-5;
@@ -68,6 +86,7 @@ $(document).ready(function(){
        
         var start_day = $('#datepicker1').val().replace(/\-/g,'');;
         var end_day = $('#datepicker2').val().replace(/\-/g,'');;
+        $('.table-layout').remove('.inout-table jsgrid');
         if(!validateInterval(start_day,end_day))
         {
             alert('기간을 다시 설정해주세요.');
@@ -81,6 +100,7 @@ $(document).ready(function(){
             // ajax로 날짜 두개, 사번 드림
         
             $.ajax({
+
                 method:'POST',
                 url:'/users/inout',
                 data:check_list,
@@ -125,14 +145,19 @@ $(document).ready(function(){
                             { name:"계획시간", type:"text"}
             
                         ]
-                    });
+                    })
+                    $('a:contains("1")').click();
+                    ;
                     // res로 받은 정보들을 list에 넣음 
                     $('#check-inout').prop('disabled', false);
-                    $('a:contains("1")').click();
+                   
                 },
                 error:function(result){
                     alert('실패')
                 }
+            }).then(()=>{
+                // $('#datepicker1').val(start_day);
+                // $('#datepicker2').val(end_day);
             })
         }
         
@@ -144,7 +169,7 @@ $(document).ready(function(){
     // 초과근무 및 급량비 산정 확인 버튼
     $('#check-overtime').on('click',function(e){
         $('#check-overtime').prop('disabled', true);
-       
+        $('.table-layout').remove('.inout-table jsgrid');
         var emp_id = $($('.mem-num')[0]).text();
         var date = $('#monthpicker1').val();
         // date = '2022-05'
@@ -266,7 +291,7 @@ $(document).ready(function(){
                         { name: "급량비유무", type: "text"}
                     ]
                 });
-                $('a:contains("1")').click();
+                
             },
             error:function(result){
                 alert('실패')
@@ -277,7 +302,7 @@ $(document).ready(function(){
     //팀별 급량비 조회하기 버튼
     $('#check-team-overtime').on('click',function(e){
         $('#check-team-overtime').prop('disabled', true);
-        
+        $('.table-layout').remove('.inout-table jsgrid');
         var dept_name = $($('.mem-dept')[0]).text();
 
         var date = $('#monthpicker2').val();
@@ -397,7 +422,7 @@ $(document).ready(function(){
                         { name: "총 급량비", type: "text"}
                     ]
                 });
-                $('a:contains("1")').click();
+                
                 
             },
             error:function(result){

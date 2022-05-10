@@ -28,8 +28,9 @@
     <script src="../jquery.mtz.monthpicker.js"></script>
     <!-- 자체 css js -->
     <link rel="stylesheet" href="../css/registerForm.css">
-    <script src="../js/index.js"></script>
-    
+    <link rel="stylesheet" href="../css/adminForm.css">
+    <script src="../js/admin_index.js"></script>
+
 </head>
 <body>
     <div id="wrap">
@@ -39,14 +40,15 @@
                     <img id="top_title_img" src="../img/logoFile.jpg" >
                 </div>
                 <div class="title">
-                    <p class="fs-4 fw-bold" id="top_title">근태기록관리</p>
+                    <p class="fs-4 fw-bold" id="top_title">근태기록관리 관리자 페이지</p>
                 </div> 
                 <div class="flex-box1">
                     <div class="login-name fw-bold fs-5" style="margin-bottom: -5px;">
+                        <!-- 관리자 이름 -->
                         <%= list['EMP_NM'] %> 님
                     </div>
                     <hr>
-                    <button class="btn btn-outline-secondary fw-bold" id="admin-button">관리자 로그인</button>
+                    <button class="btn btn-outline-secondary fw-bold" id="logout-button">로그아웃</button>
                 </div>
                 
                 
@@ -55,10 +57,13 @@
                 
                 <ul class="nav nav-tabs" id="myTab" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="nav-inout-tab" data-bs-toggle="tab" data-bs-target="#nav-inout" type="button" role="tab" aria-controls="nav-inout" aria-selected="true">출퇴근기록</button>
+                        <button class="nav-link active" id="nav-inout-tab" data-bs-toggle="tab" data-bs-target="#nav-inout" type="button" role="tab" aria-controls="nav-inout" aria-selected="true">출퇴근기록 조회</button>
                     </li>
                     <li class="nav-item">
                         <button class="nav-link" id="nav-overtime-tab" data-bs-toggle="tab" data-bs-target="#nav-overtime" type="button" role="tab" aria-controls="nav-overtime" aria-selected="false">초과근무 및 급량비 조회</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="nav-edit-tab" data-bs-toggle="tab" data-bs-target="#nav-edit" type="button" role="tab" aria-controls="nav-edit" aria-selected="false">개인별근무일정변경</button>
                     </li>
                 </ul>
                   
@@ -66,20 +71,25 @@
                 <div class="tab-content">
                     <!-- 출퇴근기록 TAB -->
                     <div class="tab-pane active" id="nav-inout" role="tabpanel" aria-labelledby="nav-inout-tab">
+                        <div class="button-class" style="display: flex;justify-content: right;padding: 20px; padding-bottom: 0px;">
+                            <button class="btn btn-outline-success inout-download">EXCEL DOWNLOAD</button>
+                        </div>
                         <div class="header-info">
-                    
                             <!-- 사번,부서, datepicker, 표출  -->
                             <div class="input-group">
-                                <span class="input-group-text" id="basic-addon1">이름</span>
-                                <div class="mem-name fw-bold"><%= list['EMP_NM'] %></div>
-                                <span class="input-group-text" id="basic-addon1">사번</span>
-                                <div class="mem-num fw-bold"  ><%= list['EMP_ID'] %></div>
+                                <span class="input-group-text" id="basic-addon1">이름/사번</span>
+                                <input type="text" class="form-control" placeholder="이름 또는 사번을 입력하세요" aria-label="empName" id="empName" >
                                 <span class="input-group-text" id="basic-addon1">부서</span>
-                                <div class="mem-dept fw-bold"  ><%= list['ORG_NM'] %></div>
+                                <select class="form-select" aria-label="Default select example">
+                                    <option selected>부서를 선택해주세요</option>
+                                    <option value="1">One</option>
+                                    <option value="2">Two</option>
+                                    <option value="3">Three</option>
+                                  </select>
                                 <span class="input-group-text no-border" id="basic-addon1">기간</span>
-                                <input type="text" id="datepicker1" class="form-control no-border" style="width:20px;" placeholder="시작 날짜를 선택해주세요"  dir="rtl">
-                                <input type="text" id="datepicker2" class="form-control no-border"  placeholder="끝 날짜를 선택해주세요"  dir="rtl">
-                                <button type="button" class="btn btn-secondary" id="check-inout">조회하기</button>
+                                <input type="text" id="admin_datepicker1" class="form-control no-border" style="width:20px;" placeholder="시작 날짜를 선택해주세요"  dir="rtl">
+                                <input type="text" id="admin_datepicker2" class="form-control no-border"  placeholder="끝 날짜를 선택해주세요"  dir="rtl">
+                                <button type="button" class="btn btn-secondary" id="check-search">조회하기</button>
                             </div>
                         </div>
                         <div class="table-layout">
@@ -88,9 +98,7 @@
                                  <!--칼럼 설정하고 페이지 넘기기 구현 -->
 
                             </div>
-                        
                         </div>
-                       
                     </div>
                     <!-- 초과근무 및 급량비 조회 TAB -->
                     <div class="tab-pane" id="nav-overtime" role="tabpanel" aria-labelledby="nav-overtime-tab">
@@ -104,7 +112,36 @@
                                 <span class="input-group-text" id="basic-addon1">부서</span>
                                 <div class="mem-dept fw-bold"  ><%= list['ORG_NM'] %></div>
                                 <span class="input-group-text no-border" id="basic-addon1">기간</span>
-                                <input type="text" id="monthpicker1" class="form-control no-border" style="width:20px;" placeholder="날짜를 선택해주세요"  dir="rtl">
+                                <input type="text" id="admin_monthpicker1" class="form-control no-border" style="width:20px;" placeholder="날짜를 선택해주세요"  dir="rtl">
+                                <button type="button" class="btn btn-secondary" id="check-overtime">조회하기</button>
+                            </div>
+                        </div>
+                        <div class="table-layout">
+                            <!-- 초과근무 및 급량비 테이블 -->
+                            <div class="cal-table">
+                                <div class="summary-table">
+                                    <!-- 해당 월의 1주차,...4주차까지 초과근무,급량비,총합산 표출 테이블 -->
+                                </div>
+                                <div class="detail-table">
+                                    <!-- 세부 내역(1달치, 하루단위로 ) -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <!-- 개인별근무일정변경 TAB -->
+                    <div class="tab-pane" id="nav-edit" role="tabpanel" aria-labelledby="nav-edit-tab">
+                        <div class="header-info">
+                            <!-- 사번,부서, datepicker, 표출  -->
+                            <div class="input-group second-size">
+                                <span class="input-group-text" id="basic-addon1">이름</span>
+                                <div class="mem-name fw-bold"><%= list['EMP_NM']%></div>
+                                <span class="input-group-text" id="basic-addon1">사번</span>
+                                <div class="mem-num fw-bold"  ><%= list['EMP_ID'] %></div>
+                                <span class="input-group-text" id="basic-addon1">부서</span>
+                                <div class="mem-dept fw-bold"  ><%= list['ORG_NM'] %></div>
+                                <span class="input-group-text no-border" id="basic-addon1">기간</span>
+                                <input type="text" id="admin_monthpicker2" class="form-control no-border" style="width:20px;" placeholder="날짜를 선택해주세요"  dir="rtl">
                                 <button type="button" class="btn btn-secondary" id="check-overtime">조회하기</button>
                             </div>
                         </div>

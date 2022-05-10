@@ -49,8 +49,9 @@ router.get('/main', function(req, res) { //
     3. 출퇴근 기록 조회 | 급량비 및 초과근무 기록 조회의 2개의 tab으로 구성
     이후 main page 리턴
   */
-  console.log(req.session.data)
+  console.log('/users/main');
   if(lib.isSession(req, users)){ // request, session, session data 유효하면
+    console.log(req.session.data[0]);
     res.render('main',{list:req.session.data[0]}) // 세션 정보를 ejs에 보내줌
   }else res.status(404).send('<p>오류</p>'); //추후 수정
 });
@@ -68,7 +69,7 @@ router.post('/inout',function(req, res){
   const {emp_id, start_day, end_day}=req.body; // 사번, 시작일시, 종료일시
 
   db.configure(db_config['mysql']);
-  sql='select EMP_ID, NAME, YMD, WORK_TYPE, FIX1, `INOUT`, PLAN1 from connect.ehr_cal where emp_id=? and ymd>=? and ymd<=?';
+  sql='select EMP_ID, NAME, YMD, WORK_TYPE, FIX1, `INOUT`, PLAN1 from connect.ehr_cal where emp_id=? and ymd>=? and ymd<=? ';
 
   db.query(sql,[emp_id, start_day, end_day]).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
     console.log(JSON.parse(JSON.stringify(rows)));
@@ -91,7 +92,7 @@ router.post('/overtime',function(req, res){
   const {emp_id, start_day, end_day}=req.body;
   console.log(req.body);
   db.configure(db_config['mysql']);
-  sql='select EMP_ID, `NAME`, YMD, CAL_OVERTIME, CAL_MEAL from connect.ehr_cal where emp_id=? and ymd>=? and ymd<=?';
+  sql='select EMP_ID, `NAME`, YMD, CAL_OVERTIME, CAL_MEAL from connect.ehr_cal where emp_id=? and ymd>=? and ymd<=? order by YMD';
 
   db.query(sql,[emp_id, start_day, end_day]).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
     result=JSON.parse(JSON.stringify(rows));
