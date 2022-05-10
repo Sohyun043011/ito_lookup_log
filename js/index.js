@@ -85,7 +85,6 @@ $(document).ready(function(){
                 url:'/users/inout',
                 data:check_list,
                 success:function(result){
-                    alert('성공')
                     console.log(result.length);
                     var list =[];
                     for(var i=0;i<result.length;i++)
@@ -160,7 +159,6 @@ $(document).ready(function(){
             url:'/users/overtime',
             data:{'emp_id':emp_id,'start_day':start_day,'end_day':end_day},
             success:function(result){
-                alert('성공')
                 // result로 오는 정보 : 각 월에 해당하는 초과근무 및 급량비 산정 기록 
                 // 
                 console.log(result.empInfo);

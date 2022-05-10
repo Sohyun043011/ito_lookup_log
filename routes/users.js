@@ -129,6 +129,7 @@ router.post('/cal_meal',function(req, res){
       "empInfo":[], // 일별 데이터
       "endOfWeek": lib.weekOfMonth(end_day) // 마지막 주 정보
     }
+    console.log(new_result)
     for (row in result){
       result[row]['WEEK']=lib.weekOfMonth(result[row]['YMD']);
     }

@@ -1,4 +1,6 @@
 var moment=require('moment');
+var fs=require('fs');
+const xl = require('excel4node');
 
 function jsonize(object){
     return JSON.parse(JSON.stringify(object));
@@ -97,6 +99,63 @@ const commuteTypeDict={
     '0450':	'임신기근로단축'
 }
 
+function getInoutPrototype(){
+    return new Promise((resolve, reject)=>{
+        const wb = new xl.Workbook();
+        const ws = wb.addWorksheet('Worksheet Name');
+        const style=wb.createStyle({
+            alignment:{
+            horizontal:"center",
+            vertical:"center",
+            wrapText: true
+            }
+        })
+        
+        ws.cell(1,1,2,1,true).string('No').style(style); //No
+        ws.cell(1,2,2,2,true).string('사번').style(style); //사번
+        ws.cell(1,3,2,3,true).string('성명').style(style); //성명
+        ws.cell(1,4,2,4,true).string('조직').style(style); //조직
+        ws.cell(1,5,2,5,true).string('근무일(*)').style(style); //근무일(*)
+        ws.cell(1,6,2,6,true).string('요일').style(style); //요일
+        ws.cell(1,7,2,7,true).string('근로유형').style(style); //근로유형
+        ws.cell(1,8,2,8,true).string('근무조').style(style); //근무조
+        ws.cell(1,9,2,9,true).string('근무유형').style(style); //근무유형
+        ws.cell(1,10,2,10,true).string('마감 여부').style(style); //마감 여부
+        ws.cell(1,11,1,14,true).string('출퇴근계획').style(style); //출퇴근계획
+            ws.cell(2,11).string('출근일자').style(style); //출퇴근계획/출근일자
+            ws.cell(2,12).string('출근시간').style(style); //출퇴근계획/출근시간
+            ws.cell(2,13).string('퇴근일자').style(style); //출퇴근계획/퇴근일자
+            ws.cell(2,14).string('퇴근시각').style(style); //출퇴근계획/퇴근시각
+        ws.cell(1,15,1,20,true).string('출퇴근기록(본인)').style(style); //출퇴근기록(본인)
+            ws.cell(2,15).string('출근일자').style(style); //출퇴근기록(본인)/출근일자
+            ws.cell(2,16).string('출근시간').style(style); //출퇴근기록(본인)/출근시간
+            ws.cell(2,19).string('출근입력시각').style(style); //출퇴근기록(본인)/출근입력시각
+            ws.cell(2,17).string('퇴근일자').style(style); //출퇴근기록(본인)/퇴근일자
+            ws.cell(2,18).string('퇴근시각').style(style); //출퇴근기록(본인)/퇴근시각
+            ws.cell(2,20).string('퇴근입력시각').style(style); //출퇴근기록(본인)/퇴근입력시각
+        ws.cell(1,21,1,24,true).string('출퇴근신청').style(style); //출퇴근신청
+            ws.cell(2,21).string('출근일자').style(style); //출퇴근신청/출근일자
+            ws.cell(2,22).string('출근시간').style(style); //출퇴근신청/출근시간
+            ws.cell(2,23).string('퇴근일자').style(style); //출퇴근신청/출근입력시각
+            ws.cell(2,24).string('퇴근시각').style(style); //출퇴근신청/퇴근일자
+        ws.cell(1,25,1,28,true).string('출퇴근기록기').style(style); //출퇴근기록기
+            ws.cell(2,25).string('출근일자').style(style); //출퇴근기록기/출근일자
+            ws.cell(2,26).string('출근시간').style(style); //출퇴근기록기/출근시간
+            ws.cell(2,27).string('퇴근일자').style(style); //출퇴근기록기/출근입력시각
+            ws.cell(2,28).string('퇴근시각').style(style); //출퇴근기록기/퇴근일자
+        ws.cell(1,29,1,32,true).string('확정').style(style); //확정
+            ws.cell(2,29).string('출근일자').style(style); //확정/출근일자
+            ws.cell(2,30).string('출근시간').style(style); //확정/출근시간
+            ws.cell(2,31).string('퇴근일자').style(style); //확정/출근입력시각
+            ws.cell(2,32).string('퇴근시각').style(style); //확정/퇴근일자
+        ws.cell(1,33,2,33,true).string('비고').style(style); //비고
+        ws.cell(1,34,2,34,true).string('수정자').style(style); //수정자
+        ws.cell(1,35,2,35,true).string('수정일시').style(style); //수정일시
+        resolve(wb);
+    });    
+}
+
+
 
 function addOverTime(list){
     var total=0;
@@ -144,7 +203,7 @@ function isSession(req, type){ //세션 유효한지 검증
 }
 
 const weekOfMonth = function(target_day){
-    m=moment(target_day).utc(true);
+    m=moment(target_day);
     target_week= m.week() - moment(m).startOf('month').week() + 1;
     if (m.day()==0 && target_week!=1){
         target_week=target_week-1;
@@ -178,11 +237,7 @@ async function makeInoutUploadForm(result){ // 출퇴근시각관리 양식 생�
         delete i.NO;
         await dayFormatTranslate(i["YMD"])
         .then(function(ymdResult){
-            delete result.NO; // NO 제거
-            i["No"]=String(noCount++); // 연번
-            //사번 : i["emp_id"]
-            //성명 : i["emp_name"]
-            //조직 : i["org_nm"]
+            i["NO"]=String(noCount++); // 연번
             i["date"]=getDate(ymdResult);
             i["COMMUTE_TYPE"]=commuteTypeDict[i["SHIFT_CD"]];
             i["SHIFT_CD"]=shiftCdDict[i["SHIFT_CD"]];
@@ -195,6 +250,7 @@ async function makeInoutUploadForm(result){ // 출퇴근시각관리 양식 생�
             return result[i] 
         })
     }
+    console.log(result);
     return result;
 }
 
@@ -205,6 +261,14 @@ function makeChitLink(result){ // 시간외전표연동 양식 생성
 function makePersonalWorkPlanEdit(result){ // 개인별근무일정변경 양식 생성
 
 }
+
+async function clean(file){
+    fs.unlink(file, function(err){
+      if(err) {
+        console.log("Error : ", err)
+      }
+    })
+  }
 
 module.exports={
     workTypeDict,
@@ -218,5 +282,7 @@ module.exports={
     makeChitLink,
     makePersonalWorkPlanEdit,
     jsonize,
-    getNow
+    getNow,
+    clean,
+    getInoutPrototype
 }

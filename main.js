@@ -21,7 +21,7 @@ const app=express();
 
 app.set('views','./views');
 app.set('view engine','ejs');
-
+app.set('data','./data');
 
 app.use(cookieParser());
 app.use(session({
