@@ -67,34 +67,50 @@ router.get('/ehr/:type', function(req, res){
     type : inout -> 출퇴근시각관리 form | cal_meal -> 급량비 form | edit -> 개인별근무일정변경 form
     이후 form 정보 리턴
   */
-  // if (!lib.isSession(req,admin)){ // request, session, session data 유효성 검사
-  //   res.status(404).send('<p>오류</p>'); //추후 수정
-  // }
+  if (!lib.isSession(req,admin)){ // request, session, session data 유효성 검사
+    res.status(404).send('<p>오류</p>'); //추후 수정
+  }
   var {emp_name, emp_id, org_nm, start_day, end_day}= req.query;
-  console.log(req.query)
-  var sql=``;
-  
+
+  var sql=` where ymd>=? and ymd<=?`;
+
+  db.configure(db_config['mysql']);
+
+  var sqlFilter=[ //preparedStatement 생성
+    emp_name==undefined||''?'':' and `NAME`=?',
+    emp_id==undefined||''?'':' and `emp_id`=?',
+    org_nm==undefined||''?'':' and `org_nm`=?',
+  ]
+  var sqlList=[start_day, end_day];
+  for(i of [emp_name, emp_id, org_nm]){ 
+    if (i!=undefined&&i!=''){ 
+      sqlList.push(i);
+    }
+  }
+  for (i of sqlFilter){
+    sql=sql+i;
+  }
+
   switch(req.params.type){
     case 'inout': // 출퇴근 시각관리
-    case 'cal_meal': // 급량비
-      sql=`select * from connect.ehr_cal where name=${emp_name} and emp_id=${emp_id} 
-      and org_nm=${org_nm} and ymd>=${start_day} and ymd<=${end_day}`
+      sql='select EMP_ID, NAME, YMD, WORK_TYPE, FIX1, `INOUT`, PLAN1 from connect.ehr_cal'+sql;
       
+      //lib 특정 함수에 result 인수로 보내서 전처리 후 serverCache에 저장
+    case 'cal_meal': // 급량비
+      // sql=`select * from connect.ehr_cal where name=${emp_name} and emp_id=${emp_id} 
+      // and org_nm=${org_nm} and ymd>=${start_day} and ymd<=${end_day}`
+      db.query(sql,sqlList).spread(function(rows){ //세션 수 조회
+        result=JSON.parse(JSON.stringify(rows)) 
+        return result;
+      }).then((result)=>{
+        res.json(result);
+      });
       break;
     case 'edit': // 개인별근무일정변경
       break;
     default:
       res.status(404).send('<p>오류</p>'); //추후 수정
   }
-  console.log(sql)
-  db.configure(db_config['mysql']);
-  db.query(sql).spread(function(rows){ //세션 수 조회
-    result=JSON.parse(JSON.stringify(rows));
-    //lib 특정 함수에 result 인수로 보내서 전처리 후 serverCache에 저장
-    return lib.makeInoutUploadForm(result);
-  }).then((result)=>{
-  })
-  
 })
 
 router.get('/download/:type', function(req, res){
@@ -129,7 +145,6 @@ router.get('/download/:type', function(req, res){
       sqlList.push(i);
     }
   }
-  console.log(sqlList)
   switch(req.params.type){
     case 'inout': // 출퇴근 시각관리
       sql='select YMD, EMP_ID, `NAME`, ORG_NM, SHIFT_CD, WORK_TYPE, PLAN1, `INOUT`, FIX1, CAL_OVERTIME, CAL_MEAL from connect.ehr_cal'+
