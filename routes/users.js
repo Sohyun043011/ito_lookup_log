@@ -27,7 +27,8 @@ router.get('/login/:emp_id',async function(req, res){
   db.query(sql).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
     if (JSON.parse(JSON.stringify(rows)).length==1){
       console.log(`${req.params.emp_id}님의 직원정보가 존재합니다.`);
-      req.session.data=JSON.parse(JSON.stringify(rows))
+      req.session.data=JSON.parse(JSON.stringify(rows));
+      req.session.isAdmin=false;
       req.session.save(()=>{
         console.log('세션 생성 완료!');
         /*3. '/user/main/으로 redirect */

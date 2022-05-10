@@ -25,11 +25,10 @@ app.set('data','./data');
 
 app.use(cookieParser());
 app.use(session({
-    secret:'kjwlakwf@$#!',
+    secret:'awefeawfe',
     resave:true,
     saveUninitialized: false,
     cookie:{
-        path:'/',
         maxAge:300000,
         httpOnly:false
     },

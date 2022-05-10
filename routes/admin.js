@@ -41,6 +41,12 @@ router.post('/login',function(req, res){ //data 키값 중 password라는 항목
     res.status(404).send('<p>비밀번호가 틀렸습니다.</p>');
   }
 });
+router.post('/logout',function(req,res){
+  req.session.isAdmin=false;
+  req.session.save(()=>{
+    req.redirect('/user/main');
+  })
+})
 
 router.get('/main', function(req, res) { //
   /*
