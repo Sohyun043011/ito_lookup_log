@@ -88,30 +88,29 @@ router.get('/ehr/:type', function(req, res){
     res.status(404).send('<p>오류</p>'); //추후 수정
   }
   var {emp_name, emp_id, org_nm, start_day, end_day}= req.query;
-  console.log(req.query);
+  
   var sql=` where ymd>=? and ymd<=?`;
 
   db.configure(db_config['mysql']);
-
-  var sqlFilter=[ //preparedStatement 생성
-    emp_name==(undefined||'')?'':' and `NAME`=?',
-    emp_id==(undefined||'')?'':' and `emp_id`=?',
-    org_nm==(undefined||''||'부서를 선택해주세요')?'':' and `org_nm`=?',
-  ]
-  console.log('sqlFilter: '+sqlFilter);
   var sqlList=[start_day, end_day];
-  for(i of sqlFilter){ 
-    if (i!=undefined&&i!=''){ 
-      sqlList.push(i);
-    }
+  
+  if (!(emp_name==undefined||emp_name=='')){
+    sqlList.push(emp_name);
+    sql=sql+` and NAME=?`; 
   }
-  for (i of sqlFilter){
-    sql=sql+i;
+  if (!(emp_id==undefined||emp_id=='')){
+    sqlList.push(emp_id);
+    sql=sql+` and EMP_ID=?`; 
+  }
+  if (!(org_nm==undefined||org_nm==''||org_nm=='부서를 선택해주세요')){
+    sqlList.push(emp_name);
+    sql=sql+` and ORG_NM=?`; 
   }
 
   switch(req.params.type){
     case 'inout': // 출퇴근 시각관리
       sql='select EMP_ID, NAME, YMD, WORK_TYPE, FIX1, `INOUT`, PLAN1 from connect.ehr_cal'+sql;
+      console.log(sql);
       //lib 특정 함수에 result 인수로 보내서 전처리 후 serverCache에 저장
     case 'cal_meal': // 급량비
       // sql=`select * from connect.ehr_cal where name=${emp_name} and emp_id=${emp_id} 
