@@ -1,8 +1,6 @@
 document.write("<script src='../js/index_lib.js'></script>");
 $(document).ready(function(){
 
-    //부서 list 출력
-
     // 로그아웃 버튼 
     $('#logout-button').click(function(){
         alert('로그아웃');
@@ -16,8 +14,73 @@ $(document).ready(function(){
         })
     })
 
-    //조회버튼
-    $('#check-search').on('click',function(){
+    // EXCEL DOWNLOAD 버튼은 조회버튼을 눌렀을 때만 활성화
+    $('.inout-download').prop('disabled', true);
+    $('.cal-download').prop('disabled', true);
+
+    $.datepicker.setDefaults({
+        dateFormat: 'yy-mm-dd'
+        ,showOtherMonths : true
+        ,changeYear:true
+        ,changeMonth:true
+        ,minDate:"-6M",
+        maxDate:"+0D",
+        prevText: '이전 달',
+        nextText: '다음 달',
+        monthNames: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+        monthNamesShort: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+        dayNames: ['일', '월', '화', '수', '목', '금', '토'],
+        dayNamesShort: ['일', '월', '화', '수', '목', '금', '토'],
+        dayNamesMin: ['일', '월', '화', '수', '목', '금', '토'],
+        showMonthAfterYear: true,
+        yearSuffix: '년'
+    });
+    $(function() {
+        $("#admin_datepicker1, #admin_datepicker2").datepicker();
+    });
+    var currentYear = (new Date()).getFullYear();
+    var currentMonth = (new Date()).getMonth();
+    var startYear = currentYear-5;
+    var options = {
+            startYear: startYear,
+            finalYear: currentYear,
+            pattern: 'yyyy-mm',
+            monthNames: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월']
+
+    };
+    $('#admin_monthpicker1').monthpicker(options);
+    $('#admin_monthpicker2').monthpicker(options);
+
+    //미래 월은 비활성화시키기
+    var months=[];
+    for(var i=currentMonth+2,j=0;i<=12;i++){
+        months[j++]=i;
+    }
+    for(var i=0;i<$('#admin_monthpicker1').length;i++){
+        $($('#admin_monthpicker1')[i]).monthpicker("disableMonths",months);
+        $($('#admin_monthpicker2')[i]).monthpicker("disableMonths",months);
+        $($('#admin_monthpicker1')[i]).monthpicker().bind('monthpicker-change-year',function(e,year){
+            var item = $(e.currentTarget);
+            if(year==currentYear){
+                $(item).monthpicker('disableMonths',months);
+            }
+            else{
+                $(item).monthpicker('disableMonths',[]);
+            }
+        });
+        $($('#admin_monthpicker1')[i]).monthpicker().bind('monthpicker-change-year',function(e,year){
+            var item = $(e.currentTarget);
+            if(year==currentYear){
+                $(item).monthpicker('disableMonths',months);
+            }
+            else{
+                $(item).monthpicker('disableMonths',[]);
+            }
+        });
+    }
+
+     //출퇴근기록 조회버튼
+     $('#check-search').on('click',function(){
         alert("조회하기");
         var emp_name = $('#empName').val();
         var emp_id = $('#empID').val();
@@ -87,73 +150,81 @@ $(document).ready(function(){
                     // res로 받은 정보들을 list에 넣음 
                     $('#check-search').prop('disabled', false);
                 }
-            });
+            }).then(()=>{$('.inout-download').prop('disabled', false);});
 
             
         }
     });
 
+    //급량비 조회버튼 - 기간 관련해서 수정
+    $('#check-cal-search').on('click',function(){
+        alert("조회하기");
+        var emp_name = $('#empName').eq(1).val();
+        var emp_id = $('#empID').eq(1).val();
+        var org_nm = $('#select-dept').eq(1).val();
+        var type = 'cal_meal';
+        var date = $('#admin_monthpicker1').val();
+        var [start_day,end_day] = monthPicktoString(date);
 
-    $.datepicker.setDefaults({
-        dateFormat: 'yy-mm-dd'
-        ,showOtherMonths : true
-        ,changeYear:true
-        ,changeMonth:true
-        ,minDate:"-6M",
-        maxDate:"+0D",
-        prevText: '이전 달',
-        nextText: '다음 달',
-        monthNames: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
-        monthNamesShort: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
-        dayNames: ['일', '월', '화', '수', '목', '금', '토'],
-        dayNamesShort: ['일', '월', '화', '수', '목', '금', '토'],
-        dayNamesMin: ['일', '월', '화', '수', '목', '금', '토'],
-        showMonthAfterYear: true,
-        yearSuffix: '년'
+        
+        $('#check-cal-search').prop('disabled', true);
+        var info = {'emp_name':emp_name,'emp_id':emp_id,'org_nm':org_nm,'start_day':start_day,'end_day':end_day};
+        // ajax로 날짜 두개, 사번 드림
+        $.ajax({
+                type:"GET",
+                url:`/admin/ehr/${type}`,
+                data:info,
+                success:function(result){
+                    console.log("cal success");
+                    console.log(result);
+                    var list =[];
+                    for(var i=0;i<result.length;i++)
+                    {
+                        day = (result[i].YMD).replace(/(\d{4})(\d{2})(\d{2})/g, '$1-$2-$3');
+                        var week = ['일', '월', '화', '수', '목', '금', '토'];
+                        var dayOfWeek = week[new Date(day).getDay()];
+
+                        list.push({
+                            "No":`${i+1}`,
+                            "사번":result.empInfo[i]['EMP_ID'],
+                            "이름": result.empInfo[i].NAME,
+                            "부서명":result.empInfo[i].ORG_NM,
+                            "날짜": day, 
+                            "요일": dayOfWeek,
+                            "주차": `${result.empInfo[i].WEEK}주차`,
+                            "초과근무시간": hhmmToString2(result.empInfo[i].CAL_OVERTIME),
+                            "급량비유무": (result.empInfo[i].CAL_MEAL=="TRUE") ? "O" : "X"
+                        });
+
+                    }
+                
+                    $(".cal-table").jsGrid({
+                        width: "100%",
+                        height: "100%",
+                        sorting: true,
+                        paging: true,
+                        data: list,
+                        pageSize: 15,
+                        pageButtonCount: 5,
+                        fields: [
+                            { name: "No", type: "text",width:"35px"},
+                            { name: "사번", type: "text"},
+                            { name: "이름", type: "text"},
+                            { name: "부서명", type: "text"},
+                            { name: "날짜", type: "text"},
+                            { name: "요일", type: "text"},
+                            { name: "주차", type: "text"},
+                            { name: "초과근무시간", type: "text"},
+                            { name: "급량비유무", type: "text"}
+                        ]
+                    })
+                    $('a:contains("1")').click();
+                    // res로 받은 정보들을 list에 넣음 
+                    $('#check-cal-search').prop('disabled', false);
+                }
+            }).then(()=>{$('.inout-download').prop('disabled', false);});
+        
     });
-    $(function() {
-        $("#admin_datepicker1, #admin_datepicker2").datepicker();
-    });
-    var currentYear = (new Date()).getFullYear();
-    var currentMonth = (new Date()).getMonth();
-    var startYear = currentYear-5;
-    var options = {
-            startYear: startYear,
-            finalYear: currentYear,
-            pattern: 'yyyy-mm',
-            monthNames: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월']
-
-    };
-    $('#admin_monthpicker1').monthpicker(options);
-    $('#admin_monthpicker2').monthpicker(options);
-
-    //미래 월은 비활성화시키기
-    var months=[];
-    for(var i=currentMonth+2,j=0;i<=12;i++){
-        months[j++]=i;
-    }
-    for(var i=0;i<$('#admin_monthpicker1').length;i++){
-        $($('#admin_monthpicker1')[i]).monthpicker("disableMonths",months);
-        $($('#admin_monthpicker2')[i]).monthpicker("disableMonths",months);
-        $($('#admin_monthpicker1')[i]).monthpicker().bind('monthpicker-change-year',function(e,year){
-            var item = $(e.currentTarget);
-            if(year==currentYear){
-                $(item).monthpicker('disableMonths',months);
-            }
-            else{
-                $(item).monthpicker('disableMonths',[]);
-            }
-        });
-        $($('#admin_monthpicker1')[i]).monthpicker().bind('monthpicker-change-year',function(e,year){
-            var item = $(e.currentTarget);
-            if(year==currentYear){
-                $(item).monthpicker('disableMonths',months);
-            }
-            else{
-                $(item).monthpicker('disableMonths',[]);
-            }
-        });
-    }
 
 });
 

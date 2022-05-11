@@ -69,7 +69,8 @@
                 <div class="tab-content">
                     <!-- 출퇴근기록 TAB -->
                     <div class="tab-pane active" id="nav-inout" role="tabpanel" aria-labelledby="nav-inout-tab">
-                        <div class="button-class" style="display: flex;justify-content: right;padding: 20px; padding-bottom: 0px;">
+                        <div class="button-class" style="display: flex;justify-content: right;padding: 20px; padding-bottom: 0px; align-items:center;">
+                            <span style="margin-right: 15px;">※ EXCEL DOWNLOAD 는 조회하신 후에 사용 가능합니다.</span>
                             <button class="btn btn-outline-success inout-download">EXCEL DOWNLOAD</button>
                         </div>
                         <div class="header-info">
@@ -104,18 +105,29 @@
                     </div>
                     <!-- 초과근무 및 급량비 조회 TAB -->
                     <div class="tab-pane" id="nav-overtime" role="tabpanel" aria-labelledby="nav-overtime-tab">
+                        <div class="button-class" style="display: flex;justify-content: right;padding: 20px; padding-bottom: 0px; align-items:center;">
+                            <span style="margin-right: 15px;">※ EXCEL DOWNLOAD 는 조회하신 후에 사용 가능합니다.</span>
+                            <button class="btn btn-outline-success cal-download">EXCEL DOWNLOAD</button>
+                        </div>
                         <div class="header-info">
                             <!-- 사번,부서, datepicker, 표출  -->
-                            <div class="input-group second-size">
+                            <div class="input-group">
                                 <span class="input-group-text" id="basic-addon1">이름</span>
-                                <div class="mem-name fw-bold"></div>
+                                <input type="text" class="form-control" placeholder="이름을 입력하세요" aria-label="empName" id="empName" >
                                 <span class="input-group-text" id="basic-addon1">사번</span>
-                                <div class="mem-num fw-bold"  ></div>
+                                <input type="text" class="form-control" placeholder="사번을 입력하세요" aria-label="empID" id="empID" >
                                 <span class="input-group-text" id="basic-addon1">부서</span>
-                                <div class="mem-dept fw-bold"  ></div>
+                                <select class="form-select" aria-label="Default select example" id="select-dept">
+                                    <option selected>부서를 선택해주세요</option>
+                                    <% for(var i=0;i<list.dept_info.length;i++){%>
+                                    <%  var dept_name = Object.values(list.dept_info[i]) %>
+                                        <option><%= dept_name %></option>
+                                    <%}%>  
+                                    
+                                  </select>
                                 <span class="input-group-text no-border" id="basic-addon1">기간</span>
-                                <input type="text" id="admin_monthpicker1" class="form-control no-border" style="width:20px;" placeholder="날짜를 선택해주세요"  dir="rtl">
-                                <button type="button" class="btn btn-secondary" id="check-overtime">조회하기</button>
+                                <input type="text" id="admin_monthpicker1" class="form-control no-border" style="width:20px;" placeholder="시작 날짜를 선택해주세요"  dir="rtl">
+                                <button type="button" class="btn btn-secondary" id="check-cal-search">조회하기</button>
                             </div>
                         </div>
                         <div class="table-layout">
