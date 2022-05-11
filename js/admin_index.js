@@ -32,7 +32,7 @@ $(document).ready(function(){
             $('#admin_datepicker2').val('');
             
         }else{
-            $('#check-inout').prop('disabled', true);
+            $('#check-search').prop('disabled', true);
             var info = {'emp_name':emp_name,'emp_id':emp_id,'org_nm':org_nm,'start_day':start_day,'end_day':end_day};
             // ajax로 날짜 두개, 사번 드림
             $.ajax({
@@ -42,8 +42,54 @@ $(document).ready(function(){
                 success:function(result){
                     console.log("success");
                     console.log(result);
+                    var list =[];
+                    for(var i=0;i<result.length;i++)
+                    {
+                        day = (result[i].YMD).replace(/(\d{4})(\d{2})(\d{2})/g, '$1-$2-$3');
+                        var week = ['일', '월', '화', '수', '목', '금', '토'];
+                        var dayOfWeek = week[new Date(day).getDay()];
+
+                        list.push({
+                            "No":`${i+1}`,
+                            "사번":result[i]['EMP_ID'],
+                            "이름": result[i].NAME,
+                            "날짜": day, 
+                            "요일": dayOfWeek,
+                            "근무유형":workTypeDict[`${result[i].WORK_TYPE}`],
+                            "출입시각":result[i].INOUT,
+                            "확정시각":result[i].FIX1,
+                            "계획시간":result[i].PLAN1
+                        })
+                    }
+                
+                    $(".inout-table").jsGrid({
+                        width: "100%",
+                        height: "100%",
+                        sorting: true,
+                        paging: true,
+                        data: list,
+                        pageSize: 15,
+                        pageButtonCount: 5,
+                        fields: [
+                            { name: "No", type: "text",width:"35px"},
+                            { name: "사번", type: "text"},
+                            { name: "이름", type: "text"},
+                            { name: "날짜", type: "text"},
+                            { name: "요일", type: "text"},
+                            { name:"근무유형", type:"text"},
+                            { name:"출입시각", type:"text"},
+                            { name:"확정시각", type:"text"},
+                            { name:"계획시간", type:"text"}
+            
+                        ]
+                    })
+                    $('a:contains("1")').click();
+                    // res로 받은 정보들을 list에 넣음 
+                    $('#check-search').prop('disabled', false);
                 }
             });
+
+            
         }
     });
 
