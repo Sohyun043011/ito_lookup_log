@@ -4,7 +4,6 @@ var db=require('mysql2-promise')();
 var db_config=require('../db_config');
 var lib=require('../js/lib');
 var path=require('path')
-var fs=require('fs');
 const { head } = require('request');
 const xl = require('excel4node');
 
@@ -78,7 +77,7 @@ router.get('/main', function(req, res) { //
   }else res.status(404).send('<p>세션 오류</p>'); //추후 수정
 });
 
-router.get('/ehr/:type', function(req, res){
+router.get('/ehr/:type', async function(req, res){
   /*
     ehr 업로드 폼 조회
     type : inout -> 출퇴근시각관리 form | cal_meal -> 급량비 form | edit -> 개인별근무일정변경 form
@@ -92,43 +91,43 @@ router.get('/ehr/:type', function(req, res){
   var sql=` where ymd>=? and ymd<=?`;
 
   db.configure(db_config['mysql']);
-
-  var sqlFilter=[ //preparedStatement 생성
-    emp_name==(undefined||'')?'':' and `NAME`=?',
-    emp_id==(undefined||'')?'':' and `emp_id`=?',
-    org_nm==(undefined||''||'부서를 선택해주세요')?'':' and `org_nm`=?',
-  ]
-  console.log('sqlFilter: '+sqlFilter);
   var sqlList=[start_day, end_day];
-  for(i of sqlFilter){ 
-    if (i!=undefined&&i!=''){ 
-      sqlList.push(i);
-    }
+  
+  if (!(emp_name==undefined||emp_name=='')){
+    sqlList.push(emp_name);
+    sql=sql+` and NAME=?`; 
   }
-  for (i of sqlFilter){
-    sql=sql+i;
+  if (!(emp_id==undefined||emp_id=='')){
+    sqlList.push(emp_id);
+    sql=sql+` and EMP_ID=?`; 
   }
-
+  console.log(org_nm)
+  if (!(org_nm==undefined||org_nm==''||org_nm=='부서를 선택해주세요')){
+    sqlList.push(org_nm);
+    sql=sql+` and ORG_NM=?`; 
+  }
   switch(req.params.type){
     case 'inout': // 출퇴근 시각관리
-      sql='select EMP_ID, NAME, YMD, WORK_TYPE, FIX1, `INOUT`, PLAN1 from connect.ehr_cal'+sql;
+      sql='select EMP_ID, NAME, YMD, WORK_TYPE, FIX1, `INOUT`, PLAN1 from connect.ehr_cal'+sql+` order by EMP_ID, YMD`;
+      console.log(sql);
       //lib 특정 함수에 result 인수로 보내서 전처리 후 serverCache에 저장
+      break;
     case 'cal_meal': // 급량비
-      // sql=`select * from connect.ehr_cal where name=${emp_name} and emp_id=${emp_id} 
-      // and org_nm=${org_nm} and ymd>=${start_day} and ymd<=${end_day}`
-      db.query(sql,sqlList).spread(function(rows){ //세션 수 조회
-        result=JSON.parse(JSON.stringify(rows)) 
-        return result;
-      }).then((result)=>{
-        console.log(result);
-        res.json(result);
-      });
+      sql='select EMP_ID, NAME, YMD, CAL_OVERTIME, CAL_MEAL from connect.ehr_cal'+sql+` order by EMP_ID, YMD`;
+      console.log(sql);
       break;
     case 'edit': // 개인별근무일정변경
       break;
     default:
       res.status(404).send('<p>오류</p>'); //추후 수정
   }
+  db.query(sql,sqlList).spread(function(rows){ //세션 수 조회
+    result=JSON.parse(JSON.stringify(rows)) 
+    return result;
+  }).then((result)=>{
+    console.log(result);
+    res.json(result);
+  });
 })
 
 router.get('/download/:type', function(req, res){
@@ -137,50 +136,43 @@ router.get('/download/:type', function(req, res){
     type : inout -> 출퇴근시각관리 form | cal_meal -> 급량비 form | edit -> 개인별근무일정변경 form
     이후 csv file download 유도
   */
-
-  var {emp_name, emp_id, org_nm, start_day, end_day}= req.query;
+  console.log('download 시작');
   const xl = require('excel4node');
   const wb = new xl.Workbook();
   const ws = wb.addWorksheet('Worksheet Name');
-  // const headingColumnNames=[
-  //   "NO","YMD","EMP_ID","NAME","ORG_NM","SHIFT_CD","WORK_TYPE","PLAN1","INOUT","FIX1","ERROR_INFO","DAYOFF1_TIME",
-  //   "DAYOFF1_ID","DAYOFF2_TIME","DAYOFF2_ID","OVER1_TIME","OVER1_ID","BUSI_TRIP1_TIME","BUSI_TRIP1_ID","BUSI_TRIP2_TIME","BUSI_TRIP2_ID",
-  //   "HOME_ID","ETC_INFO","ETC_ID","REWARD_TIME","REWARD_ID","CAL_OVERTIME","CAL_MEAL","RSN","date","COMMUTE_TYPE","DEL_YN"
-  // ]
   
   var sql=``;
 
-  db.configure(db_config['mysql']);
 
-  var sqlFilter=[
-    emp_name==undefined||''?'':' and `NAME`=?',
-    emp_id==undefined||''?'':' and `emp_id`=?',
-    org_nm==undefined||''?'':' and `org_nm`=?',
-  ]
+  var {emp_name, emp_id, org_nm, start_day, end_day}= req.query;
+
+  var sql=` where ymd>=? and ymd<=?`;
+
+  db.configure(db_config['mysql']);
   var sqlList=[start_day, end_day];
-  for(i of [emp_name, emp_id, org_nm]){
-    if (i!=undefined&&i!=''){
-      sqlList.push(i);
-    }
+  
+  if (!(emp_name==undefined||emp_name=='')){
+    sqlList.push(emp_name);
+    sql=sql+` and NAME=?`; 
   }
+  if (!(emp_id==undefined||emp_id=='')){
+    sqlList.push(emp_id);
+    sql=sql+` and EMP_ID=?`; 
+  }
+  
+  if (!(org_nm==undefined||org_nm==''||org_nm=='부서를 선택해주세요')){
+    sqlList.push(org_nm);
+    sql=sql+` and ORG_NM=?`; 
+  }
+
   switch(req.params.type){
     case 'inout': // 출퇴근 시각관리
-      sql='select YMD, EMP_ID, `NAME`, ORG_NM, SHIFT_CD, WORK_TYPE, PLAN1, `INOUT`, FIX1, CAL_OVERTIME, CAL_MEAL from connect.ehr_cal'+
-      ' where ymd>=? and ymd<=?'
-      for (i of sqlFilter){
-        sql=sql+i;
-      }
+      // sql='select YMD, EMP_ID, `NAME`, ORG_NM, SHIFT_CD, WORK_TYPE, PLAN1, `INOUT`, FIX1, CAL_OVERTIME, CAL_MEAL from connect.ehr_cal'+
+      // ' where ymd>=? and ymd<=?'
+      sql='select EMP_ID, NAME, YMD, ORG_NM, SHIFT_CD, WORK_TYPE, FIX1, `INOUT`, PLAN1 from connect.ehr_cal'+sql+` order by EMP_ID, YMD`;
       console.log(sql);
-
-      db.query(sql,sqlList).spread(function(rows){ //세션 수 조회
-        result=JSON.parse(JSON.stringify(rows));
-        //lib 특정 함수에 result 인수로 보내서 전처리 후 serverCache에 저장
-        return lib.makeInoutUploadForm(result);
-      }).then((result)=>{
-        result.write('testExcel.xlsx',res);
-        // res.send('aewfewafw');
-      })
-      // .catch(error => console.log(error))
+      break;
+      
     case 'cal_meal': // 급량비
       
       break;
@@ -189,43 +181,20 @@ router.get('/download/:type', function(req, res){
     default:
       res.status(404).send('<p>오류</p>'); //추후 수정
   }
-  
-  
-  
+  db.query(sql,sqlList).spread(function(rows){ 
+    result=JSON.parse(JSON.stringify(rows));
+    //lib 특정 함수에 result 인수로 보내서 출퇴근시각관리 양식으로 전처리
+    return lib.makeInoutUploadForm(result);
+  }).then((result)=>{
+    result.write('testExcel.xlsx',res);
+  })
+  // .catch(error => console.log(error))
 })
 
 router.get('/test',function(req,res){
   lib.getInoutPrototype().then(function(wb){
     wb.write('testExcel.xlsx',res);
   });
-  
-//   ws.cell(1, 1)
-//     .number(100)
-//     .style(style);
- 
-//  // Set value of cell B1 to 200 as a number type styled with 
-
-//   ws.cell(1, 2)
-//     .number(200)
-//     .style(style);
-  
-//   // Set value of cell C1 to a formula styled with paramaters of style
-//   ws.cell(1, 3)
-//     .formula('A1 + B1')
-//     .style(style);
-  
-//   // Set value of cell A2 to 'string' styled with paramaters of style
-//   ws.cell(2, 1)
-//     .string('string')
-//     .style(style);
-  
-//   // Set value of cell A3 to true as a boolean type styled with paramaters of style but with an adjustment to the font size.
-//   ws.cell(3, 1)
-//     .bool(true)
-//     .style(style)
-//     .style({font: {size: 14}});
-//   ws.cell(1,4,2,4,true).string('병합된 셀')
-//   wb.write('testExcel.xlsx',res);
 })
 
 module.exports=router;

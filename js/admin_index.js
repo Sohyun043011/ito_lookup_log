@@ -85,6 +85,7 @@ $(document).ready(function(){
         var emp_name = $('#empName').val();
         var emp_id = $('#empID').val();
         var org_nm = $('#select-dept').val();
+        console.log(org_nm);
         var type = 'inout';
         var start_day = $('#admin_datepicker1').val().replace(/\-/g,'');;
         var end_day = $('#admin_datepicker2').val().replace(/\-/g,'');;
