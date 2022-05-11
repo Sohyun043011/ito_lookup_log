@@ -34,7 +34,7 @@ router.post('/login',function(req, res){ //data 키값 중 password라는 항목
     req.session.isAdmin=true;
     req.session.save(()=>{
       // /admin/main/으로 redirect */
-      res.redirect('/admin/main');
+      res.send('성공!!');
     });
   }else{
     res.status(404).send('<p>비밀번호가 틀렸습니다.</p>');
@@ -59,7 +59,6 @@ router.get('/main', function(req, res) { //
 
 
   if(req.session.isAdmin){
-    
     db.configure(db_config['mysql']);
     db.query(`select DEPT_NAME from connect.gw_dept_info 
     where DEPT_NAME not in ('인천관광공사','사장','본부장','테스트팀','전자결재임시조직')`).spread(function(rows){
@@ -69,7 +68,7 @@ router.get('/main', function(req, res) { //
         session_data:req.session.data[0],
         dept_info:result
       }
-      return listJSON.values;
+      return listJSON;
     }).then(function(listJSON){
       console.log(listJSON);
       res.render('admin',{list:listJSON});
