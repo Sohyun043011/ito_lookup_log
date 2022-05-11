@@ -62,7 +62,9 @@ function monthPicktoString(date){
     
     return [start_day,end_day];
 }
-
+function dayFormatTranslate(ymd){//'yyyymmdd' to 'yyyy-mm-dd'
+    return ymd.replace(/(\d{4})(\d{2})(\d{2})/g, '$1-$2-$3');
+}
 // const dept=[
 //     '전략기획팀','경영지원팀','고객홍보팀',
 //     '해외마케팅팀','국내관광팀','스마트관광팀','MICE뷰로','의료웰니스팀',

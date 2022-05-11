@@ -86,7 +86,6 @@ $(document).ready(function(){
        
         var start_day = $('#datepicker1').val().replace(/\-/g,'');;
         var end_day = $('#datepicker2').val().replace(/\-/g,'');;
-        $('.table-layout').remove('.inout-table jsgrid');
         if(!validateInterval(start_day,end_day))
         {
             alert('기간을 다시 설정해주세요.');
@@ -147,7 +146,6 @@ $(document).ready(function(){
                         ]
                     })
                     $('a:contains("1")').click();
-                    ;
                     // res로 받은 정보들을 list에 넣음 
                     $('#check-inout').prop('disabled', false);
                    
@@ -156,8 +154,8 @@ $(document).ready(function(){
                     alert('실패')
                 }
             }).then(()=>{
-                // $('#datepicker1').val(start_day);
-                // $('#datepicker2').val(end_day);
+                $('#datepicker1').val(dayFormatTranslate(start_day));
+                $('#datepicker2').val(dayFormatTranslate(end_day));
             })
         }
         
@@ -291,7 +289,7 @@ $(document).ready(function(){
                         { name: "급량비유무", type: "text"}
                     ]
                 });
-                
+                $('a:contains("1")').click();
             },
             error:function(result){
                 alert('실패')
@@ -423,7 +421,7 @@ $(document).ready(function(){
                     ]
                 });
                 
-                
+                $('a:contains("1")').click();
             },
             error:function(result){
                 alert('실패')
