@@ -17,9 +17,37 @@ $(document).ready(function(){
     })
 
     //조회버튼
-    $('#check-sesarch').on('click',function(){
-        
+    $('#check-search').on('click',function(){
+        alert("조회하기");
+        var emp_name = $('#empName').val();
+        var emp_id = $('#empID').val();
+        var org_nm = $('#select-dept').val();
+        var type = 'inout';
+        var start_day = $('#admin_datepicker1').val().replace(/\-/g,'');;
+        var end_day = $('#admin_datepicker2').val().replace(/\-/g,'');;
+        if(!validateInterval(start_day,end_day))
+        {
+            alert('기간을 다시 설정해주세요.');
+            $('#admin_datepicker1').val('');
+            $('#admin_datepicker2').val('');
+            
+        }else{
+            $('#check-inout').prop('disabled', true);
+            var info = {'emp_name':emp_name,'emp_id':emp_id,'org_nm':org_nm,'start_day':start_day,'end_day':end_day};
+            // ajax로 날짜 두개, 사번 드림
+            $.ajax({
+                type:"GET",
+                url:`/admin/ehr/${type}`,
+                data:info,
+                success:function(result){
+                    console.log("success");
+                    console.log(result);
+                }
+            });
+        }
     });
+
+
     $.datepicker.setDefaults({
         dateFormat: 'yy-mm-dd'
         ,showOtherMonths : true
@@ -82,3 +110,4 @@ $(document).ready(function(){
     }
 
 });
+

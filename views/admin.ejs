@@ -45,7 +45,7 @@
                 <div class="flex-box1">
                     <div class="login-name fw-bold fs-5" style="margin-bottom: -5px;">
                         <!-- 관리자 이름 -->
-                        <%= list['EMP_NM'] %> 님
+                       <%= list.session_data["EMP_NM"] %> 님
                     </div>
                     <hr>
                     <button class="btn btn-outline-secondary fw-bold" id="logout-button">로그아웃</button>
@@ -55,7 +55,7 @@
             </div>
             <div class="main">
                 
-                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <ul class="nav nav-tabs" id="myTab" role="tablist.session_data">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active" id="nav-inout-tab" data-bs-toggle="tab" data-bs-target="#nav-inout" type="button" role="tab" aria-controls="nav-inout" aria-selected="true">출퇴근기록 조회</button>
                     </li>
@@ -77,14 +77,18 @@
                         <div class="header-info">
                             <!-- 사번,부서, datepicker, 표출  -->
                             <div class="input-group">
-                                <span class="input-group-text" id="basic-addon1">이름/사번</span>
-                                <input type="text" class="form-control" placeholder="이름 또는 사번을 입력하세요" aria-label="empName" id="empName" >
+                                <span class="input-group-text" id="basic-addon1">이름</span>
+                                <input type="text" class="form-control" placeholder="이름을 입력하세요" aria-label="empName" id="empName" >
+                                <span class="input-group-text" id="basic-addon1">사번</span>
+                                <input type="text" class="form-control" placeholder="사번을 입력하세요" aria-label="empID" id="empID" >
                                 <span class="input-group-text" id="basic-addon1">부서</span>
-                                <select class="form-select" aria-label="Default select example">
+                                <select class="form-select" aria-label="Default select example" id="select-dept">
                                     <option selected>부서를 선택해주세요</option>
-                                    <option value="1">One</option>
-                                    <option value="2">Two</option>
-                                    <option value="3">Three</option>
+                                    <% for(var i=0;i<list.dept_info.length;i++){%>
+                                    <%  var dept_name = Object.values(list.dept_info[i]) %>
+                                        <option><%= dept_name %></option>
+                                    <%}%>  
+                                    
                                   </select>
                                 <span class="input-group-text no-border" id="basic-addon1">기간</span>
                                 <input type="text" id="admin_datepicker1" class="form-control no-border" style="width:20px;" placeholder="시작 날짜를 선택해주세요"  dir="rtl">
@@ -106,11 +110,11 @@
                             <!-- 사번,부서, datepicker, 표출  -->
                             <div class="input-group second-size">
                                 <span class="input-group-text" id="basic-addon1">이름</span>
-                                <div class="mem-name fw-bold"><%= list['EMP_NM']%></div>
+                                <div class="mem-name fw-bold"></div>
                                 <span class="input-group-text" id="basic-addon1">사번</span>
-                                <div class="mem-num fw-bold"  ><%= list['EMP_ID'] %></div>
+                                <div class="mem-num fw-bold"  ></div>
                                 <span class="input-group-text" id="basic-addon1">부서</span>
-                                <div class="mem-dept fw-bold"  ><%= list['ORG_NM'] %></div>
+                                <div class="mem-dept fw-bold"  ></div>
                                 <span class="input-group-text no-border" id="basic-addon1">기간</span>
                                 <input type="text" id="admin_monthpicker1" class="form-control no-border" style="width:20px;" placeholder="날짜를 선택해주세요"  dir="rtl">
                                 <button type="button" class="btn btn-secondary" id="check-overtime">조회하기</button>
@@ -135,11 +139,11 @@
                             <!-- 사번,부서, datepicker, 표출  -->
                             <div class="input-group second-size">
                                 <span class="input-group-text" id="basic-addon1">이름</span>
-                                <div class="mem-name fw-bold"><%= list['EMP_NM']%></div>
+                                <div class="mem-name fw-bold"></div>
                                 <span class="input-group-text" id="basic-addon1">사번</span>
-                                <div class="mem-num fw-bold"  ><%= list['EMP_ID'] %></div>
+                                <div class="mem-num fw-bold"  ></div>
                                 <span class="input-group-text" id="basic-addon1">부서</span>
-                                <div class="mem-dept fw-bold"  ><%= list['ORG_NM'] %></div>
+                                <div class="mem-dept fw-bold"  ></div>
                                 <span class="input-group-text no-border" id="basic-addon1">기간</span>
                                 <input type="text" id="admin_monthpicker2" class="form-control no-border" style="width:20px;" placeholder="날짜를 선택해주세요"  dir="rtl">
                                 <button type="button" class="btn btn-secondary" id="check-overtime">조회하기</button>
