@@ -4,7 +4,6 @@ var db=require('mysql2-promise')();
 var db_config=require('../db_config');
 var lib=require('../js/lib');
 var path=require('path')
-var fs=require('fs');
 const { head } = require('request');
 const xl = require('excel4node');
 
@@ -112,22 +111,23 @@ router.get('/ehr/:type', async function(req, res){
       sql='select EMP_ID, NAME, YMD, WORK_TYPE, FIX1, `INOUT`, PLAN1 from connect.ehr_cal'+sql+` order by EMP_ID, YMD`;
       console.log(sql);
       //lib 특정 함수에 result 인수로 보내서 전처리 후 serverCache에 저장
+      break;
     case 'cal_meal': // 급량비
       sql='select EMP_ID, NAME, YMD, CAL_OVERTIME, CAL_MEAL from connect.ehr_cal'+sql+` order by EMP_ID, YMD`;
       console.log(sql);
-      db.query(sql,sqlList).spread(function(rows){ //세션 수 조회
-        result=JSON.parse(JSON.stringify(rows)) 
-        return result;
-      }).then((result)=>{
-        console.log(result);
-        res.json(result);
-      });
       break;
     case 'edit': // 개인별근무일정변경
       break;
     default:
       res.status(404).send('<p>오류</p>'); //추후 수정
   }
+  db.query(sql,sqlList).spread(function(rows){ //세션 수 조회
+    result=JSON.parse(JSON.stringify(rows)) 
+    return result;
+  }).then((result)=>{
+    console.log(result);
+    res.json(result);
+  });
 })
 
 router.get('/download/:type', function(req, res){
@@ -136,17 +136,16 @@ router.get('/download/:type', function(req, res){
     type : inout -> 출퇴근시각관리 form | cal_meal -> 급량비 form | edit -> 개인별근무일정변경 form
     이후 csv file download 유도
   */
-
+  console.log('download 시작');
   const xl = require('excel4node');
   const wb = new xl.Workbook();
   const ws = wb.addWorksheet('Worksheet Name');
   
   var sql=``;
 
-  db.configure(db_config['mysql']);
 
   var {emp_name, emp_id, org_nm, start_day, end_day}= req.query;
-  console.log(req.query);
+
   var sql=` where ymd>=? and ymd<=?`;
 
   db.configure(db_config['mysql']);
@@ -160,7 +159,7 @@ router.get('/download/:type', function(req, res){
     sqlList.push(emp_id);
     sql=sql+` and EMP_ID=?`; 
   }
-  console.log(org_nm)
+  
   if (!(org_nm==undefined||org_nm==''||org_nm=='부서를 선택해주세요')){
     sqlList.push(org_nm);
     sql=sql+` and ORG_NM=?`; 
@@ -170,17 +169,10 @@ router.get('/download/:type', function(req, res){
     case 'inout': // 출퇴근 시각관리
       // sql='select YMD, EMP_ID, `NAME`, ORG_NM, SHIFT_CD, WORK_TYPE, PLAN1, `INOUT`, FIX1, CAL_OVERTIME, CAL_MEAL from connect.ehr_cal'+
       // ' where ymd>=? and ymd<=?'
-      sql='select EMP_ID, NAME, YMD, WORK_TYPE, FIX1, `INOUT`, PLAN1 from connect.ehr_cal'+sql+` order by EMP_ID, YMD`;
+      sql='select EMP_ID, NAME, YMD, ORG_NM, SHIFT_CD, WORK_TYPE, FIX1, `INOUT`, PLAN1 from connect.ehr_cal'+sql+` order by EMP_ID, YMD`;
       console.log(sql);
+      break;
       
-      db.query(sql,sqlList).spread(function(rows){ 
-        result=JSON.parse(JSON.stringify(rows));
-        //lib 특정 함수에 result 인수로 보내서 출퇴근시각관리 양식으로 전처리
-        return lib.makeInoutUploadForm(result);
-      }).then((result)=>{
-        result.write('testExcel.xlsx',res);
-      })
-      // .catch(error => console.log(error))
     case 'cal_meal': // 급량비
       
       break;
@@ -189,6 +181,14 @@ router.get('/download/:type', function(req, res){
     default:
       res.status(404).send('<p>오류</p>'); //추후 수정
   }
+  db.query(sql,sqlList).spread(function(rows){ 
+    result=JSON.parse(JSON.stringify(rows));
+    //lib 특정 함수에 result 인수로 보내서 출퇴근시각관리 양식으로 전처리
+    return lib.makeInoutUploadForm(result);
+  }).then((result)=>{
+    result.write('testExcel.xlsx',res);
+  })
+  // .catch(error => console.log(error))
 })
 
 router.get('/test',function(req,res){
