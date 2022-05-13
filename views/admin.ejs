@@ -77,11 +77,11 @@
                             <!-- 사번,부서, datepicker, 표출  -->
                             <div class="input-group">
                                 <span class="input-group-text" id="basic-addon1">이름</span>
-                                <input type="text" class="form-control" placeholder="이름을 입력하세요" aria-label="empName" id="empName" >
+                                <input type="text" class="form-control empName" placeholder="이름을 입력하세요" aria-label="empName" id="empName" >
                                 <span class="input-group-text" id="basic-addon1">사번</span>
-                                <input type="text" class="form-control" placeholder="사번을 입력하세요" aria-label="empID" id="empID" >
+                                <input type="text" class="form-control empID" placeholder="사번을 입력하세요" aria-label="empID" id="empID" >
                                 <span class="input-group-text" id="basic-addon1">부서</span>
-                                <select class="form-select" aria-label="Default select example" id="select-dept">
+                                <select class="form-select select-dept" aria-label="Default select example" id="select-dept">
                                     <option selected>부서를 선택해주세요</option>
                                     <% for(var i=0;i<list.dept_info.length;i++){%>
                                     <%  var dept_name = Object.values(list.dept_info[i]) %>
@@ -113,11 +113,11 @@
                             <!-- 사번,부서, datepicker, 표출  -->
                             <div class="input-group">
                                 <span class="input-group-text" id="basic-addon1">이름</span>
-                                <input type="text" class="form-control" placeholder="이름을 입력하세요" aria-label="empName" id="empName" >
+                                <input type="text" class="form-control empName" placeholder="이름을 입력하세요" aria-label="empName" id="empName" >
                                 <span class="input-group-text" id="basic-addon1">사번</span>
-                                <input type="text" class="form-control" placeholder="사번을 입력하세요" aria-label="empID" id="empID" >
+                                <input type="text" class="form-control empID" placeholder="사번을 입력하세요" aria-label="empID" id="empID" >
                                 <span class="input-group-text" id="basic-addon1">부서</span>
-                                <select class="form-select" aria-label="Default select example" id="select-dept">
+                                <select class="form-select select-dept" aria-label="Default select example" id="select-dept">
                                     <option selected>부서를 선택해주세요</option>
                                     <% for(var i=0;i<list.dept_info.length;i++){%>
                                     <%  var dept_name = Object.values(list.dept_info[i]) %>
