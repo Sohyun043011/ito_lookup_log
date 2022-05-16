@@ -236,7 +236,38 @@ async function makeInoutUploadForm(result){ // 출퇴근시각관리 양식 생�
     return wb;
 }
 
+function getOverTimePrototype(){ // 시간외전표연동 기본 양식 리턴
+    return new Promise((resolve, reject)=>{
+        const wb = new xl.Workbook();
+        const ws = wb.addWorksheet('Worksheet Name');
+        const style=wb.createStyle({
+            alignment:{
+            horizontal:"center",
+            vertical:"center",
+            wrapText: true
+            }
+        })
+        const headerInfo=[
+            'No',         '선택',
+            '전표번호',   '귀속월',
+            '근무시작일', '근무종료일',
+            '생성일',     '건수',
+            '전송여부',   '전송일시',
+            '비고'
+          ];
+        for (var i=0;i<headerInfo.length;i++){
+            ws.cell(1,i+1).string(headerInfo[i]).style(style);  
+        }
+        resolve({wb:wb, ws:ws, style:style});
+        // ws.cell(1,1,2,1,true).string('No').style(style); 
+        // resolve({wb:wb,ws:ws,style:style});
+    })
+}
 
+async function makeOverTimeUploadForm(result){
+
+    
+}
 function addOverTime(list){
     var total=0;
     for(i in list){
@@ -277,7 +308,6 @@ function isSession(req, type){ //세션 유효한지 검증
         if(type=='users'){//일반유저
             resolve(req&&req.session&&req.session.data);
         }else if(type=='admin'){//admin유저
-            console.log(req.session.isAdmin);
             resolve(req&&req.session&&req.session.data&&req.session.isAdmin);
         }else{
             resolve(false);

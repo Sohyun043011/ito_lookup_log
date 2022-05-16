@@ -3,15 +3,9 @@ var router = express.Router();
 var db=require('mysql2-promise')();
 var db_config=require('../db_config');
 var lib=require('../js/lib');
-var path=require('path')
-const { head } = require('request');
-const xl = require('excel4node');
 
-var serverNavCache;
-var serverQueryCache; // db조회 시 임시로 보유, 추후에 excel download 기능 구현 시 사용할 예정
 var admin='admin';
 var users='users';
-
 
 
 router.post('/login',function(req, res){ //data 키값 중 password라는 항목 받아오기
@@ -21,11 +15,11 @@ router.post('/login',function(req, res){ //data 키값 중 password라는 항목
     별도의 세션 테이블을 유지하거나 세션 정보에 관리자임을 식별할 수 있는 정보를 넣기
     이후 '/admin'으로 redirect
   */
-  if (!lib.isSession(req,users)){ // request, session, session data 유효성 검사
-    res.status(404).send('<p>오류</p>'); //추후 수정
+  if (!req.session.data){ // session data 유효성 검사
+    res.status(404).send('세션 정보 없음'); //추후 수정
   }
-  password=db_config.adminPageInfo.password; // 관리자 로그인 암호
 
+  password=db_config.adminPageInfo.password; // 관리자 로그인 암호
   user_pw=req.body.password; // 패스워드 입력값
 
   //user_pw와 password가 일치한다면 세션 data에 isAdmin:true로 추가해주고 /admin/main페이지로 redirect
@@ -33,18 +27,17 @@ router.post('/login',function(req, res){ //data 키값 중 password라는 항목
     req.session.isAdmin=true;
     req.session.save(()=>{
       // /admin/main/으로 redirect */
-      res.send('성공!!');
+      res.send('패스워드 일치');
     });
   }else{
-    res.status(404).send('<p>비밀번호가 틀렸습니다.</p>');
+    res.status(404).send('비밀번호가 틀렸습니다.');
   }
 });
-router.get('/logout',function(req,res){
- 
+
+router.get('/logout',function(req,res){ // 별도로 session destroy를 해주지 않아도 됨
   req.session.isAdmin=false;
   req.session.save(()=>{
-    console.log('req');
-    res.send('성공');
+    res.send('로그아웃');
   })
 })
 
@@ -54,9 +47,6 @@ router.get('/main', function(req, res) { //
     1. 세션 수 확인 후 N개 미만일 때만 페이지 넘겨주기
     2. 세션 정보를 페이지단으로 넘겨주기(ejs) 또는 세션정보를 바탕으로 페이지 내부(client)에서 처리
   */
-  
-
-
   if(req.session.isAdmin){
     db.configure(db_config['mysql']);
     db.query(`select DEPT_NAME from connect.gw_dept_info 
@@ -69,12 +59,11 @@ router.get('/main', function(req, res) { //
       }
       return listJSON;
     }).then(function(listJSON){
-      console.log(listJSON);
       res.render('admin',{list:listJSON});
     })
 
     // 세션 정보를 ejs에 보내줌
-  }else res.status(404).send('<p>세션 오류</p>'); //추후 수정
+  }else res.status(404).send('관리자 권한이 없습니다. 로그인 후 다시 시도해주세요.'); //추후 수정
 });
 
 router.get('/ehr/:type', async function(req, res){
@@ -83,11 +72,11 @@ router.get('/ehr/:type', async function(req, res){
     type : inout -> 출퇴근시각관리 form | cal_meal -> 급량비 form | edit -> 개인별근무일정변경 form
     이후 form 정보 리턴
   */
-  if (!lib.isSession(req,admin)){ // request, session, session data 유효성 검사
-    res.status(404).send('<p>오류</p>'); //추후 수정
+  if (!req.session.isAdmin){ // request, session, session data 유효성 검사
+    res.status(404).send('관리자 권한이 없습니다. 로그인 후 다시 시도해주세요.'); //추후 수정
   }
   var {emp_name, emp_id, org_nm, start_day, end_day}= req.query;
-  console.log(req.query);
+
   var sql=` where ymd>=? and ymd<=?`;
 
   db.configure(db_config['mysql']);
@@ -101,7 +90,7 @@ router.get('/ehr/:type', async function(req, res){
     sqlList.push(emp_id);
     sql=sql+` and EMP_ID=?`; 
   }
-  console.log(org_nm)
+  
   if (!(org_nm==undefined||org_nm==''||org_nm=='부서를 선택해주세요')){
     sqlList.push(org_nm);
     sql=sql+` and ORG_NM=?`; 
@@ -109,12 +98,10 @@ router.get('/ehr/:type', async function(req, res){
   switch(req.params.type){
     case 'inout': // 출퇴근 시각관리
       sql='select EMP_ID, NAME, YMD, WORK_TYPE, FIX1, `INOUT`, PLAN1 from connect.ehr_cal'+sql+` order by EMP_ID, YMD`;
-      console.log(sql);
-      //lib 특정 함수에 result 인수로 보내서 전처리 후 serverCache에 저장
       break;
     case 'cal_meal': // 급량비
       sql='select EMP_ID, NAME, YMD, CAL_OVERTIME, CAL_MEAL from connect.ehr_cal'+sql+` order by EMP_ID, YMD`;
-      console.log(sql);
+      
       break;
     case 'edit': // 개인별근무일정변경
       break;
@@ -125,7 +112,6 @@ router.get('/ehr/:type', async function(req, res){
     result=JSON.parse(JSON.stringify(rows)) 
     return result;
   }).then((result)=>{
-    console.log(result);
     res.json(result);
   });
 })
@@ -142,7 +128,6 @@ router.get('/download/:type', function(req, res){
   const ws = wb.addWorksheet('Worksheet Name');
   
   var sql=``;
-
 
   var {emp_name, emp_id, org_nm, start_day, end_day}= req.query;
 
@@ -169,17 +154,16 @@ router.get('/download/:type', function(req, res){
     case 'inout': // 출퇴근 시각관리
       // sql='select YMD, EMP_ID, `NAME`, ORG_NM, SHIFT_CD, WORK_TYPE, PLAN1, `INOUT`, FIX1, CAL_OVERTIME, CAL_MEAL from connect.ehr_cal'+
       // ' where ymd>=? and ymd<=?'
-      sql='select EMP_ID, NAME, YMD, ORG_NM, SHIFT_CD, WORK_TYPE, FIX1, `INOUT`, PLAN1 from connect.ehr_cal'+sql+` order by EMP_ID, YMD`;
-      console.log(sql);
+      sql='select EMP_ID, NAME, YMD, ORG_NM, SHIFT_CD, WORK_TYPE, FIX1, `INOUT`, PLAN1 from connect.ehr_cal'+sql+
+      ` order by EMP_ID, YMD`;
       break;
       
     case 'cal_meal': // 급량비
-      
       break;
     case 'edit': // 개인별근무일정변경
       break;
     default:
-      res.status(404).send('<p>오류</p>'); //추후 수정
+      res.status(404).send('잘못된 url 접근'); //추후 수정
   }
   db.query(sql,sqlList).spread(function(rows){ 
     result=JSON.parse(JSON.stringify(rows));
@@ -188,7 +172,10 @@ router.get('/download/:type', function(req, res){
   }).then((result)=>{
     result.write('testExcel.xlsx',res);
   })
-  // .catch(error => console.log(error))
+  .catch(error => {
+    console.log(error)
+    res.status(404).send('Excel 생성 중 예기치 못한 문제 발생'); //추후 수정
+  })
 })
 
 router.get('/test',function(req,res){

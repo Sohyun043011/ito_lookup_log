@@ -2,28 +2,23 @@ var express = require('express');
 var router = express.Router();
 var db=require('mysql2-promise')();
 var db_config=require('../db_config');
-
 var lib=require('../js/lib');
 
-var users='users';
-
-// const nowDate = moment(target_day).utc(true);
-
-router.get('/login/:emp_id',async function(req, res){
-  /*1. 넘겨받은 사번정보 조회 후 있으면 세션 생성 단계 진입*/
-  /*2. 세션 생성 (최대 N개, M분 만료) */
+router.get('/login/:emp_id', async function(req, res){
+  /*
+    최초 세션 테이블에서 세션 갯수 확인 및 직원 정보가 일치하면 세션 생성해주고
+    main page로 redirect
+  */
   db.configure(db_config['mysql']);
-  sql='select count(*) as session_num from good.session_lookup_log'
-
+  sql='select count(*) as session_num from good.session_lookup_log' 
   db.query(sql).spread(function(rows){ //세션 수 조회
     if(JSON.parse(JSON.stringify(rows))[0]['session_num']>=5){
-      console.log('접속 중인 사용자가 너무 많습니다. 잠시 후에 시도해주세요.');
-      res.send('<p>접속 중인 사용자가 너무 많습니다. 잠시 후에 시도해주세요.</p>');
+      // 접속 중인 세션이 5개 이상이면 접속 차단 후 404 error (with msg) 보냄 
+      res.status(404).send('접속 중인 사용자가 너무 많습니다. 잠시 후에 시도해주세요.');
     }
   })
-
+  // 넘겨받은 emp_id로 직원 정보 조회
   sql=`select EMP_ID, EMP_NM, ORG_NM from connect.hr_info where emp_id=${req.params.emp_id}`;
-
   db.query(sql).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
     if (JSON.parse(JSON.stringify(rows)).length==1){
       console.log(`${req.params.emp_id}님의 직원정보가 존재합니다.`);
@@ -35,8 +30,7 @@ router.get('/login/:emp_id',async function(req, res){
         res.redirect('/users/main')
       });
     } else{
-      console.log('직원정보가 존재하지 않습니다.');
-      res.send('<p>만료된 페이지<p>'); // 추후 수정
+      res.send('직원정보가 존재하지 않음'); // 추후 수정
     };
   })
 });
@@ -44,18 +38,14 @@ router.get('/login/:emp_id',async function(req, res){
 router.get('/main', function(req, res) { //
   /*
     메인 페이지
-    1. 세션 수 확인 후 N개 미만일 때만 페이지 넘겨주기
-    2. 세션 정보를 페이지단으로 넘겨주기(ejs) 또는 세션정보를 바탕으로 페이지 내부(client)에서 처리
-    3. 출퇴근 기록 조회 | 급량비 및 초과근무 기록 조회의 2개의 tab으로 구성
+    1. 세션 정보를 페이지단으로 넘겨주기(ejs) 또는 세션정보를 바탕으로 페이지 내부(client)에서 처리
+    2. 출퇴근 기록 조회 | 급량비 및 초과근무 기록 조회의 2개의 tab으로 구성
     이후 main page 리턴
   */
-  console.log('/users/main');
-  if(lib.isSession(req, users)){ // request, session, session data 유효하면
-    console.log(req.session.data[0]);
-    res.render('main',{list:req.session.data[0]}) // 세션 정보를 ejs에 보내줌
-  }else res.status(404).send('<p>오류</p>'); //추후 수정
+  if(req.session.data){ // 세션 정보 있는지 확인
+    res.render('main',{list:req.session.data[0]})
+  }else res.status(404).send('세션 정보 없음'); //추후 수정
 });
-
 
 router.post('/inout',function(req, res){
   /*
@@ -63,19 +53,19 @@ router.post('/inout',function(req, res){
     filter 안에 있는 내용(사번, 부서, interval)을 기반으로 중계DB의 connect.ehr_cal에서 값을 가져오는 쿼리를 실행
     이후 res.json으로 리턴
   */
-  if(!lib.isSession(req,users)){ // 세션정보 존재하지 않으면
-    res.status(404).send('<p>오류</p>'); //추후 수정
+  if(!req.session.data){ // 세션정보 존재하지 않으면 오류 표출
+    res.status(404).send('세션 정보 없음'); //추후 수정
   }
-  const {emp_id, start_day, end_day}=req.body; // 사번, 시작일시, 종료일시
+
+  const {emp_id, start_day, end_day}=req.body; // 넘겨준 데이터를 변수에 저장 (사번, 기간)
 
   db.configure(db_config['mysql']);
-  sql='select EMP_ID, NAME, YMD, WORK_TYPE, FIX1, `INOUT`, PLAN1 from connect.ehr_cal where emp_id=? and ymd>=? and ymd<=? ';
+  sql='select EMP_ID, NAME, YMD, WORK_TYPE, FIX1, `INOUT`, PLAN1 from connect.ehr_cal ' +
+  'where emp_id=? and ymd>=? and ymd<=? order by YMD'; // 특정 기간 내의 직원 출퇴근 기록을 날짜 순으로 정렬
 
   db.query(sql,[emp_id, start_day, end_day]).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
-    console.log(JSON.parse(JSON.stringify(rows)));
     res.json(JSON.parse(JSON.stringify(rows)));
   });
-
 });
 
 router.post('/overtime',function(req, res){
@@ -86,13 +76,14 @@ router.post('/overtime',function(req, res){
     각 주차별로 초과근무, 급량비 내역 표출 및 월별 합산해서 표출할 수 있는 데이터 set 생성
     이후 res.json으로 리턴
   */ 
-  if(!lib.isSession(req, users)){ //세션 정보 존재하지 않으면
-    res.status(404).send('<p>오류</p>');
+  if(!req.session.data){ // 세션정보 존재하지 않으면 오류 표출
+    res.status(404).send('세션 정보 없음'); //추후 수정
   }
   const {emp_id, start_day, end_day}=req.body;
-  console.log(req.body);
+
   db.configure(db_config['mysql']);
-  sql='select EMP_ID, `NAME`, YMD, CAL_OVERTIME, CAL_MEAL from connect.ehr_cal where emp_id=? and ymd>=? and ymd<=? order by YMD';
+  sql='select EMP_ID, `NAME`, YMD, CAL_OVERTIME, CAL_MEAL from connect.ehr_cal ' +
+  'where emp_id=? and ymd>=? and ymd<=? order by YMD';
 
   db.query(sql,[emp_id, start_day, end_day]).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
     result=JSON.parse(JSON.stringify(rows));
@@ -105,7 +96,6 @@ router.post('/overtime',function(req, res){
     }
     new_result["empInfo"]=result
     new_result=JSON.parse(JSON.stringify(new_result));
-    console.log(new_result);
     res.json(new_result);
   });
 });
@@ -118,11 +108,11 @@ router.post('/cal_meal',function(req, res){
     각 주차별로 초과근무, 급량비 내역 표출 및 월별 합산해서 표출할 수 있는 데이터 set 생성
     이후 res.json으로 리턴
   */ 
-  if(!lib.isSession(req, users)){ //세션 정보 존재하지 않으면
-    res.status(404).send('<p>오류</p>');
+  if(!req.session.data){ // 세션정보 존재하지 않으면 오류 표출
+    res.status(404).send('세션 정보 없음'); //추후 수정
   }
   const {dept_name, start_day, end_day}=req.body;
-  console.log(req.body);
+
   db.configure(db_config['mysql']);
   sql='select EMP_ID, `NAME`, ORG_NM, YMD, CAL_MEAL from connect.ehr_cal where org_nm=? and ymd>=? and ymd<=?';
 
@@ -132,13 +122,13 @@ router.post('/cal_meal',function(req, res){
       "empInfo":[], // 일별 데이터
       "endOfWeek": lib.weekOfMonth(end_day) // 마지막 주 정보
     }
-    console.log(new_result)
+
     for (row in result){
       result[row]['WEEK']=lib.weekOfMonth(result[row]['YMD']);
     }
     new_result["empInfo"]=result
     new_result=JSON.parse(JSON.stringify(new_result));
-    console.log(new_result);
+
     res.json(new_result);
   });
 });
