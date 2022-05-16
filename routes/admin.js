@@ -26,7 +26,6 @@ router.post('/login',function(req, res){ //data 키값 중 password라는 항목
   if(user_pw==password){
     req.session.isAdmin=true;
     req.session.save(()=>{
-      // /admin/main/으로 redirect */
       res.send('패스워드 일치');
     });
   }else{
@@ -44,8 +43,7 @@ router.get('/logout',function(req,res){ // 별도로 session destroy를 해주�
 router.get('/main', function(req, res) { //
   /*
     관리자 페이지
-    1. 세션 수 확인 후 N개 미만일 때만 페이지 넘겨주기
-    2. 세션 정보를 페이지단으로 넘겨주기(ejs) 또는 세션정보를 바탕으로 페이지 내부(client)에서 처리
+    1. 관리자 권한이 있는 세션 확인 후 세션 정보와 조직 정보를 main.ejs로 넘겨주기
   */
   if(req.session.isAdmin){
     db.configure(db_config['mysql']);
@@ -81,7 +79,7 @@ router.get('/ehr/:type', async function(req, res){
 
   db.configure(db_config['mysql']);
   var sqlList=[start_day, end_day];
-  
+  // 들어온 req.query에 따른 sql where 조건 수정하주기
   if (!(emp_name==undefined||emp_name=='')){
     sqlList.push(emp_name);
     sql=sql+` and NAME=?`; 
@@ -91,29 +89,41 @@ router.get('/ehr/:type', async function(req, res){
     sql=sql+` and EMP_ID=?`; 
   }
   
-  if (!(org_nm==undefined||org_nm==''||org_nm=='부서를 선택해주세요')){
+  if (!(org_nm==undefined||org_nm==''||org_nm=='부서를 선택해주세요')){ // select default option일 경우도 예외 처리
     sqlList.push(org_nm);
     sql=sql+` and ORG_NM=?`; 
   }
   switch(req.params.type){
     case 'inout': // 출퇴근 시각관리
       sql='select EMP_ID, NAME, YMD, WORK_TYPE, FIX1, `INOUT`, PLAN1 from connect.ehr_cal'+sql+` order by EMP_ID, YMD`;
+      db.query(sql,sqlList).spread(function(rows){
+        res.json(JSON.parse(JSON.stringify(rows)));
+      })
       break;
     case 'cal_meal': // 급량비
       sql='select EMP_ID, NAME, YMD, CAL_OVERTIME, CAL_MEAL from connect.ehr_cal'+sql+` order by EMP_ID, YMD`;
-      
+      db.query(sql,sqlList).spread(function(rows){ //세션 수 조회
+        result=JSON.parse(JSON.stringify(rows));
+        new_result={
+          "empInfo":[], // 일별 데이터
+          "endOfWeek": lib.weekOfMonth(end_day) // 마지막 주 정보
+        }
+        for (row in result){
+          result[row]['WEEK']=lib.weekOfMonth(result[row]['YMD']);
+        }
+        new_result["empInfo"]=result
+        new_result=JSON.parse(JSON.stringify(new_result));
+        return new_result;
+      }).then((result)=>{
+        res.json(result);
+      });
       break;
     case 'edit': // 개인별근무일정변경
-      break;
     default:
       res.status(404).send('<p>오류</p>'); //추후 수정
   }
-  db.query(sql,sqlList).spread(function(rows){ //세션 수 조회
-    result=JSON.parse(JSON.stringify(rows)) 
-    return result;
-  }).then((result)=>{
-    res.json(result);
-  });
+  
+  
 })
 
 router.get('/download/:type', function(req, res){
@@ -152,30 +162,40 @@ router.get('/download/:type', function(req, res){
 
   switch(req.params.type){
     case 'inout': // 출퇴근 시각관리
-      // sql='select YMD, EMP_ID, `NAME`, ORG_NM, SHIFT_CD, WORK_TYPE, PLAN1, `INOUT`, FIX1, CAL_OVERTIME, CAL_MEAL from connect.ehr_cal'+
-      // ' where ymd>=? and ymd<=?'
       sql='select EMP_ID, NAME, YMD, ORG_NM, SHIFT_CD, WORK_TYPE, FIX1, `INOUT`, PLAN1 from connect.ehr_cal'+sql+
       ` order by EMP_ID, YMD`;
+      db.query(sql,sqlList).spread(function(rows){ 
+        result=JSON.parse(JSON.stringify(rows));
+        //lib 특정 함수에 result 인수로 보내서 출퇴근시각관리 양식으로 전처리
+        return lib.makeInoutUploadForm(result);
+      }).then((result)=>{
+        result.write('testExcel.xlsx',res);
+      })
+      .catch(error => {
+        console.log(error)
+        res.status(404).send('Excel 생성 중 예기치 못한 문제 발생'); //추후 수정
+      })
       break;
-      
     case 'cal_meal': // 급량비
+      sql='select EMP_ID, NAME, YMD, ORG_NM, WORK_TYPE, CAL_OVERTIME, RSN from connect.ehr_cal'+sql+
+      ` and CAL_OVERTIME !='0000' and CAL_MEAL='TRUE' order by EMP_ID, YMD`;
+      db.query(sql,sqlList).spread(function(rows){ 
+        result=JSON.parse(JSON.stringify(rows));
+        //lib 특정 함수에 result 인수로 보내서 출퇴근시각관리 양식으로 전처리
+        return lib.makeOverTimeUploadForm(result);
+      }).then((result)=>{
+        result.write('testExcel.xlsx',res);
+      })
+      .catch(error => {
+        console.log(error)
+        res.status(404).send('Excel 생성 중 예기치 못한 문제 발생'); //추후 수정
+      })
       break;
     case 'edit': // 개인별근무일정변경
       break;
     default:
       res.status(404).send('잘못된 url 접근'); //추후 수정
   }
-  db.query(sql,sqlList).spread(function(rows){ 
-    result=JSON.parse(JSON.stringify(rows));
-    //lib 특정 함수에 result 인수로 보내서 출퇴근시각관리 양식으로 전처리
-    return lib.makeInoutUploadForm(result);
-  }).then((result)=>{
-    result.write('testExcel.xlsx',res);
-  })
-  .catch(error => {
-    console.log(error)
-    res.status(404).send('Excel 생성 중 예기치 못한 문제 발생'); //추후 수정
-  })
 })
 
 router.get('/test',function(req,res){

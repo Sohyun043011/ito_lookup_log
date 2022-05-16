@@ -3,7 +3,6 @@ $(document).ready(function(){
 
     // 로그아웃 버튼 
     $('#logout-button').click(function(){
-        alert('로그아웃');
         $.ajax({
             type:"GET",
             url:"/admin/logout",
@@ -79,8 +78,8 @@ $(document).ready(function(){
         });
     }
 
-     //출퇴근기록 조회버튼
-     $('#check-search').on('click',function(){
+    //출퇴근기록 조회버튼
+    $('#check-search').on('click',function(){
         alert("조회하기");
         var emp_name = $('.empName').eq(0).val();
         var emp_id = $('.empID').eq(0).val();
@@ -151,8 +150,15 @@ $(document).ready(function(){
                     $('a:contains("First")').click();
                     // res로 받은 정보들을 list에 넣음 
                     $('#check-search').prop('disabled', false);
+                },
+                error:function(result){
+                    alert('실패')
                 }
-            }).then(()=>{$('.inout-download').prop('disabled', false);});
+            }).then(()=>{
+                $('.inout-download').prop('disabled', false);
+                $('#datepicker1').val(dayFormatTranslate(start_day));
+                $('#datepicker2').val(dayFormatTranslate(end_day));
+            });
 
             
         }
@@ -254,21 +260,22 @@ $(document).ready(function(){
 
 
                     var list =[];
-                    for(var i=0;i<result.length;i++)
+                    for(var i=0;i<result.empInfo.length;i++)
                     {
-                        day = (result[i].YMD).replace(/(\d{4})(\d{2})(\d{2})/g, '$1-$2-$3');
+                        day = (result.empInfo[i].YMD).replace(/(\d{4})(\d{2})(\d{2})/g, '$1-$2-$3');
                         var week = ['일', '월', '화', '수', '목', '금', '토'];
                         var dayOfWeek = week[new Date(day).getDay()];
 
                         list.push({
                             "No":`${i+1}`,
-                            "사번":result[i]['EMP_ID'],
-                            "이름": result[i].NAME,
-                            "부서명":result[i].ORG_NM,
+                            "사번":result.empInfo[i]['EMP_ID'],
+                            "이름": result.empInfo[i].NAME,
+                            "부서명":result.empInfo[i].ORG_NM,
                             "날짜": day, 
                             "요일": dayOfWeek,
-                            "초과근무시간": hhmmToString2(result[i].CAL_OVERTIME),
-                            "급량비유무": (result[i].CAL_MEAL=="TRUE") ? "O" : "X"
+                            "주차": `${result.empInfo[i].WEEK}주차`,
+                            "초과근무시간": hhmmToString2(result.empInfo[i].CAL_OVERTIME),
+                            "급량비유무": (result.empInfo[i].CAL_MEAL=="TRUE") ? "O" : "X"
                         });
 
                     }
@@ -288,6 +295,7 @@ $(document).ready(function(){
                             { name: "부서명", type: "text"},
                             { name: "날짜", type: "text"},
                             { name: "요일", type: "text"},
+                            { name: "주차", type: "text"},
                             { name: "초과근무시간", type: "text"},
                             { name: "급량비유무", type: "text"}
                         ]
@@ -297,9 +305,49 @@ $(document).ready(function(){
                     // res로 받은 정보들을 list에 넣음 
                     $('#check-cal-search').prop('disabled', false);
                 }
-            }).then(()=>{$('.inout-download').prop('disabled', false);});
+            }).then(()=>{$('.cal-download').prop('disabled', false);});
         
     });
+    $('.inout-download').on('click', function(){
+        var emp_name = $('.empName').eq(1).val();
+        console.log(emp_name);
+        var emp_id = $('.empID').eq(1).val();
+        var org_nm = $('.select-dept').eq(1).val();
+        var type = 'inout';      //출퇴근조회
+        var start_day = $('#datepicker1').val().replace(/\-/g,'');;
+        var end_day = $('#datepicker2').val().replace(/\-/g,'');;
+        if(!validateInterval(start_day,end_day))
+        {
+            alert('기간을 다시 설정해주세요.');
+            $('#datepicker1').val('');
+            $('#datepicker2').val('');
+            
+        }else{
+            $('#check-inout').prop('disabled', true);
+            var emp_id = $($('.mem-num')[0]).text();    
+
+            var info = {'emp_name':emp_name,'emp_id':emp_id,'org_nm':org_nm,'start_day':start_day,'end_day':end_day};
+            // ajax로 날짜 두개, 사번 드림
+            window.open(`/admin/ehr/${type}?emp_name=${emp_name}&emp_id=${emp_id}&org_nm=${org_nm}
+            &start_day=${start_day}&end_day=${end_day}`);
+        }
+    })
+
+    $('.cal-download').on('click', function(){
+        var emp_name = $('.empName').eq(1).val();
+        console.log(emp_name);
+        var emp_id = $('.empID').eq(1).val();
+        var org_nm = $('.select-dept').eq(1).val();
+        var type = 'cal_meal';      //급량비 조회
+        var date = $('#admin_monthpicker1').val();
+        const year = date.split('-')[0];
+        const month = date.split('-')[1];
+        var [start_day,end_day] = monthPicktoString(date);
+
+        // ajax로 날짜 두개, 사번 드림
+        window.open(`/admin/download/${type}?emp_name=${emp_name}&emp_id=${emp_id}&org_nm=${org_nm}
+        &start_day=${start_day}&end_day=${end_day}`);
+    })
 
 });
 

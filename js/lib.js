@@ -236,6 +236,7 @@ async function makeInoutUploadForm(result){ // 출퇴근시각관리 양식 생�
     return wb;
 }
 
+
 function getOverTimePrototype(){ // 시간외전표연동 기본 양식 리턴
     return new Promise((resolve, reject)=>{
         const wb = new xl.Workbook();
@@ -247,25 +248,65 @@ function getOverTimePrototype(){ // 시간외전표연동 기본 양식 리턴
             wrapText: true
             }
         })
-        const headerInfo=[
-            'No',         '선택',
-            '전표번호',   '귀속월',
-            '근무시작일', '근무종료일',
-            '생성일',     '건수',
-            '전송여부',   '전송일시',
-            '비고'
-          ];
+        const headerInfo=[ 'No', '사번(*)', '성명', '조직', '근무일(*)', '평일연장', '평일야간', '휴일','휴일야간', 
+            '합계', '사유'
+        ];
         for (var i=0;i<headerInfo.length;i++){
             ws.cell(1,i+1).string(headerInfo[i]).style(style);  
         }
+
         resolve({wb:wb, ws:ws, style:style});
-        // ws.cell(1,1,2,1,true).string('No').style(style); 
-        // resolve({wb:wb,ws:ws,style:style});
     })
 }
 
 async function makeOverTimeUploadForm(result){
+    var {wb,ws,style}=await getOverTimePrototype();
+    var noCount=1; // No column 설정
+    var col = 2; // 시작 column 좌표
+    var row = 1; // 시작 row 좌표
 
+    var maxLength=0;
+    for (i of result){
+        delete i.NO;
+        await overTimeFormatTranslate(i["CAL_OVERTIME"])
+        .then((overtime)=>{
+            i["No"]=String(noCount++); // 연번\
+            ws.cell(col,row++).string(i["No"]).style(style); // No
+            ws.cell(col,row++).string(i["EMP_ID"]).style(style); // 사번(*)
+            ws.cell(col,row++).string(i["NAME"]).style(style); // 성명
+            ws.cell(col,row++).string(i["ORG_NM"]).style(style); // 조직
+            ws.cell(col,row++).string(i["YMD"]).style(style); // 근무일(*)
+            if(i["WORK_TYPE"]!='0060'){ //주말 제외한 초과근무 내역 
+                ws.cell(col,row++).string(overtime).style(style)// 평일연장
+                ws.cell(col,row++).string('0.00').style(style)//평일야간
+                ws.cell(col,row++).string('0.00').style(style)//휴일
+                ws.cell(col,row++).string('0.00').style(style)//휴일야간
+            }else{ //주말 초과근무 내역
+                ws.cell(col,row++).string('0.00').style(style)//평일연장
+                ws.cell(col,row++).string('0.00').style(style)//평일야간
+                ws.cell(col,row++).string(overtime).style(style)// 휴일
+                ws.cell(col,row++).string('0.00').style(style)//휴일야간
+            }
+            ws.cell(col,row++).string(overtime).style(style)// 합계
+            ws.cell(col,row).string(i["RSN"]).style(style); //초과근무사유
+
+            return i["RSN"].length;
+        })
+        .then((rsnLength)=>{
+            if (maxLength<rsnLength){
+                maxLength=rsnLength;
+            }
+        })
+        .catch(function(err){
+            if(err) console.log(err);
+        })
+        .finally(()=>{
+            col++;
+            row=1;
+        })
+    }
+    ws.column(11).setWidth(maxLength*2);
+    return wb;
     
 }
 function addOverTime(list){
@@ -331,6 +372,17 @@ function dayFormatTranslate(ymd){//'yyyymmdd' to 'yyyy/mm/dd'
     })
 }
 
+function overTimeFormatTranslate(overtime){// 'hhmm' to 'hh.mm'
+    return new Promise((resolve, reject)=>{
+        if (parseInt(overtime.substring(0,2))==0){
+            resolve(('0.'+overtime.substring(2)))
+        }else{
+            resolve((overtime.substring(0,2)+'.'+overtime.substring(2)).replace(/(^0+)/, ""))
+        }
+        
+    })
+}
+
 function getDate(ymd){
     var Day=['일','월','화','수','목','금','토'];
     var target_date=new Date(ymd).getDay();
@@ -366,5 +418,7 @@ module.exports={
     makePersonalWorkPlanEdit,
     jsonize,
     getNow,
-    getInoutPrototype
+    getInoutPrototype,
+    makeOverTimeUploadForm,
+    getOverTimePrototype
 }
