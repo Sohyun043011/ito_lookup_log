@@ -308,36 +308,35 @@ $(document).ready(function(){
             }).then(()=>{$('.cal-download').prop('disabled', false);});
         
     });
+
     $('.inout-download').on('click', function(){
-        var emp_name = $('.empName').eq(1).val();
-        console.log(emp_name);
-        var emp_id = $('.empID').eq(1).val();
-        var org_nm = $('.select-dept').eq(1).val();
+        var emp_name = $('.empName').eq(0).val();
+        var emp_id = $('.empID').eq(0).val();
+        var org_nm = $('.select-dept').eq(0).val();
         var type = 'inout';      //출퇴근조회
-        var start_day = $('#datepicker1').val().replace(/\-/g,'');;
-        var end_day = $('#datepicker2').val().replace(/\-/g,'');;
+        var start_day = $('#admin_datepicker1').val().replace(/\-/g,'');;
+        var end_day = $('#admin_datepicker2').val().replace(/\-/g,'');;
         if(!validateInterval(start_day,end_day))
         {
             alert('기간을 다시 설정해주세요.');
-            $('#datepicker1').val('');
-            $('#datepicker2').val('');
+            $('#admin_datepicker1').val('');
+            $('#admin_datepicker2').val('');
             
         }else{
             $('#check-inout').prop('disabled', true);
             var emp_id = $($('.mem-num')[0]).text();    
-
-            var info = {'emp_name':emp_name,'emp_id':emp_id,'org_nm':org_nm,'start_day':start_day,'end_day':end_day};
+            console.log(emp_name)
             // ajax로 날짜 두개, 사번 드림
-            window.open(`/admin/ehr/${type}?emp_name=${emp_name}&emp_id=${emp_id}&org_nm=${org_nm}
-            &start_day=${start_day}&end_day=${end_day}`);
+            window.open(`/admin/download/${type}?emp_name=${emp_name}&emp_id=${emp_id}&org_nm=${org_nm}`+
+            `&start_day=${start_day}&end_day=${end_day}`);
         }
     })
 
     $('.cal-download').on('click', function(){
-        var emp_name = $('.empName').eq(1).val();
+        var emp_name = $('.empName').eq(1).val().trim();
         console.log(emp_name);
         var emp_id = $('.empID').eq(1).val();
-        var org_nm = $('.select-dept').eq(1).val();
+        var org_nm = $('.select-dept').eq(1).val().trim();
         var type = 'cal_meal';      //급량비 조회
         var date = $('#admin_monthpicker1').val();
         const year = date.split('-')[0];
@@ -345,9 +344,8 @@ $(document).ready(function(){
         var [start_day,end_day] = monthPicktoString(date);
 
         // ajax로 날짜 두개, 사번 드림
-        window.open(`/admin/download/${type}?emp_name=${emp_name}&emp_id=${emp_id}&org_nm=${org_nm}
-        &start_day=${start_day}&end_day=${end_day}`);
+        window.open(`/admin/download/${type}?emp_name=${emp_name}&emp_id=${emp_id}&org_nm=${org_nm}`+
+        `&start_day=${start_day}&end_day=${end_day}`);
     })
-
 });
 

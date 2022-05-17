@@ -97,8 +97,33 @@ router.get('/ehr/:type', async function(req, res){
     case 'inout': // 출퇴근 시각관리
       sql='select EMP_ID, NAME, YMD, WORK_TYPE, FIX1, `INOUT`, PLAN1 from connect.ehr_cal'+sql+` order by EMP_ID, YMD`;
       db.query(sql,sqlList).spread(function(rows){
-        res.json(JSON.parse(JSON.stringify(rows)));
-      })
+        result=JSON.parse(JSON.stringify(rows));
+        for(line of result){
+          line["INOUT"]=line["INOUT"].split('~').map(str=>{
+            if(str==''){
+                return '';
+            }
+            return str.substring(0,2)+':'+str.substring(2)
+          }).join('~')
+          line["FIX1"]=line["FIX1"].split('~').map(str=>{
+            if(str==''){
+                return '';
+            }
+            return str.substring(0,2)+':'+str.substring(2)
+          }).join('~')
+          if(line["PLAN1"]!='None'){
+            line["PLAN1"]=line["PLAN1"].split('~').map(str=>{
+              if(str==''){
+                  return '';
+              }
+              return str.substring(0,2)+':'+str.substring(2)
+            }).join('~')
+          }
+        }
+        return result;
+      }).then((result)=>{
+        res.json(result);
+      });
       break;
     case 'cal_meal': // 급량비
       sql='select EMP_ID, NAME, YMD, CAL_OVERTIME, CAL_MEAL from connect.ehr_cal'+sql+` order by EMP_ID, YMD`;
@@ -140,6 +165,7 @@ router.get('/download/:type', function(req, res){
   var sql=``;
 
   var {emp_name, emp_id, org_nm, start_day, end_day}= req.query;
+  console.log(req.query);
 
   var sql=` where ymd>=? and ymd<=?`;
 
@@ -148,7 +174,7 @@ router.get('/download/:type', function(req, res){
   
   if (!(emp_name==undefined||emp_name=='')){
     sqlList.push(emp_name);
-    sql=sql+` and NAME=?`; 
+    sql=sql+' and `NAME`=?'; 
   }
   if (!(emp_id==undefined||emp_id=='')){
     sqlList.push(emp_id);
@@ -169,7 +195,7 @@ router.get('/download/:type', function(req, res){
         //lib 특정 함수에 result 인수로 보내서 출퇴근시각관리 양식으로 전처리
         return lib.makeInoutUploadForm(result);
       }).then((result)=>{
-        result.write('testExcel.xlsx',res);
+        result.write(`출퇴근시각관리 (${start_day.substring(2)}-${end_day.substring(2)}).xlsx`,res);
       })
       .catch(error => {
         console.log(error)
@@ -184,7 +210,7 @@ router.get('/download/:type', function(req, res){
         //lib 특정 함수에 result 인수로 보내서 출퇴근시각관리 양식으로 전처리
         return lib.makeOverTimeUploadForm(result);
       }).then((result)=>{
-        result.write('testExcel.xlsx',res);
+        result.write(`시간외전표연동 (${start_day.substring(2)}-${end_day.substring(2)}).xlsx`,res);
       })
       .catch(error => {
         console.log(error)

@@ -160,9 +160,6 @@ $(document).ready(function(){
                 $('#datepicker2').val(dayFormatTranslate(end_day));
             })
         }
-        
-        // db에서 받은 정보를 list에 넣을 것
-        
     });
 
 

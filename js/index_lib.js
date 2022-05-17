@@ -28,13 +28,29 @@ function hhmmToString(time){ // 초과근무 시간정보를 'hh시간 mm분' �
     time=parseInt(time)
     hour=Math.floor(time/60);
     minute=time%60;
-    return hour+'시간 '+minute+'분'
+    if(hour==0){
+        if(minute==0){
+            return '0시간';
+        }else{
+            return minute+'분';
+        }
+    }else{
+        return hour+'시간 '+minute+'분'
+    }
 }
 function hhmmToString2(time){ // 초과근무 시간정보를 'hh시간 mm분' 문자열 형태로 변환
     time=parseInt(time)
     hour=Math.floor(time/100);
     minute=time%100;
-    return hour+'시간 '+minute+'분'
+    if(hour==0){
+        if(minute==0){
+            return '0시간';
+        }else{
+            return minute+'분';
+        }
+    }else{
+        return hour+'시간 '+minute+'분'
+    }
 }
 function calMeal(dict){
     cal_dict ={};

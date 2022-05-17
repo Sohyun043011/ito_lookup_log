@@ -64,7 +64,33 @@ router.post('/inout',function(req, res){
   'where emp_id=? and ymd>=? and ymd<=? order by YMD'; // 특정 기간 내의 직원 출퇴근 기록을 날짜 순으로 정렬
 
   db.query(sql,[emp_id, start_day, end_day]).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
-    res.json(JSON.parse(JSON.stringify(rows)));
+    result=JSON.parse(JSON.stringify(rows));
+    for(line of result){
+      line["INOUT"]=line["INOUT"].split('~').map(str=>{
+        if(str==''){
+            return '';
+        }
+        return str.substring(0,2)+':'+str.substring(2)
+      }).join('~')
+      line["FIX1"]=line["FIX1"].split('~').map(str=>{
+        if(str==''){
+            return '';
+        }
+        return str.substring(0,2)+':'+str.substring(2)
+      }).join('~')
+      if(line["PLAN1"]!='None'){
+        line["PLAN1"]=line["PLAN1"].split('~').map(str=>{
+          if(str==''){
+              return '';
+          }
+          return str.substring(0,2)+':'+str.substring(2)
+        }).join('~')
+      }
+      
+    }
+    return result;
+  }).then(result=>{
+    res.json(result);
   });
 });
 
@@ -83,7 +109,7 @@ router.post('/overtime',function(req, res){
 
   db.configure(db_config['mysql']);
   sql='select EMP_ID, `NAME`, YMD, CAL_OVERTIME, CAL_MEAL from connect.ehr_cal ' +
-  'where emp_id=? and ymd>=? and ymd<=? order by YMD';
+  `where emp_id=? and ymd>=? and ymd<=? and CAL_OVERTIME!='0000' order by YMD`;
 
   db.query(sql,[emp_id, start_day, end_day]).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
     result=JSON.parse(JSON.stringify(rows));
