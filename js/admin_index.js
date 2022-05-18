@@ -80,7 +80,6 @@ $(document).ready(function(){
 
     //출퇴근기록 조회버튼
     $('#check-search').on('click',function(){
-        alert("조회하기");
         var emp_name = $('.empName').eq(0).val();
         var emp_id = $('.empID').eq(0).val();
         var org_nm = $('.select-dept').eq(0).val();
@@ -166,7 +165,6 @@ $(document).ready(function(){
 
     //급량비 조회버튼 - 기간 관련해서 수정
     $('#check-cal-search').on('click',function(){
-        alert("조회하기");
         var emp_name = $('.empName').eq(1).val();
         console.log(emp_name);
         var emp_id = $('.empID').eq(1).val();
