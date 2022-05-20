@@ -126,7 +126,7 @@ router.get('/ehr/:type', async function(req, res){
       });
       break;
     case 'cal_meal': // 급량비
-      sql='select EMP_ID, NAME, YMD, CAL_OVERTIME, CAL_MEAL from connect.ehr_cal'+sql+` order by EMP_ID, YMD`;
+      sql='select EMP_ID, NAME, YMD, CAL_OVERTIME, CAL_MEAL from connect.ehr_cal'+sql+` and cal_meal!='0000' order by EMP_ID, YMD`;
       db.query(sql,sqlList).spread(function(rows){ //세션 수 조회
         result=JSON.parse(JSON.stringify(rows));
         new_result={
@@ -224,9 +224,31 @@ router.get('/download/:type', function(req, res){
   }
 })
 
-router.get('/test',function(req,res){
-  lib.getInoutPrototype().then(function(wb){
-    wb.write('testExcel.xlsx',res);
+router.get('/gw/ehr/con/:emp_id',function(req,res){
+  const emp_id=req.params.emp_id;
+  console.log(emp_id);
+
+  db.configure(db_config['mysql']);
+
+  var sql=`select * from connect.gw_ehr_con where emp_id=${emp_id}`;
+  db.query(sql).spread(function(rows){ 
+    result=JSON.parse(JSON.stringify(rows));
+    //lib 특정 함수에 result 인수로 보내서 출퇴근시각관리 양식으로 전처리
+    
+    return result;
+  }).then((result)=>{
+    var new_result={}
+    console.log(result[0]);
+    new_result["OVERTIME"]=`초과근무 ${lib.digitTimeToFormatted(result[0]["TOTAL_OVERTIME"])} / ${result[0]["over_std_time"]}시간`;
+    new_result["VOC"]=`잔여연차 ${lib.floatTimeToFormatted(result[0]["dayoff_rest_time"])}/${result[0]["dayoff_std_time"]}시간`;
+    new_result["ORG_EDU"]=`기관교육 ${result[0]["i_edu_admit_time"]}/${result[0]["i_edu_std_time"]}시간`;
+    new_result["IND_EDU"]=`개인교육 ${result[0]["p_edu_admit_time"]}/${result[0]["p_edu_std_time"]}시간`;
+    return new_result;
+  }).then((new_result)=>{
+    console.log(new_result);
+    res.json(new_result);
+  }).catch((err)=>{
+    console.log(err);
   });
 })
 
