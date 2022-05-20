@@ -9,7 +9,6 @@ router.get('/login/:emp_id', async function(req, res){
     최초 세션 테이블에서 세션 갯수 확인 및 직원 정보가 일치하면 세션 생성해주고
     main page로 redirect
   */
-  console.log(!(req.header('User-Agent').indexOf('Chrome') || req.header('User-Agent').indexOf('Firefox')));
   if((req.header('User-Agent').indexOf('Chrome') || req.header('User-Agent').indexOf('Firefox'))==-1){
     console.log('IE 감지')
     res.send('Internet Explorer에서 지원되지 않습니다.');
@@ -17,7 +16,7 @@ router.get('/login/:emp_id', async function(req, res){
     db.configure(db_config['mysql']);
     sql='select count(*) as session_num from good.session_lookup_log' 
     db.query(sql).spread(function(rows){ //세션 수 조회
-      if(JSON.parse(JSON.stringify(rows))[0]['session_num']>=20){
+      if(JSON.parse(JSON.stringify(rows))[0]['session_num']>=50){
         // 접속 중인 세션이 5개 이상이면 접속 차단 후 404 error (with msg) 보냄 
         res.status(404).send('접속 중인 사용자가 너무 많습니다. 잠시 후에 시도해주세요.');
       }
