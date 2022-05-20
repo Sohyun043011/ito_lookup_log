@@ -17,7 +17,7 @@ router.get('/login/:emp_id', async function(req, res){
     db.configure(db_config['mysql']);
     sql='select count(*) as session_num from good.session_lookup_log' 
     db.query(sql).spread(function(rows){ //세션 수 조회
-      if(JSON.parse(JSON.stringify(rows))[0]['session_num']>=5){
+      if(JSON.parse(JSON.stringify(rows))[0]['session_num']>=20){
         // 접속 중인 세션이 5개 이상이면 접속 차단 후 404 error (with msg) 보냄 
         res.status(404).send('접속 중인 사용자가 너무 많습니다. 잠시 후에 시도해주세요.');
       }
