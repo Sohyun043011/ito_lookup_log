@@ -11,7 +11,7 @@ router.get('/login/:emp_id', async function(req, res){
   */
   if((req.header('User-Agent').indexOf('Chrome') || req.header('User-Agent').indexOf('Firefox'))==-1){
     console.log('IE 감지')
-    res.send('Internet Explorer에서 지원되지 않습니다.');
+    res.redirect('/users/error');
   }else{
     db.configure(db_config['mysql']);
     sql='select count(*) as session_num from good.session_lookup_log' 
@@ -77,12 +77,14 @@ router.post('/inout',function(req, res){
         }
         return str.substring(0,2)+':'+str.substring(2)
       }).join('~')
-      line["FIX1"]=line["FIX1"].split('~').map(str=>{
-        if(str==''){
-            return '';
-        }
-        return str.substring(0,2)+':'+str.substring(2)
-      }).join('~')
+      if(!line["FIX1"]=='ERROR'){
+        line["FIX1"]=line["FIX1"].split('~').map(str=>{
+          if(str==''){
+              return '';
+          }
+          return str.substring(0,2)+':'+str.substring(2)
+        }).join('~')
+      }
       if(line["PLAN1"]!='None'){
         line["PLAN1"]=line["PLAN1"].split('~').map(str=>{
           if(str==''){
@@ -162,6 +164,10 @@ router.post('/cal_meal',function(req, res){
 
     res.json(new_result);
   });
+});
+
+router.get('/error',function(req,res){
+  res.send('<p>Internet Explorer에서 지원하지 않습니다.</p>');
 });
 
 module.exports=router;

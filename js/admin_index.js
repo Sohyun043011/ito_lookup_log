@@ -249,11 +249,11 @@ $(document).ready(function(){
                         cal_count = ele*8000;
                         cal_sum+=cal_count;
                         const cal_string = (cal_count).toLocaleString('ko-KR');
-                        $(`.week-cal>.${idx+1}-cal`).html(cal_string);
+                        $(`.week-cal>.${idx+1}-cal`).html(cal_string+'원');
                     });
 
                     //급량비 합산
-                    $('.week-cal>.cal-sum').html(cal_sum.toLocaleString('ko-KR'));
+                    $('.week-cal>.cal-sum').html(cal_sum.toLocaleString('ko-KR')+'원');
                     $('#check-overtime').prop('disabled', false);
 
 
@@ -264,18 +264,19 @@ $(document).ready(function(){
                         var week = ['일', '월', '화', '수', '목', '금', '토'];
                         var dayOfWeek = week[new Date(day).getDay()];
 
-                        list.push({
-                            "No":`${i+1}`,
-                            "사번":result.empInfo[i]['EMP_ID'],
-                            "이름": result.empInfo[i].NAME,
-                            "부서명":result.empInfo[i].ORG_NM,
-                            "날짜": day, 
-                            "요일": dayOfWeek,
-                            "주차": `${result.empInfo[i].WEEK}주차`,
-                            "초과근무시간": hhmmToString2(result.empInfo[i].CAL_OVERTIME),
-                            "급량비유무": (result.empInfo[i].CAL_MEAL=="TRUE") ? "O" : "X"
-                        });
-
+                        if(result.empInfo[i].CAL_OVERTIME!='0000'){
+                            list.push({
+                                "No":`${i+1}`,
+                                "사번":result.empInfo[i]['EMP_ID'],
+                                "이름": result.empInfo[i].NAME,
+                                "부서명":result.empInfo[i].ORG_NM,
+                                "날짜": day, 
+                                "요일": dayOfWeek,
+                                "주차": `${result.empInfo[i].WEEK}주차`,
+                                "초과근무시간": hhmmToString2(result.empInfo[i].CAL_OVERTIME),
+                                "급량비유무": (result.empInfo[i].CAL_MEAL=="TRUE") ? "O" : "X"
+                            });
+                        }
                     }
                 
                     $(".detail-table").jsGrid({

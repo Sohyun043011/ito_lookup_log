@@ -244,11 +244,11 @@ $(document).ready(function(){
                     cal_count = ele*8000;
                     cal_sum+=cal_count;
                     const cal_string = (cal_count).toLocaleString('ko-KR');
-                    $(`.week-cal>.${idx+1}-cal`).html(cal_string);
+                    $(`.week-cal>.${idx+1}-cal`).html(cal_string+'원');
                 });
 
                 //급량비 합산
-                $('.week-cal>.cal-sum').html(cal_sum.toLocaleString('ko-KR'));
+                $('.week-cal>.cal-sum').html(cal_sum.toLocaleString('ko-KR')+'원');
                 $('#check-overtime').prop('disabled', false);
                 
                 // detail table 표출

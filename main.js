@@ -31,7 +31,7 @@ app.use(session({
     resave:true, // request가 들어올 때마다 세션을 다시 저장하는 것
     saveUninitialized: false, // request가 들어오면 로직과 관계 없이 빈 세션을 생성
     cookie:{
-        maxAge:300000, // 5분
+        maxAge:300000*6, // 30분
         httpOnly:false // 웹서버에서만 쿠키에 접근할 수 있도록 쿠키에 플래그 지정
     },
     store:session_store,
