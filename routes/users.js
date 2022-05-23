@@ -65,7 +65,7 @@ router.post('/inout',function(req, res){
   const {emp_id, start_day, end_day}=req.body; // 넘겨준 데이터를 변수에 저장 (사번, 기간)
 
   db.configure(db_config['mysql']);
-  sql='select EMP_ID, NAME, ORG_NM, YMD, WORK_TYPE, FIX1, `INOUT`, PLAN1 from connect.ehr_cal ' +
+  sql='select EMP_ID, NAME, ORG_NM, YMD, WORK_TYPE, FIX1, `INOUT`, PLAN1, ERROR_INFO from connect.ehr_cal ' +
   'where emp_id=? and ymd>=? and ymd<=? order by YMD'; // 특정 기간 내의 직원 출퇴근 기록을 날짜 순으로 정렬
 
   db.query(sql,[emp_id, start_day, end_day]).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
@@ -77,13 +77,15 @@ router.post('/inout',function(req, res){
         }
         return str.substring(0,2)+':'+str.substring(2)
       }).join('~')
-      if(!line["FIX1"]=='ERROR'){
+      if(line["FIX1"]!='ERROR'){
         line["FIX1"]=line["FIX1"].split('~').map(str=>{
           if(str==''){
               return '';
           }
           return str.substring(0,2)+':'+str.substring(2)
         }).join('~')
+      }else{
+        line["FIX1"]='수기 계산 필요';
       }
       if(line["PLAN1"]!='None'){
         line["PLAN1"]=line["PLAN1"].split('~').map(str=>{
@@ -92,11 +94,17 @@ router.post('/inout',function(req, res){
           }
           return str.substring(0,2)+':'+str.substring(2)
         }).join('~')
+      }else{
+        line["PLAN1"]='~';
+      }
+      if(line["ERROR_INFO"]=='None'){
+        line["ERROR_INFO"]='';
       }
       
     }
     return result;
   }).then(result=>{
+    console.log(result);
     res.json(result);
   });
 });

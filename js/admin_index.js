@@ -120,7 +120,8 @@ $(document).ready(function(){
                             "근무유형":workTypeDict[`${result[i].WORK_TYPE}`],
                             "출입시각":result[i].INOUT,
                             "확정시각":result[i].FIX1,
-                            "계획시간":result[i].PLAN1
+                            "계획시간":result[i].PLAN1,
+                            "비고":result[i].ERROR_INFO,
                         })
                     }
                 
@@ -141,8 +142,8 @@ $(document).ready(function(){
                             { name:"근무유형", type:"text"},
                             { name:"출입시각", type:"text"},
                             { name:"확정시각", type:"text"},
-                            { name:"계획시간", type:"text"}
-            
+                            { name:"계획시간", type:"text"},
+                            { name:"비고", type:"text"}
                         ]
                     })
                     $('a:contains("1")').click();
