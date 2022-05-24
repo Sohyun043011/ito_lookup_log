@@ -103,7 +103,6 @@ div::-webkit-scrollbar-track {
 	padding:10px;
 	border:1px solid #ced4da;
 	font: bold;
-	width: 100px;
     text-align: center;
 }
 .nav-link{
