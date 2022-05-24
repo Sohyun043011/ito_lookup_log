@@ -9,15 +9,14 @@ router.get('/login/:emp_id', async function(req, res){
     최초 세션 테이블에서 세션 갯수 확인 및 직원 정보가 일치하면 세션 생성해주고
     main page로 redirect
   */
-  console.log(!(req.header('User-Agent').indexOf('Chrome') || req.header('User-Agent').indexOf('Firefox')));
   if((req.header('User-Agent').indexOf('Chrome') || req.header('User-Agent').indexOf('Firefox'))==-1){
     console.log('IE 감지')
-    res.send('Internet Explorer에서 지원되지 않습니다.');
+    res.redirect('/users/error');
   }else{
     db.configure(db_config['mysql']);
     sql='select count(*) as session_num from good.session_lookup_log' 
     db.query(sql).spread(function(rows){ //세션 수 조회
-      if(JSON.parse(JSON.stringify(rows))[0]['session_num']>=20){
+      if(JSON.parse(JSON.stringify(rows))[0]['session_num']>=50){
         // 접속 중인 세션이 5개 이상이면 접속 차단 후 404 error (with msg) 보냄 
         res.status(404).send('접속 중인 사용자가 너무 많습니다. 잠시 후에 시도해주세요.');
       }
@@ -66,7 +65,7 @@ router.post('/inout',function(req, res){
   const {emp_id, start_day, end_day}=req.body; // 넘겨준 데이터를 변수에 저장 (사번, 기간)
 
   db.configure(db_config['mysql']);
-  sql='select EMP_ID, NAME, ORG_NM, YMD, WORK_TYPE, FIX1, `INOUT`, PLAN1 from connect.ehr_cal ' +
+  sql='select EMP_ID, NAME, ORG_NM, YMD, WORK_TYPE, FIX1, `INOUT`, PLAN1, ERROR_INFO from connect.ehr_cal ' +
   'where emp_id=? and ymd>=? and ymd<=? order by YMD'; // 특정 기간 내의 직원 출퇴근 기록을 날짜 순으로 정렬
 
   db.query(sql,[emp_id, start_day, end_day]).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
@@ -78,12 +77,16 @@ router.post('/inout',function(req, res){
         }
         return str.substring(0,2)+':'+str.substring(2)
       }).join('~')
-      line["FIX1"]=line["FIX1"].split('~').map(str=>{
-        if(str==''){
-            return '';
-        }
-        return str.substring(0,2)+':'+str.substring(2)
-      }).join('~')
+      if(line["FIX1"]!='ERROR'){
+        line["FIX1"]=line["FIX1"].split('~').map(str=>{
+          if(str==''){
+              return '';
+          }
+          return str.substring(0,2)+':'+str.substring(2)
+        }).join('~')
+      }else{
+        line["FIX1"]='수기 계산 필요';
+      }
       if(line["PLAN1"]!='None'){
         line["PLAN1"]=line["PLAN1"].split('~').map(str=>{
           if(str==''){
@@ -91,11 +94,17 @@ router.post('/inout',function(req, res){
           }
           return str.substring(0,2)+':'+str.substring(2)
         }).join('~')
+      }else{
+        line["PLAN1"]='~';
+      }
+      if(line["ERROR_INFO"]=='None'){
+        line["ERROR_INFO"]='';
       }
       
     }
     return result;
   }).then(result=>{
+    console.log(result);
     res.json(result);
   });
 });
@@ -163,6 +172,10 @@ router.post('/cal_meal',function(req, res){
 
     res.json(new_result);
   });
+});
+
+router.get('/error',function(req,res){
+  res.send('<p>Internet Explorer에서 지원하지 않습니다.</p>');
 });
 
 module.exports=router;

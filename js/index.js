@@ -121,7 +121,8 @@ $(document).ready(function(){
                             "근무유형":workTypeDict[`${result[i].WORK_TYPE}`],
                             "출입시각":result[i].INOUT,
                             "확정시각":result[i].FIX1,
-                            "계획시간":result[i].PLAN1
+                            "계획시간":result[i].PLAN1,
+                            "비고":result[i].ERROR_INFO,
                         })
                     }
                 
@@ -143,7 +144,8 @@ $(document).ready(function(){
                             { name:"근무유형", type:"text"},
                             { name:"출입시각", type:"text"},
                             { name:"확정시각", type:"text"},
-                            { name:"계획시간", type:"text"}
+                            { name:"계획시간", type:"text"},
+                            { name:"비고", type:"text"}
             
                         ]
                     })
@@ -244,11 +246,11 @@ $(document).ready(function(){
                     cal_count = ele*8000;
                     cal_sum+=cal_count;
                     const cal_string = (cal_count).toLocaleString('ko-KR');
-                    $(`.week-cal>.${idx+1}-cal`).html(cal_string);
+                    $(`.week-cal>.${idx+1}-cal`).html(cal_string+'원');
                 });
 
                 //급량비 합산
-                $('.week-cal>.cal-sum').html(cal_sum.toLocaleString('ko-KR'));
+                $('.week-cal>.cal-sum').html(cal_sum.toLocaleString('ko-KR')+'원');
                 $('#check-overtime').prop('disabled', false);
                 
                 // detail table 표출

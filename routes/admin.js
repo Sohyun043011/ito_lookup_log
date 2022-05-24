@@ -95,7 +95,7 @@ router.get('/ehr/:type', async function(req, res){
   }
   switch(req.params.type){
     case 'inout': // 출퇴근 시각관리
-      sql='select EMP_ID, NAME, YMD, WORK_TYPE, FIX1, `INOUT`, PLAN1 from connect.ehr_cal'+sql+` order by EMP_ID, YMD`;
+      sql='select EMP_ID, NAME, YMD, WORK_TYPE, FIX1, `INOUT`, PLAN1, ERROR_INFO from connect.ehr_cal'+sql+` order by EMP_ID, YMD`;
       db.query(sql,sqlList).spread(function(rows){
         result=JSON.parse(JSON.stringify(rows));
         for(line of result){
@@ -105,12 +105,16 @@ router.get('/ehr/:type', async function(req, res){
             }
             return str.substring(0,2)+':'+str.substring(2)
           }).join('~')
-          line["FIX1"]=line["FIX1"].split('~').map(str=>{
-            if(str==''){
-                return '';
-            }
-            return str.substring(0,2)+':'+str.substring(2)
-          }).join('~')
+          if(line["FIX1"]!='ERROR'){
+            line["FIX1"]=line["FIX1"].split('~').map(str=>{
+              if(str==''){
+                  return '';
+              }
+              return str.substring(0,2)+':'+str.substring(2)
+            }).join('~')
+          }else{
+            line["FIX1"]='수기 계산 필요';
+          }
           if(line["PLAN1"]!='None'){
             line["PLAN1"]=line["PLAN1"].split('~').map(str=>{
               if(str==''){
@@ -118,6 +122,11 @@ router.get('/ehr/:type', async function(req, res){
               }
               return str.substring(0,2)+':'+str.substring(2)
             }).join('~')
+          }else{
+            line["PLAN1"]='~';
+          }
+          if(line["ERROR_INFO"]=='None'){
+            line["ERROR_INFO"]='';
           }
         }
         return result;
