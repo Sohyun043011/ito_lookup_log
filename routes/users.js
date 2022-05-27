@@ -117,9 +117,9 @@ router.post('/overtime',function(req, res){
     각 주차별로 초과근무, 급량비 내역 표출 및 월별 합산해서 표출할 수 있는 데이터 set 생성
     이후 res.json으로 리턴
   */ 
-  // if(!req.session.data){ // 세션정보 존재하지 않으면 오류 표출
-  //   res.status(404).send('세션 정보 없음'); //추후 수정
-  // }
+  if(!req.session.data){ // 세션정보 존재하지 않으면 오류 표출
+    res.status(404).send('세션 정보 없음'); //추후 수정
+  }
   const {emp_id, start_day, end_day}=req.body;
   var temp_overtime='0000'; // 임시 초과근무 저장변수
 
@@ -187,24 +187,64 @@ router.post('/cal_meal',function(req, res){
     res.status(404).send('세션 정보 없음'); //추후 수정
   }
   const {dept_name, start_day, end_day}=req.body;
+  var tempEmpId; // 임시저장사번 
+  var temp_overtime='0000'; // 임시저장초과근무시간
 
   db.configure(db_config['mysql']);
-  sql='select EMP_ID, `NAME`, ORG_NM, YMD, CAL_MEAL from connect.ehr_cal where org_nm=? and ymd>=? and ymd<=?';
-
+  // sql='select EMP_ID, `NAME`, ORG_NM, YMD, CAL_OVERTIME, CAL_MEAL from connect.ehr_cal where org_nm=? and ymd>=? and ymd<=?';
+  sql='SELECT a.EMP_ID AS EMP_ID, a.`NAME` AS `NAME`, a.YMD AS YMD, a.CAL_OVERTIME AS CAL_OVERTIME, a.CAL_MEAL AS CAL_MEAL, a.ORG_NM as ORG_NM,' +
+  ` b.over_std_time AS over_std_time from connect.ehr_cal a LEFT JOIN (SELECT EMP_ID, over_std_time FROM connect.gw_ehr_con)b`+
+  ` ON a.EMP_ID=b.EMP_ID`+
+  ` where a.ORG_NM=? and a.YMD>=? and a.YMD<=? and a.CAL_OVERTIME!='0000' order by YMD`;
+  
   db.query(sql,[dept_name, start_day, end_day]).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
     result=JSON.parse(JSON.stringify(rows));
+
     new_result={
       "empInfo":[], // 일별 데이터
       "endOfWeek": lib.weekOfMonth(end_day) // 마지막 주 정보
     }
-
     for (row in result){
       result[row]['WEEK']=lib.weekOfMonth(result[row]['YMD']);
+
+      
+      if(row==0){// 사번 맨처음 넣기
+        tempEmpId=result[row]['EMP_ID'];
+      }else if(tempEmpId!=result[row]['EMP_ID']){
+        tempEmpId=result[row]['EMP_ID'];
+        temp_overtime='0000'
+      }
+      
+      if(temp_overtime==(parseInt(result[row]["over_std_time"])*100).toString()){//초과근무 꽉 채우면 모두 drop
+        result.splice(row, 1);
+        row=row-1;
+        continue;
+      }
+      temp_overtime=lib.addOverTime2(temp_overtime, result[row]["CAL_OVERTIME"]);
+      if(temp_overtime>`${result[row]["over_std_time"]}00`){//초과근무 한계 넘어간경우
+        result[row]["CAL_OVERTIME"]=lib.subOverTime(result[row]["CAL_OVERTIME"],lib.subOverTime(temp_overtime,`${result[row]["over_std_time"]}00`))
+        temp_overtime=`${result[row]["over_std_time"]}00`;
+
+        if(result[row]["CAL_MEAL"]){
+          if(lib.yyyymmddToDay(result[row]["YMD"])==0 || lib.yyyymmddToDay(result[row]["YMD"])==6){
+            if(result[row]["CAL_OVERTIME"]<'0200'){
+              result[row]["CAL_MEAL"]=false;
+            }
+          }else{
+            if(result[row]["CAL_OVERTIME"]<'0100'){
+              result[row]["CAL_MEAL"]=false;
+            }
+          }
+        }
+      }
+
     }
     new_result["empInfo"]=result
     new_result=JSON.parse(JSON.stringify(new_result));
 
     res.json(new_result);
+  }).catch((err)=>{
+    console.log(err);
   });
 });
 
