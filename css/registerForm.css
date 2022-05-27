@@ -17,6 +17,10 @@ input[type=password]{
 p,h4,h3,h2,h1,span,button,div{
 	transform: skew(-0.1deg);
 }
+.week-col{
+	min-width: 40px;
+	max-width:40px;
+}
 div::-webkit-scrollbar {
     width: 8px;  /* 스크롤바의 너비 */
 }
@@ -103,7 +107,6 @@ div::-webkit-scrollbar-track {
 	padding:10px;
 	border:1px solid #ced4da;
 	font: bold;
-	width: 100px;
     text-align: center;
 }
 .nav-link{
