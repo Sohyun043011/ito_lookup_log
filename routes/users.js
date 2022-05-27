@@ -202,17 +202,16 @@ router.post('/cal_meal',function(req, res){
   
   db.query(sql,[dept_name, start_day, end_day]).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
     result=JSON.parse(JSON.stringify(rows));
-
+    console.log(result);
     new_result={
       "empInfo":[], // 일별 데이터
       "endOfWeek": lib.weekOfMonth(end_day) // 마지막 주 정보
     }
-    var row=result.length;
+    var row=0;
     var len_row=result.length;
     while(row<len_row){
       result[row]['WEEK']=lib.weekOfMonth(result[row]['YMD']);
 
-      
       if(row==0){// 사번 맨처음 넣기
         tempEmpId=result[row]['EMP_ID'];
       }else if(tempEmpId!=result[row]['EMP_ID']){
@@ -222,7 +221,6 @@ router.post('/cal_meal',function(req, res){
       
       if(temp_overtime==(parseInt(result[row]["over_std_time"])*100).toString()){//초과근무 꽉 채우면 모두 drop
         result.splice(row, 1);
-        row=row-1;
         continue;
       }
       temp_overtime=lib.addOverTime2(temp_overtime, result[row]["CAL_OVERTIME"]);
@@ -242,8 +240,9 @@ router.post('/cal_meal',function(req, res){
           }
         }
       }
-
+      row++;
     }
+    console.log(result);
     new_result["empInfo"]=result
     new_result=JSON.parse(JSON.stringify(new_result));
 
