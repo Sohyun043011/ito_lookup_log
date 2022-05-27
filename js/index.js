@@ -218,7 +218,7 @@ $(document).ready(function(){
                     $('.week-tr').append(`<th scope="col" class="week-col">합산</th>`)
                     $('.week-tr').append(`<th scope="col" class="week-col">초과근무 기준시간</th>`)
                     $('.week-overtime').append(`<th scope="col" class="over-sum week-col" ></th>`)
-                    $('.week-overtime').append(`<th rowspan="2" scope="col" class="over-std week-col">25</th>`)
+                    $('.week-overtime').append(`<th rowspan="2" scope="col" class="over-std week-col"></th>`)
                     $('.week-cal').append(`<th scope="col" class="cal-sum week-col"></th>`)
                     $('.week-tr>.1-week').before(`<th scope="col" class="date week-col"></th>`)
                     $('.week-tr>.date').html(`${year}년 ${month}월`);
@@ -229,12 +229,13 @@ $(document).ready(function(){
                     
                     // 초과근무 기준시간 append
 
-
                     // 초과근무 및 급량비 계산결과 있는 경우만 실행
                     if(result.empInfo.length!=0){
                         var overtime = {1:[],2:[],3:[],4:[],5:[],6:[]};
                         var cal_meal = {1:0,2:0,3:0,4:0,5:0,6:0};
                         var now_week = result.empInfo[0].WEEK;  //1주차에 대해서
+                        var over_std_time = result.empInfo[0].over_std_time;
+                        $('.over-std').html(`${over_std_time} 시간`);
                         for(var m=0;m<result.empInfo.length;m++)
                         {
                             // WEEK에 따라서 나누기
@@ -287,7 +288,11 @@ $(document).ready(function(){
                                 day = (result.empInfo[i].YMD).replace(/(\d{4})(\d{2})(\d{2})/g, '$1-$2-$3');
                                 var week = ['일', '월', '화', '수', '목', '금', '토'];
                                 var dayOfWeek = week[new Date(day).getDay()];
-        
+                                var cutOff = result.empInfo[i].CUTOFF;
+                                var etc = '';
+                                if (cutOff == true){
+                                    etc = "(초과근무 일부 반영)"
+                                }
                                 over_list.push({
                                     "No":`${i+1}`,
                                     "사번":result.empInfo[i]['EMP_ID'],
@@ -295,7 +300,7 @@ $(document).ready(function(){
                                     "날짜": day, 
                                     "요일": dayOfWeek,
                                     "주차": `${result.empInfo[i].WEEK}주차`,
-                                    "초과근무시간": hhmmToString2(result.empInfo[i].CAL_OVERTIME),
+                                    "초과근무시간":`${hhmmToString2(result.empInfo[i].CAL_OVERTIME)} ${etc}` ,
                                     "급량비유무": (result.empInfo[i].CAL_MEAL=="TRUE") ? "O" : "X"
                                 });
                         }
@@ -317,6 +322,15 @@ $(document).ready(function(){
                                 { name: "급량비유무", type: "text"}
                             ]
                         });
+
+                        $('.jsgrid-cell').each(function(index,obj){ 
+
+                            if(($(this).text()).includes("초과근무 일부 반영")){
+                                $(this).addClass('HL');
+                                $(this).addClass('fw-bold');
+                            }
+                        });
+                        
                         $('a:contains("1")').click();
                     }
                     
