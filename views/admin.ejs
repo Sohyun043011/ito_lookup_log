@@ -24,6 +24,8 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.js"></script>
     <!-- MONTHPICKER(년,월만 pick) -->
     <script src="../jquery.mtz.monthpicker.js"></script>
+    <!-- Alert 관련 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
     <!-- 자체 css js -->
     <link rel="stylesheet" href="../css/registerForm.css">
     <link rel="stylesheet" href="../css/adminForm.css">
@@ -137,18 +139,18 @@
                                 <table class="table summary-table" style="display: none;">
                                     <thead class="thead-dark">
                                       <tr class="week-tr">
-                                        <th scope="col" class="date"></th>
+                                        <th scope="col" class="date week-col"></th>
                                         
                                       </tr>
                                     </thead>
                                     <tbody>
                                       <tr class="week-overtime">
-                                        <th scope="row" >초과근무</th>
+                                        <th scope="row" class="week-col">초과근무</th>
 
 
                                       </tr>
                                       <tr class="week-cal">
-                                        <th scope="row">급량비</th>
+                                        <th scope="row" class="week-col">급량비</th>
                                       </tr>
                                     </tbody>
                                   </table>

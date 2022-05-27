@@ -216,7 +216,9 @@ $(document).ready(function(){
                         $('.week-cal').append(`<th scope="col" class="${i+1}-cal week-col"></th>`)
                     }
                     $('.week-tr').append(`<th scope="col" class="week-col">합산</th>`)
-                    $('.week-overtime').append(`<th scope="col" class="over-sum week-col"></th>`)
+                    $('.week-tr').append(`<th scope="col" class="week-col">초과근무 기준시간</th>`)
+                    $('.week-overtime').append(`<th scope="col" class="over-sum week-col" ></th>`)
+                    $('.week-overtime').append(`<th rowspan="2" scope="col" class="over-std week-col">25</th>`)
                     $('.week-cal').append(`<th scope="col" class="cal-sum week-col"></th>`)
                     $('.week-tr>.1-week').before(`<th scope="col" class="date week-col"></th>`)
                     $('.week-tr>.date').html(`${year}년 ${month}월`);
@@ -225,6 +227,9 @@ $(document).ready(function(){
     
                     //각 주차에 대해 overtime,급량비 계산
                     
+                    // 초과근무 기준시간 append
+
+
                     // 초과근무 및 급량비 계산결과 있는 경우만 실행
                     if(result.empInfo.length!=0){
                         var overtime = {1:[],2:[],3:[],4:[],5:[],6:[]};
@@ -306,9 +311,9 @@ $(document).ready(function(){
                                 { name: "사번", type: "text"},
                                 { name: "이름", type: "text"},
                                 { name: "날짜", type: "text"},
-                                { name: "요일", type: "text"},
-                                { name: "주차", type: "text"},
-                                { name: "초과근무시간", type: "text"},
+                                { name: "요일", type: "text", width:"50px"},
+                                { name: "주차", type: "text", width:"50px"},
+                                { name: "초과근무시간", type: "text",width:"280px"},
                                 { name: "급량비유무", type: "text"}
                             ]
                         });

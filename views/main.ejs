@@ -64,7 +64,7 @@
                         <button class="nav-link" id="nav-team-overtime-tab" data-bs-toggle="tab" data-bs-target="#nav-team-overtime" type="button" role="tab" aria-controls="nav-overtime" aria-selected="false">팀별 급량비 조회</button>
                     </li>
                     <div>
-                        <p style="margin-bottom: 0px; padding:8px;">※<span class="fw-bold">[출퇴근기록]</span>&nbsp;조회 시 확정시각에 <span class="fw-bold">'수기계산필요'</span>가 포함될 경우, 초과근무 시간, 급량비 비용이 달라질 수 있습니다.</p>
+                        <p style="margin-bottom: 0px; padding:8px;">※<span class="fw-bold">[출퇴근기록]</span>&nbsp;조회 시 확정시각이 <span class="fw-bold">'수기계산필요'</span>일 경우, 초과근무 시간, 급량비 비용이 달라질 수 있습니다.</p>
                     </div>
                 </ul>
                   
@@ -152,7 +152,7 @@
                                 <span class="input-group-text" id="basic-addon1">이름</span>
                                 <div class="mem-name fw-bold"><%= list['EMP_NM']%></div>
                                 <span class="input-group-text" id="basic-addon1">사번</span>
-                                <div class="mem-num fw-bold"  ><%= list['EMP_ID'] %></div>
+                                <div class="mem-num fw-bold "  ><%= list['EMP_ID'] %></div>
                                 <span class="input-group-text" id="basic-addon1">부서</span>
                                 <div class="mem-dept fw-bold"  ><%= list['ORG_NM'] %></div>
                                 <span class="input-group-text no-border" id="basic-addon1">기간</span>
@@ -171,7 +171,7 @@
                                     </thead>
                                     <tbody>
                                       <tr class="team-week-cal">
-                                        <th scope="row" class="week-col">급량비</th>
+                                        <th scope="row" class="week-col ">급량비</th>
                                       </tr>
                                     </tbody>
                                   </table>

@@ -193,7 +193,7 @@ div::-webkit-scrollbar-track {
     height:500px;
 }
 .summary-table, .team-summary-table{
-	width: 70%;
+	width: 75%;
 	
 }
 .form-select{
@@ -303,9 +303,22 @@ div::-webkit-scrollbar-track {
 	margin:10px;
 }
 
-
-
 .inout-download{
 	float:right;
 	display: block;
 }
+.over-std{
+	vertical-align: middle;
+	border-left: 1px solid lightgrey;
+}
+/* 초과근무시간 짜투리 남은 경우 하이라이팅 */
+.HL{
+	background-color: yellow;
+	color:red;
+}
+
+table{
+	table-layout:fixed;
+	word-break:break-all;
+}
+
