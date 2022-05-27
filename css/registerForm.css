@@ -313,7 +313,7 @@ div::-webkit-scrollbar-track {
 }
 /* 초과근무시간 짜투리 남은 경우 하이라이팅 */
 .HL{
-	background-color: yellow;
+	background-color: yellow !important;
 	color:red;
 }
 
