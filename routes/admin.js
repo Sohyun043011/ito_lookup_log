@@ -135,7 +135,7 @@ router.get('/ehr/:type', async function(req, res){
       });
       break;
     case 'cal_meal': // 급량비
-      sql='select EMP_ID, NAME, YMD, CAL_OVERTIME, CAL_MEAL from connect.ehr_cal'+sql+` and cal_meal!='0000' order by EMP_ID, YMD`;
+      sql='select EMP_ID, NAME, YMD, CAL_OVERTIME, CAL_MEAL, ORG_NM from connect.ehr_cal'+sql+` and cal_meal!='0000' order by EMP_ID, YMD`;
       db.query(sql,sqlList).spread(function(rows){ //세션 수 조회
         result=JSON.parse(JSON.stringify(rows));
         new_result={
