@@ -309,7 +309,7 @@ async function makeOverTimeUploadForm(result){
     return wb;
     
 }
-function addOverTime(list){
+function addOverTime(list){ // 초과근무 더하기
     var total=0;
     for(i in list){
         hours=parseInt(list[i].substring(0,2));
@@ -318,6 +318,34 @@ function addOverTime(list){
         total=totalMinutes+total; 
     }
     return total;
+}
+
+function addOverTime2(one,two){
+    one_hours=parseInt(one.substring(0,2));
+    one_minutes=parseInt(one.substring(2));
+    two_hours=parseInt(two.substring(0,2));
+    two_minutes=parseInt(two.substring(2));
+    one_totalMinutes=one_minutes+one_hours*60;
+    two_totalMinutes=two_minutes+two_hours*60;
+    total=one_totalMinutes+two_totalMinutes;
+
+    total_hour=parseInt(total/60).toString().padStart(2,'0');
+    total_minute=(total%60).toString().padStart(2,'0');
+    return total_hour+total_minute;
+}
+
+function subOverTime(one, two){// 초과근무 빼기
+    one_hours=parseInt(one.substring(0,2));
+    one_minutes=parseInt(one.substring(2));
+    two_hours=parseInt(two.substring(0,2));
+    two_minutes=parseInt(two.substring(2));
+    one_totalMinutes=one_minutes+one_hours*60;
+    two_totalMinutes=two_minutes+two_hours*60;
+    total=one_totalMinutes-two_totalMinutes;
+
+    total_hour=parseInt(total/60).toString().padStart(2,'0');
+    total_minute=(total%60).toString().padStart(2,'0');
+    return total_hour+total_minute;
 }
 
 function addOverTimeTotal(dict){ //딕셔너리로 받아온 초과근무내역 합산해서 그대로 리턴
@@ -436,6 +464,15 @@ function floatTimeToFormatted(time){ //time:string (ex : 1344 - 13h 44m으로 �
     return returnString;
 }
 
+function yyyymmddToDay(ymd){
+    var y = parseInt(ymd.substr(0, 4));
+    var m = parseInt(ymd.substr(4, 2));
+    var d = parseInt(ymd.substr(6,2));
+
+    d = new Date(y, m - 1, d);
+    return d.getDay();
+}
+
 module.exports={
     workTypeDict,
     shiftCdDict,
@@ -453,5 +490,8 @@ module.exports={
     makeOverTimeUploadForm,
     getOverTimePrototype,
     digitTimeToFormatted,
-    floatTimeToFormatted
+    floatTimeToFormatted,
+    subOverTime,
+    addOverTime2,
+    yyyymmddToDay
 }
