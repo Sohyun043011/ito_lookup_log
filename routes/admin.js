@@ -70,32 +70,32 @@ router.get('/ehr/:type', async function(req, res){
     type : inout -> 출퇴근시각관리 form | cal_meal -> 급량비 form | edit -> 개인별근무일정변경 form
     이후 form 정보 리턴
   */
-  if (!req.session.isAdmin){ // request, session, session data 유효성 검사
-    res.status(404).send('관리자 권한이 없습니다. 로그인 후 다시 시도해주세요.'); //추후 수정
-  }
+  // if (!req.session.isAdmin){ // request, session, session data 유효성 검사
+  //   res.status(404).send('관리자 권한이 없습니다. 로그인 후 다시 시도해주세요.'); //추후 수정
+  // }
   var {emp_name, emp_id, org_nm, start_day, end_day}= req.query;
 
-  var sql=` where ymd>=? and ymd<=?`;
+  var sql=` where a.ymd>=? and a.ymd<=?`;
 
   db.configure(db_config['mysql']);
   var sqlList=[start_day, end_day];
   // 들어온 req.query에 따른 sql where 조건 수정하주기
   if (!(emp_name==undefined||emp_name=='')){
     sqlList.push(emp_name);
-    sql=sql+` and NAME=?`; 
+    sql=sql+` and a.NAME=?`; 
   }
   if (!(emp_id==undefined||emp_id=='')){
     sqlList.push(emp_id);
-    sql=sql+` and EMP_ID=?`; 
+    sql=sql+` and a.EMP_ID=?`; 
   }
   
   if (!(org_nm==undefined||org_nm==''||org_nm=='부서를 선택해주세요')){ // select default option일 경우도 예외 처리
     sqlList.push(org_nm);
-    sql=sql+` and ORG_NM=?`; 
+    sql=sql+` and a.ORG_NM=?`; 
   }
   switch(req.params.type){
     case 'inout': // 출퇴근 시각관리
-      sql='select EMP_ID, NAME, YMD, WORK_TYPE, FIX1, `INOUT`, PLAN1, ERROR_INFO from connect.ehr_cal'+sql+` order by EMP_ID, YMD`;
+      sql='select a.EMP_ID as EMP_ID, a.NAME as NAME, a.YMD as YMD, a.WORK_TYPE as WORK_TYPE, a.FIX1 as FIX1, a.`INOUT` as `INOUT`, a.PLAN1 as PLAN1, a.ERROR_INFO as ERROR_INFO from connect.ehr_cal a '+sql+` order by EMP_ID, YMD`;
       db.query(sql,sqlList).spread(function(rows){
         result=JSON.parse(JSON.stringify(rows));
         for(line of result){
@@ -141,7 +141,7 @@ router.get('/ehr/:type', async function(req, res){
       
       sql='SELECT a.EMP_ID AS EMP_ID, a.`NAME` AS `NAME`, a.YMD AS YMD, a.CAL_OVERTIME AS CAL_OVERTIME, a.CAL_MEAL AS CAL_MEAL, a.ORG_NM as ORG_NM,' +
       ` b.over_std_time AS over_std_time from connect.ehr_cal a LEFT JOIN (SELECT EMP_ID, over_std_time FROM connect.gw_ehr_con)b`+
-      ` ON a.EMP_ID=b.EMP_ID `+ sql+` and a.CAL_OVERTIME!='0000' order by YMD`;
+      ` ON a.EMP_ID=b.EMP_ID `+ sql+` and a.CAL_OVERTIME!='0000' order by EMP_ID, YMD`;
 
       db.query(sql,sqlList).spread(function(rows){ //세션 수 조회
         
@@ -199,8 +199,6 @@ router.get('/ehr/:type', async function(req, res){
     default:
       res.status(404).send('<p>오류</p>'); //추후 수정
   }
-  
-  
 })
 
 router.get('/download/:type', function(req, res){
