@@ -138,7 +138,6 @@ router.post('/overtime',function(req, res){
     }
     var row=0;
     while(row<result.length){
-      console.log(`초과근무분 : ${result[row]["CAL_OVERTIME"]}, 누적시간 : ${temp_overtime}`);
       result[row]['CUTOFF']=false;
       result[row]['WEEK']=lib.weekOfMonth(result[row]['YMD']);
       if(temp_overtime==(parseInt(result[row]["over_std_time"])*100).toString()){//초과근무 꽉 채우면 모두 drop
@@ -208,8 +207,7 @@ router.post('/cal_meal',function(req, res){
       "endOfWeek": lib.weekOfMonth(end_day) // 마지막 주 정보
     }
     var row=0;
-    var len_row=result.length;
-    while(row<len_row){
+    while(row<result.length){
       result[row]['WEEK']=lib.weekOfMonth(result[row]['YMD']);
 
       if(row==0){// 사번 맨처음 넣기
