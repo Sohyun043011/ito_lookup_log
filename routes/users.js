@@ -50,7 +50,7 @@ router.get('/main', function(req, res) { //
   if(req.session.data){ // 세션 정보 있는지 확인
     res.render('main',{list:req.session.data[0]})
   }else res.status(404).send('세션 정보 없음'); //추후 수정
-});
+  });
 
 router.post('/inout',function(req, res){
   /*

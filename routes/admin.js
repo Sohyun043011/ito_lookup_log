@@ -70,9 +70,9 @@ router.get('/ehr/:type', async function(req, res){
     type : inout -> 출퇴근시각관리 form | cal_meal -> 급량비 form | edit -> 개인별근무일정변경 form
     이후 form 정보 리턴
   */
-  // if (!req.session.isAdmin){ // request, session, session data 유효성 검사
-  //   res.status(404).send('관리자 권한이 없습니다. 로그인 후 다시 시도해주세요.'); //추후 수정
-  // }
+  if (!req.session.isAdmin){ // request, session, session data 유효성 검사
+    res.status(404).send('관리자 권한이 없습니다. 로그인 후 다시 시도해주세요.'); //추후 수정
+  }
   var {emp_name, emp_id, org_nm, start_day, end_day}= req.query;
 
   var sql=` where a.ymd>=? and a.ymd<=?`;
@@ -207,6 +207,10 @@ router.get('/download/:type', function(req, res){
     type : inout -> 출퇴근시각관리 form | cal_meal -> 급량비 form | edit -> 개인별근무일정변경 form
     이후 csv file download 유도
   */
+
+  if (!req.session.isAdmin){ // request, session, session data 유효성 검사
+    res.status(404).send('관리자 권한이 없습니다. 로그인 후 다시 시도해주세요.'); //추후 수정
+  }
   console.log('download 시작');
   const xl = require('excel4node');
   const wb = new xl.Workbook();
