@@ -160,7 +160,7 @@ $(document).ready(function(){
                         pageSize: 15,
                         pageButtonCount: 5,
                         fields: [
-                            { name: "No", type: "text",width:"35px"},
+                            { name: "No", type: "number",width:"35px"},
                             { name: "사번", type: "text"},
                             { name: "이름", type: "text"},
                             { name: "날짜", type: "text"},
@@ -339,7 +339,7 @@ $(document).ready(function(){
                                 // pageSize: 15,
                                 // pageButtonCount: 5,
                                 fields: [
-                                    { name: "No", type: "text",width:"35px"},
+                                    { name: "No", type: "number",width:"35px"},
                                     { name: "사번", type: "text"},
                                     { name: "이름", type: "text"},
                                     { name: "부서명", type: "text"},

@@ -322,3 +322,10 @@ table{
 	word-break:break-all;
 }
 
+.jsgrid-grid-body{
+	height:446px !important;
+}
+
+.jsgrid-cell{
+	text-align: center !important;
+}

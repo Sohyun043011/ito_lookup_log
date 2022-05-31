@@ -311,7 +311,7 @@ $(document).ready(function(){
                             autoload:true,
                             data: over_list,
                             fields: [
-                                { name: "No", type: "text",width:"35px"},
+                                { name: "No", type: "number",width:"35px"},
                                 { name: "사번", type: "text"},
                                 { name: "이름", type: "text"},
                                 { name: "날짜", type: "text"},
@@ -467,7 +467,7 @@ $(document).ready(function(){
                         pageButtonCount: 5,
                         data: team_over_list,
                         fields: [
-                            { name: "No", type: "text",width:"35px"},
+                            { name: "No", type: "number",width:"35px"},
                             { name: "날짜", type: "text"},
                             { name: "요일", type: "text"},
                             { name: "팀이름", type: "text"},
