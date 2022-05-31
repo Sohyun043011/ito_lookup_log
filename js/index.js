@@ -1,5 +1,26 @@
 document.write("<script src='../js/index_lib.js'></script>");
 $(document).ready(function(){
+    let target = document.querySelector('.overtime-table');
+    let observer = new MutationObserver((mutations)=>{
+        // alert('변경됨');
+        $('.jsgrid-cell').each(function(index,obj){ 
+
+            if(($(this).text()).includes("초과근무 일부 반영")){
+                $(this).addClass('HL');
+                $(this).addClass('fw-bold');
+            }
+        });
+    })
+    let option = {
+        attributes: true,
+        childList : true,
+        subtree :true,
+        characterData : true
+    };
+
+    observer.observe(target,option);
+
+
     $.datepicker.setDefaults($.datepicker.regional['ko']);
     $('#datepicker1').datepicker({
         dateFormat : 'yy-mm-dd',
@@ -140,7 +161,7 @@ $(document).ready(function(){
                         pageSize: 15,
                         pageButtonCount: 5,
                         fields: [
-                            { name: "No", type: "text",width:"35px"},
+                            { name: "No", type: "number",width:"35px"},
                             { name: "사번", type: "text"},
                             { name: "이름", type: "text"},
                             { name: "부서", type: "text"},
