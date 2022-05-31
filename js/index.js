@@ -308,7 +308,6 @@ $(document).ready(function(){
                         $('.overtime-table').jsGrid({
                             height:"70%",
                             sorting: true,
-                            paging:true,
                             autoload:true,
                             data: over_list,
                             fields: [

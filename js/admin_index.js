@@ -1,5 +1,27 @@
 document.write("<script src='../js/index_lib.js'></script>");
+
 $(document).ready(function(){
+
+    // jsgrid cell 변경시 감지하여
+    let target = document.querySelector('.detail-table');
+    let observer = new MutationObserver((mutations)=>{
+        // alert('변경됨');
+        $('.jsgrid-cell').each(function(index,obj){ 
+
+            if(($(this).text()).includes("초과근무 일부 반영")){
+                $(this).addClass('HL');
+                $(this).addClass('fw-bold');
+            }
+        });
+    })
+    let option = {
+        attributes: true,
+        childList : true,
+        subtree :true,
+        characterData : true
+    };
+
+    observer.observe(target,option);
 
     // 로그아웃 버튼 
     $('#logout-button').click(function(){
@@ -168,6 +190,9 @@ $(document).ready(function(){
         }
     });
 
+    $('a').on('click',function(){
+        alert('누름');
+    })
     //급량비 조회버튼 - 기간 관련해서 수정
     $('#check-cal-search').on('click',function(){
         var emp_name = $('.empName').eq(1).val();
@@ -210,8 +235,8 @@ $(document).ready(function(){
                         for(var i=0;i<result.endOfWeek;i++)
                         {
                             $('.week-tr').append(`<th scope="col" class="${i+1}-week week-col">${i+1}주차</th>`)
-                            $('.week-overtime').append(`<th scope="col" class="${i+1}-overtime">${i+1}주차</th>`)
-                            $('.week-cal').append(`<th scope="col" class="${i+1}-cal week-col">${i+1}주차</th>`)
+                            $('.week-overtime').append(`<th scope="col" class="${i+1}-overtime"></th>`)
+                            $('.week-cal').append(`<th scope="col" class="${i+1}-cal week-col"></th>`)
                         }
                         $('.week-tr').append(`<th scope="col" class="week-col">합산</th>`)
                         // $('.week-tr').append(`<th scope="col" class="week-col">초과근무 기준시간</th>`)
@@ -229,7 +254,6 @@ $(document).ready(function(){
                             var overtime = {1:[],2:[],3:[],4:[],5:[],6:[]};
                             var cal_meal = {1:0,2:0,3:0,4:0,5:0,6:0};
                             var now_week = result.empInfo[0].WEEK;  //1주차에 대해서
-                            console.log(result)
                             for(var m=0;m<result.empInfo.length;m++)
                             {
                                 // WEEK에 따라서 나누기
@@ -312,8 +336,8 @@ $(document).ready(function(){
                                 sorting: true,
                                 paging: true,
                                 data: list,
-                                pageSize: 15,
-                                pageButtonCount: 5,
+                                // pageSize: 15,
+                                // pageButtonCount: 5,
                                 fields: [
                                     { name: "No", type: "text",width:"35px"},
                                     { name: "사번", type: "text"},
@@ -322,12 +346,13 @@ $(document).ready(function(){
                                     { name: "날짜", type: "text"},
                                     { name: "요일", type: "text"},
                                     { name: "주차", type: "text"},
-                                    { name: "초과근무시간", type: "text",width : "150px"},
+                                    { name: "초과근무시간", type: "text",width : "150px", title : "초과근무"},
                                     { name: "급량비유무", type: "text"}
                                 ]
                             });
 
                             $('.jsgrid-cell').each(function(index,obj){ 
+
                                 if(($(this).text()).includes("초과근무 일부 반영")){
                                     $(this).addClass('HL');
                                     $(this).addClass('fw-bold');
@@ -336,11 +361,14 @@ $(document).ready(function(){
                             $('a:contains("1")').click();
                             $('a:contains("First")').click();
                             // res로 받은 정보들을 list에 넣음 
-                            
                         }
                         $('#check-cal-search').prop('disabled', false);
                     }
-                }).then(()=>{$('.cal-download').prop('disabled', false);});
+                }).then(()=>{
+                    $('.cal-download').prop('disabled', false);
+            
+            });
+            
         }
         
         
@@ -383,5 +411,6 @@ $(document).ready(function(){
         window.open(`/admin/download/${type}?emp_name=${emp_name}&emp_id=${emp_id}&org_nm=${org_nm}`+
         `&start_day=${start_day}&end_day=${end_day}`);
     })
+
 });
 
