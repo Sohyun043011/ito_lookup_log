@@ -300,7 +300,7 @@ router.get('/gw/ehr/con/:emp_id',function(req,res){
     return new_result;
   }).then((new_result)=>{
     console.log(new_result);
-    res.json(new_result);
+    res.jsonp(new_result);
   }).catch((err)=>{
     console.log(err);
   });
