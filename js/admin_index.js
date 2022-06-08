@@ -312,10 +312,13 @@ $(document).ready(function(){
                                 var cutOff = result.empInfo[i].CUTOFF;
                                 var except = result.empInfo[i].EXCEPT;
                                 var etc = '';
+                                var time = result.empInfo[i].CAL_OVERTIME;
                                 if (cutOff == true){
+                                   
                                     etc = "(초과근무 일부 반영)"
                                 }
                                 if(except==true){
+                                    time = result.empInfo[i].INOUT;
                                     etc = "(출퇴근기록 초과분으로 적용)"
                                 }
                                 
@@ -328,10 +331,23 @@ $(document).ready(function(){
                                         "날짜": day, 
                                         "요일": dayOfWeek,
                                         "주차": `${result.empInfo[i].WEEK}주차`,
-                                        "초과근무시간": `${hhmmToString2(result.empInfo[i].CAL_OVERTIME)} ${etc}`,
+                                       
                                         "급량비유무": (result.empInfo[i].CAL_MEAL=="TRUE") ? "O" : "X"
                                     });
+                                    if(except==true){
+                                        time=time.split('~').map(str=>{
+                                            if(str==''){
+                                                return '';
+                                            }
+                                            return str.substring(0,2)+':'+str.substring(2)
+                                          }).join('~')
+                                          list[i]['초과근무시간'] = `${time} ${etc}`;
 
+
+                                    }
+                                    else{
+                                        list[i]['초과근무시간'] = `${hhmmToString2(time)} ${etc}`;
+                                    }
                                     cnt++;
                                 }
                             }
