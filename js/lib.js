@@ -464,7 +464,6 @@ function floatTimeToFormatted(time){ //time:string (ex : 1344 - 13h 44m으로 �
     return returnString;
 }
 
-console.log(floatTimeToFormatted('15730'));
 
 function yyyymmddToDay(ymd){
     var y = parseInt(ymd.substr(0, 4));
