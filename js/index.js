@@ -28,7 +28,7 @@ $(document).ready(function(){
         showOtherMonths : true
         ,changeYear:true
         ,changeMonth:true
-        ,minDate:"-6M",
+        ,minDate:"-5M",
         maxDate:"+0D",
         currentText: '오늘 날짜',
         prevText: '이전 달',
@@ -61,7 +61,7 @@ $(document).ready(function(){
     });
     var currentYear = (new Date()).getFullYear();
     var currentMonth = (new Date()).getMonth();
-    var startYear = currentYear-5;
+    var startYear = currentYear;
     var options = {
             startYear: startYear,
             finalYear: currentYear,
@@ -104,6 +104,7 @@ $(document).ready(function(){
 
     // 출퇴근기록 TAB - 조회하기 버튼 누르면 table 표출
     $('#check-inout').on('click',function(e){
+        $('.inout-table').html('');
         var start_day = $('#datepicker1').val().replace(/\-/g,'');;
         var end_day = $('#datepicker2').val().replace(/\-/g,'');;
         // 기간 설정 잘못한 경우
@@ -322,7 +323,6 @@ $(document).ready(function(){
                                 if (cutOff == true){
                                     etc = "(초과근무 일부 반영)"
                                 }
-                                
                                 over_list.push({
                                     "No":`${i+1}`,
                                     "사번":result.empInfo[i]['EMP_ID'],
@@ -392,6 +392,7 @@ $(document).ready(function(){
     $('#check-team-overtime').on('click',function(e){
         
         $('.table-layout').remove('.inout-table jsgrid');
+        $('.team-overtime-table').html('');
         var dept_name = $($('.mem-dept')[0]).text();
         var date = $('#monthpicker2').val();
         if(date==''){

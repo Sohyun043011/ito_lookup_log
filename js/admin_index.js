@@ -44,7 +44,7 @@ $(document).ready(function(){
         ,showOtherMonths : true
         ,changeYear:true
         ,changeMonth:true
-        ,minDate:"-6M",
+        ,minDate:"-5M",
         maxDate:"+0D",
         prevText: '이전 달',
         nextText: '다음 달',
@@ -61,7 +61,7 @@ $(document).ready(function(){
     });
     var currentYear = (new Date()).getFullYear();
     var currentMonth = (new Date()).getMonth();
-    var startYear = currentYear-5;
+    var startYear = currentYear;
     var options = {
             startYear: startYear,
             finalYear: currentYear,
@@ -102,6 +102,7 @@ $(document).ready(function(){
 
     //출퇴근기록 조회버튼
     $('#check-search').on('click',function(){
+        $('.inout-table').html('');
         var emp_name = $('.empName').eq(0).val();
         var emp_id = $('.empID').eq(0).val();
         var org_nm = $('.select-dept').eq(0).val();
@@ -196,6 +197,7 @@ $(document).ready(function(){
     //급량비 조회버튼 - 기간 관련해서 수정
     $('#check-cal-search').on('click',function(){
         var emp_name = $('.empName').eq(1).val();
+        $('.detail-table').html('');
         // console.log(emp_name);
         var emp_id = $('.empID').eq(1).val();
         var org_nm = $('.select-dept').eq(1).val();
@@ -225,7 +227,7 @@ $(document).ready(function(){
                     data:info,
                     success:function(result){
                         // console.log("cal success");
-                        console.log(result);
+                        // console.log(result);
                         $('.summary-table').css('display','inline-table');
                    
                         // table생성 (end_of_week에 따라서)
@@ -302,7 +304,7 @@ $(document).ready(function(){
         
                             var list =[];
                             var cnt = 1;
-                            console.log(result)
+                            // console.log(result)
                             
                             for(var i=0;i<result.empInfo.length;i++)
                             {
