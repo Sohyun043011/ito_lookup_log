@@ -143,8 +143,9 @@ router.post('/overtime',async function(req, res){
     res.status(404).send('세션 정보 없음'); //추후 수정
   }
   const {emp_id, start_day, end_day}=req.body;
-  var temp_overtime='0000'; // 임시 초과근무 저장변수
-
+  var temp_overtime='0000'; // 임시 초과근무 저장변수 (월별)
+  var temp_overtime_week='0000' // 임시 초과근무 저장변수 (주별)
+  var temp_week; // 임시 주차 저장변수
 
   db.configure(db_config['mysql']);
   sql='SELECT a.EMP_ID AS EMP_ID, a.`NAME` AS `NAME`, a.YMD AS YMD, a.CAL_OVERTIME AS CAL_OVERTIME, a.CAL_MEAL AS CAL_MEAL,' +
@@ -168,7 +169,15 @@ router.post('/overtime',async function(req, res){
       result[row]['CUTOFF']=false;
       result[row]['EXCEPT']=false;
       result[row]['WEEK']=lib.weekOfMonth(result[row]['YMD']);
-      // console.log(result[row]['EMP_ID'].toString(), exception_list)
+      if(row==0){
+        temp_week=result[row]['WEEK'];
+      }else{
+        if(temp_week!=result[row['WEEK']]){
+          temp_overtime_week='0000';
+          temp_week=result[row]['WEEK'];
+        }
+      }
+    
       if(exception_list.indexOf(result[row]['EMP_ID'])!=-1){
         result[row]['over_std_time']=0;
         result[row]['EXCEPT']=true;
@@ -182,7 +191,32 @@ router.post('/overtime',async function(req, res){
       }
       
       temp_overtime=lib.addOverTime2(temp_overtime, result[row]["CAL_OVERTIME"]);
-      if(temp_overtime>`${result[row]["over_std_time"]}00`){//초과근무 한계 넘어간경우
+      temp_overtime_week=lib.addOverTime2(temp_overtime_week, result[row]["CAL_OVERTIME"]);
+      console.log(temp_overtime_week);
+      if(temp_overtime_week>`1200`){// (주별 12h) 초과근무 한계 넘어간경우
+        console.log('cutoff 발생')
+        result[row]['CUTOFF']=true;
+        result[row]["CAL_OVERTIME"]=lib.subOverTime(result[row]["CAL_OVERTIME"],lib.subOverTime(temp_overtime_week,`${result[row]["over_std_time"]}00`))
+        
+        temp_overtime_week='0000';
+        //급량비 TRUE이면
+        // 주말데이터면 2시간 넘겨야 급량비 TRUE
+        // 평일이면 1시간 넘겨야 급량비 TRUE
+
+        if(result[row]["CAL_MEAL"]=="TRUE"){
+          if(lib.yyyymmddToDay(result[row]["YMD"])==0 || lib.yyyymmddToDay(result[row]["YMD"])==6){
+            if(result[row]["CAL_OVERTIME"]<'0200'){
+              result[row]["CAL_MEAL"]="FALSE";
+            }
+          }else{
+            if(result[row]["CAL_OVERTIME"]<'0100'){
+              result[row]["CAL_MEAL"]="FALSE";
+            }
+          }
+        }
+      }
+
+      if(temp_overtime>`${result[row]["over_std_time"]}00`){// (월별) 초과근무 한계 넘어간경우
         console.log('cutoff 발생')
         result[row]['CUTOFF']=true;
         result[row]["CAL_OVERTIME"]=lib.subOverTime(result[row]["CAL_OVERTIME"],lib.subOverTime(temp_overtime,`${result[row]["over_std_time"]}00`))

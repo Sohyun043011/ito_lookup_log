@@ -159,8 +159,11 @@ router.get('/ehr/:type', async function(req, res){
       // sql='select EMP_ID, NAME, YMD, CAL_OVERTIME, CAL_MEAL, ORG_NM from connect.ehr_cal'+sql+` and cal_meal!='0000' order by EMP_ID, YMD`;
       var tempEmpId; // 임시저장사번 
       var temp_overtime='0000'; // 임시저장초과근무시간
-      
+      var temp_overtime_week='0000' // 임시 초과근무 저장변수 (주별)
+      var temp_week; // 임시 주차 저장변수
+
       sql='SELECT a.EMP_ID AS EMP_ID, a.`NAME` AS `NAME`, a.YMD AS YMD, a.CAL_OVERTIME AS CAL_OVERTIME, a.CAL_MEAL AS CAL_MEAL, a.ORG_NM as ORG_NM,' +
+      ' a.`INOUT` AS `INOUT`,'+
       ` b.over_std_time AS over_std_time from connect.ehr_cal a LEFT JOIN (SELECT EMP_ID, over_std_time FROM connect.gw_ehr_con)b`+
       ` ON a.EMP_ID=b.EMP_ID `+ sql+` and (a.CAL_OVERTIME!='0000' OR a.CAL_MEAL!='FALSE') order by EMP_ID, YMD`;
 
@@ -178,9 +181,15 @@ router.get('/ehr/:type', async function(req, res){
           result[row]['EXCEPT']=false;
           if(row==0){// 사번 맨처음 넣기
             tempEmpId=result[row]['EMP_ID'];
+            temp_week=result[row]['WEEK'];
           }else if(tempEmpId!=result[row]['EMP_ID']){
             tempEmpId=result[row]['EMP_ID'];
             temp_overtime='0000'
+          }else{
+            if(temp_week!=result[row['WEEK']]){
+              temp_overtime_week='0000';
+              temp_week=result[row]['WEEK'];
+            }
           }
           if(exception_list.indexOf(result[row]['EMP_ID'])!=-1){
             console.log('exception list!')
@@ -194,6 +203,29 @@ router.get('/ehr/:type', async function(req, res){
             continue;
           }
           temp_overtime=lib.addOverTime2(temp_overtime, result[row]["CAL_OVERTIME"]);
+          temp_overtime_week=lib.addOverTime2(temp_overtime_week, result[row]["CAL_OVERTIME"]);
+          if(temp_overtime_week>`1200`){// (주별 12h) 초과근무 한계 넘어간경우
+            console.log('cutoff 발생')
+            result[row]['CUTOFF']=true;
+            result[row]["CAL_OVERTIME"]=lib.subOverTime(result[row]["CAL_OVERTIME"],lib.subOverTime(temp_overtime_week,`${result[row]["over_std_time"]}00`))
+            
+            temp_overtime_week='0000';
+            //급량비 TRUE이면
+            // 주말데이터면 2시간 넘겨야 급량비 TRUE
+            // 평일이면 1시간 넘겨야 급량비 TRUE
+    
+            if(result[row]["CAL_MEAL"]=="TRUE"){
+              if(lib.yyyymmddToDay(result[row]["YMD"])==0 || lib.yyyymmddToDay(result[row]["YMD"])==6){
+                if(result[row]["CAL_OVERTIME"]<'0200'){
+                  result[row]["CAL_MEAL"]="FALSE";
+                }
+              }else{
+                if(result[row]["CAL_OVERTIME"]<'0100'){
+                  result[row]["CAL_MEAL"]="FALSE";
+                }
+              }
+            }
+          }
           if(temp_overtime>`${result[row]["over_std_time"]}00`){//초과근무 한계 넘어간경우
             result[row]['CUTOFF']=true;
             result[row]["CAL_OVERTIME"]=lib.subOverTime(result[row]["CAL_OVERTIME"],lib.subOverTime(temp_overtime,`${result[row]["over_std_time"]}00`))
