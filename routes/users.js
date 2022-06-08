@@ -4,6 +4,28 @@ var db=require('mysql2-promise')();
 var db_config=require('../db_config');
 var lib=require('../js/lib');
 
+sql=`SELECT emp_id FROM connect.hr_info WHERE (emp_grade_nm = '4급' AND duty_nm='팀장') 
+OR (EMP_GRADE_NM in ('1급', '2급', '3급'))`;
+
+var exception_list;
+
+function get_exception_list(){
+  db.configure(db_config['mysql']);
+  db.query(sql).spread(function(rows){ //세션 수 조회
+    result=JSON.parse(JSON.stringify(rows));
+    for(i in result){
+      result[i]=result[i]["emp_id"]
+    }
+    return result;
+  }).then((result)=>{
+    exception_list=result;
+  }).catch((error)=>{
+    console.log(error);
+  })
+}
+
+get_exception_list();
+
 router.get('/login/:emp_id', async function(req, res){
   /*
     최초 세션 테이블에서 세션 갯수 확인 및 직원 정보가 일치하면 세션 생성해주고
@@ -109,7 +131,7 @@ router.post('/inout',function(req, res){
   });
 });
 
-router.post('/overtime',function(req, res){
+router.post('/overtime',async function(req, res){
   /*
     급량비 및 초과근무 기록 조회
     filter 안에 있는 내용(사번, 부서, 연월 정보)을 기반으로 중계DB의 connect.ehr_cal에서 값을 가져오는 쿼리를 실행
@@ -123,23 +145,36 @@ router.post('/overtime',function(req, res){
   const {emp_id, start_day, end_day}=req.body;
   var temp_overtime='0000'; // 임시 초과근무 저장변수
 
+
   db.configure(db_config['mysql']);
   sql='SELECT a.EMP_ID AS EMP_ID, a.`NAME` AS `NAME`, a.YMD AS YMD, a.CAL_OVERTIME AS CAL_OVERTIME, a.CAL_MEAL AS CAL_MEAL,' +
+  ' a.`INOUT` AS `INOUT`,'+
   ` b.over_std_time AS over_std_time from connect.ehr_cal a LEFT JOIN (SELECT EMP_ID, over_std_time FROM connect.gw_ehr_con)b`+
   ` ON a.EMP_ID=b.EMP_ID`+
-  ` where a.emp_id=? and a.YMD>=? and a.YMD<=? and a.CAL_OVERTIME!='0000' order by YMD`;
+  ` where a.emp_id=? and a.YMD>=? and a.YMD<=? and (a.CAL_OVERTIME!='0000' OR a.CAL_MEAL!='FALSE') order by YMD`;
 
   db.query(sql,[emp_id, start_day, end_day]).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
+    
     result=JSON.parse(JSON.stringify(rows));
-    console.log(result);
     new_result={
       "empInfo":[], // 일별 데이터
       "endOfWeek": lib.weekOfMonth(end_day) // 마지막 주 정보
     }
     var row=0;
+    //over_std_time=0이면 그냥 넘기기
+
+    console.log(exception_list)
     while(row<result.length){
       result[row]['CUTOFF']=false;
+      result[row]['EXCEPT']=false;
       result[row]['WEEK']=lib.weekOfMonth(result[row]['YMD']);
+      // console.log(result[row]['EMP_ID'].toString(), exception_list)
+      if(exception_list.indexOf(result[row]['EMP_ID'])!=-1){
+        result[row]['over_std_time']=0;
+        result[row]['EXCEPT']=true;
+        row++;
+        continue;
+      }
       if(temp_overtime==(parseInt(result[row]["over_std_time"])*100).toString()){//초과근무 꽉 채우면 모두 drop
         result.splice(row, 1);
         console.log('열 삭제')
@@ -156,24 +191,28 @@ router.post('/overtime',function(req, res){
         // 주말데이터면 2시간 넘겨야 급량비 TRUE
         // 평일이면 1시간 넘겨야 급량비 TRUE
 
-        if(result[row]["CAL_MEAL"]){
+        if(result[row]["CAL_MEAL"]=="TRUE"){
           if(lib.yyyymmddToDay(result[row]["YMD"])==0 || lib.yyyymmddToDay(result[row]["YMD"])==6){
             if(result[row]["CAL_OVERTIME"]<'0200'){
-              result[row]["CAL_MEAL"]=false;
+              result[row]["CAL_MEAL"]="FALSE";
             }
           }else{
             if(result[row]["CAL_OVERTIME"]<'0100'){
-              result[row]["CAL_MEAL"]=false;
+              result[row]["CAL_MEAL"]="FALSE";
             }
           }
         }
       }
       row++;
     }
-    console.log(result);
     new_result["empInfo"]=result
+
     new_result=JSON.parse(JSON.stringify(new_result));
+    
+    
     res.json(new_result);
+  }).catch((err)=>{
+    console.log(err);
   });
 });
 
@@ -195,9 +234,10 @@ router.post('/cal_meal',function(req, res){
   db.configure(db_config['mysql']);
   // sql='select EMP_ID, `NAME`, ORG_NM, YMD, CAL_OVERTIME, CAL_MEAL from connect.ehr_cal where org_nm=? and ymd>=? and ymd<=?';
   sql='SELECT a.EMP_ID AS EMP_ID, a.`NAME` AS `NAME`, a.YMD AS YMD, a.CAL_OVERTIME AS CAL_OVERTIME, a.CAL_MEAL AS CAL_MEAL, a.ORG_NM as ORG_NM,' +
+  ' a.`INOUT` AS `INOUT`,'+
   ` b.over_std_time AS over_std_time from connect.ehr_cal a LEFT JOIN (SELECT EMP_ID, over_std_time FROM connect.gw_ehr_con)b`+
   ` ON a.EMP_ID=b.EMP_ID`+
-  ` where a.ORG_NM=? and a.YMD>=? and a.YMD<=? and a.CAL_OVERTIME!='0000' order by YMD`;
+  ` where a.ORG_NM=? and a.YMD>=? and a.YMD<=? and (a.CAL_OVERTIME!='0000' OR a.CAL_MEAL!='FALSE') order by YMD`;
   
   db.query(sql,[dept_name, start_day, end_day]).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
     result=JSON.parse(JSON.stringify(rows));
@@ -209,6 +249,7 @@ router.post('/cal_meal',function(req, res){
     var row=0;
     while(row<result.length){
       result[row]['WEEK']=lib.weekOfMonth(result[row]['YMD']);
+      
 
       if(row==0){// 사번 맨처음 넣기
         tempEmpId=result[row]['EMP_ID'];
@@ -216,7 +257,10 @@ router.post('/cal_meal',function(req, res){
         tempEmpId=result[row]['EMP_ID'];
         temp_overtime='0000'
       }
-      
+      if(result[row]['over_std_time']==0){
+        row++;
+        continue;
+      }
       if(temp_overtime==(parseInt(result[row]["over_std_time"])*100).toString()){//초과근무 꽉 채우면 모두 drop
         result.splice(row, 1);
         continue;
@@ -226,14 +270,14 @@ router.post('/cal_meal',function(req, res){
         result[row]["CAL_OVERTIME"]=lib.subOverTime(result[row]["CAL_OVERTIME"],lib.subOverTime(temp_overtime,`${result[row]["over_std_time"]}00`))
         temp_overtime=`${result[row]["over_std_time"]}00`;
 
-        if(result[row]["CAL_MEAL"]){
+        if(result[row]["CAL_MEAL"]=="TRUE"){
           if(lib.yyyymmddToDay(result[row]["YMD"])==0 || lib.yyyymmddToDay(result[row]["YMD"])==6){
             if(result[row]["CAL_OVERTIME"]<'0200'){
-              result[row]["CAL_MEAL"]=false;
+              result[row]["CAL_MEAL"]="FALSE";
             }
           }else{
             if(result[row]["CAL_OVERTIME"]<'0100'){
-              result[row]["CAL_MEAL"]=false;
+              result[row]["CAL_MEAL"]="FALSE";
             }
           }
         }

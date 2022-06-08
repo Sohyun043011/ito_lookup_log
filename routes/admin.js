@@ -7,6 +7,27 @@ var lib=require('../js/lib');
 var admin='admin';
 var users='users';
 
+sql=`SELECT emp_id FROM connect.hr_info WHERE (emp_grade_nm = '4급' AND duty_nm='팀장') 
+OR (EMP_GRADE_NM in ('1급', '2급', '3급'))`;
+
+var exception_list;
+
+function get_exception_list(){
+  db.configure(db_config['mysql']);
+  db.query(sql).spread(function(rows){ //세션 수 조회
+    result=JSON.parse(JSON.stringify(rows));
+    for(i in result){
+      result[i]=result[i]["emp_id"]
+    }
+    return result;
+  }).then((result)=>{
+    exception_list=result;
+  }).catch((error)=>{
+    console.log(error);
+  })
+}
+
+get_exception_list();
 
 router.post('/login',function(req, res){ //data 키값 중 password라는 항목 받아오기
   /*
@@ -141,12 +162,11 @@ router.get('/ehr/:type', async function(req, res){
       
       sql='SELECT a.EMP_ID AS EMP_ID, a.`NAME` AS `NAME`, a.YMD AS YMD, a.CAL_OVERTIME AS CAL_OVERTIME, a.CAL_MEAL AS CAL_MEAL, a.ORG_NM as ORG_NM,' +
       ` b.over_std_time AS over_std_time from connect.ehr_cal a LEFT JOIN (SELECT EMP_ID, over_std_time FROM connect.gw_ehr_con)b`+
-      ` ON a.EMP_ID=b.EMP_ID `+ sql+` and a.CAL_OVERTIME!='0000' order by EMP_ID, YMD`;
+      ` ON a.EMP_ID=b.EMP_ID `+ sql+` and (a.CAL_OVERTIME!='0000' OR a.CAL_MEAL!='FALSE') order by EMP_ID, YMD`;
 
       db.query(sql,sqlList).spread(function(rows){ //세션 수 조회
         
         result=JSON.parse(JSON.stringify(rows));
-        console.log(result);
         new_result={
           "empInfo":[], // 일별 데이터
           "endOfWeek": lib.weekOfMonth(end_day) // 마지막 주 정보
@@ -155,13 +175,20 @@ router.get('/ehr/:type', async function(req, res){
         while(row<result.length){
           result[row]['WEEK']=lib.weekOfMonth(result[row]['YMD']);
           result[row]['CUTOFF']=false;
+          result[row]['EXCEPT']=false;
           if(row==0){// 사번 맨처음 넣기
             tempEmpId=result[row]['EMP_ID'];
           }else if(tempEmpId!=result[row]['EMP_ID']){
             tempEmpId=result[row]['EMP_ID'];
             temp_overtime='0000'
           }
-          
+          if(exception_list.indexOf(result[row]['EMP_ID'])!=-1){
+            console.log('exception list!')
+            result[row]['over_std_time']=0;
+            result[row]['EXCEPT']=true;
+            row++;
+            continue;
+          }
           if(temp_overtime==(parseInt(result[row]["over_std_time"])*100).toString()){//초과근무 꽉 채우면 모두 drop
             result.splice(row, 1);
             continue;
@@ -172,14 +199,14 @@ router.get('/ehr/:type', async function(req, res){
             result[row]["CAL_OVERTIME"]=lib.subOverTime(result[row]["CAL_OVERTIME"],lib.subOverTime(temp_overtime,`${result[row]["over_std_time"]}00`))
             temp_overtime=`${result[row]["over_std_time"]}00`;
 
-            if(result[row]["CAL_MEAL"]){
+            if(result[row]["CAL_MEAL"]=="TRUE"){
               if(lib.yyyymmddToDay(result[row]["YMD"])==0 || lib.yyyymmddToDay(result[row]["YMD"])==6){
                 if(result[row]["CAL_OVERTIME"]<'0200'){
-                  result[row]["CAL_MEAL"]=false;
+                  result[row]["CAL_MEAL"]="FALSE";
                 }
               }else{
                 if(result[row]["CAL_OVERTIME"]<'0100'){
-                  result[row]["CAL_MEAL"]=false;
+                  result[row]["CAL_MEAL"]="FALSE";
                 }
               }
             }
