@@ -3,14 +3,14 @@ var router = express.Router();
 var db=require('mysql2-promise')();
 var db_config=require('../db_config');
 var lib=require('../js/lib');
-
+db.configure(db_config['mysql']);
 sql=`SELECT emp_id FROM connect.hr_info WHERE (emp_grade_nm = '4급' AND duty_nm='팀장') 
 OR (EMP_GRADE_NM in ('1급', '2급', '3급'))`;
 
 var exception_list;
 
 function get_exception_list(){
-  db.configure(db_config['mysql']);
+  
   db.query(sql).spread(function(rows){ //세션 수 조회
     result=JSON.parse(JSON.stringify(rows));
     for(i in result){
@@ -35,7 +35,6 @@ router.get('/login/:emp_id', async function(req, res){
     console.log('IE 감지')
     res.redirect('/users/error');
   }else{
-    db.configure(db_config['mysql']);
     sql='select count(*) as session_num from good.session_lookup_log' 
     db.query(sql).spread(function(rows){ //세션 수 조회
       if(JSON.parse(JSON.stringify(rows))[0]['session_num']>=50){
@@ -86,7 +85,6 @@ router.post('/inout',function(req, res){
 
   const {emp_id, start_day, end_day}=req.body; // 넘겨준 데이터를 변수에 저장 (사번, 기간)
 
-  db.configure(db_config['mysql']);
   sql='select EMP_ID, NAME, ORG_NM, YMD, WORK_TYPE, FIX1, `INOUT`, PLAN1, ERROR_INFO from connect.ehr_cal ' +
   'where emp_id=? and ymd>=? and ymd<=? order by YMD'; // 특정 기간 내의 직원 출퇴근 기록을 날짜 순으로 정렬
 
@@ -147,7 +145,6 @@ router.post('/overtime',async function(req, res){
   var temp_overtime_week='0000' // 임시 초과근무 저장변수 (주별)
   var temp_week; // 임시 주차 저장변수
 
-  db.configure(db_config['mysql']);
   sql='SELECT a.EMP_ID AS EMP_ID, a.`NAME` AS `NAME`, a.YMD AS YMD, a.CAL_OVERTIME AS CAL_OVERTIME, a.CAL_MEAL AS CAL_MEAL,' +
   ' a.`INOUT` AS `INOUT`,'+
   ` b.over_std_time AS over_std_time from connect.ehr_cal a LEFT JOIN (SELECT EMP_ID, over_std_time FROM connect.gw_ehr_con)b`+
@@ -192,7 +189,6 @@ router.post('/overtime',async function(req, res){
       
       temp_overtime=lib.addOverTime2(temp_overtime, result[row]["CAL_OVERTIME"]);
       temp_overtime_week=lib.addOverTime2(temp_overtime_week, result[row]["CAL_OVERTIME"]);
-      console.log(temp_overtime_week);
       if(temp_overtime_week>`1200`){// (주별 12h) 초과근무 한계 넘어간경우
         console.log('cutoff 발생')
         result[row]['CUTOFF']=true;
@@ -265,7 +261,6 @@ router.post('/cal_meal',function(req, res){
   var tempEmpId; // 임시저장사번 
   var temp_overtime='0000'; // 임시저장초과근무시간
 
-  db.configure(db_config['mysql']);
   // sql='select EMP_ID, `NAME`, ORG_NM, YMD, CAL_OVERTIME, CAL_MEAL from connect.ehr_cal where org_nm=? and ymd>=? and ymd<=?';
   sql='SELECT a.EMP_ID AS EMP_ID, a.`NAME` AS `NAME`, a.YMD AS YMD, a.CAL_OVERTIME AS CAL_OVERTIME, a.CAL_MEAL AS CAL_MEAL, a.ORG_NM as ORG_NM,' +
   ' a.`INOUT` AS `INOUT`,'+

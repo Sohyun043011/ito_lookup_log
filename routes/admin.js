@@ -6,14 +6,13 @@ var lib=require('../js/lib');
 
 var admin='admin';
 var users='users';
-
+db.configure(db_config['mysql']);
 sql=`SELECT emp_id FROM connect.hr_info WHERE (emp_grade_nm = '4급' AND duty_nm='팀장') 
 OR (EMP_GRADE_NM in ('1급', '2급', '3급'))`;
 
 var exception_list;
 
 function get_exception_list(){
-  db.configure(db_config['mysql']);
   db.query(sql).spread(function(rows){ //세션 수 조회
     result=JSON.parse(JSON.stringify(rows));
     for(i in result){
@@ -67,7 +66,6 @@ router.get('/main', function(req, res) { //
     1. 관리자 권한이 있는 세션 확인 후 세션 정보와 조직 정보를 main.ejs로 넘겨주기
   */
   if(req.session.isAdmin){
-    db.configure(db_config['mysql']);
     db.query(`select DEPT_NAME from connect.gw_dept_info 
     where DEPT_NAME not in ('인천관광공사','사장','본부장','테스트팀','전자결재임시조직')`).spread(function(rows){
       return lib.jsonize(rows);
@@ -98,7 +96,6 @@ router.get('/ehr/:type', async function(req, res){
 
   var sql=` where a.ymd>=? and a.ymd<=?`;
 
-  db.configure(db_config['mysql']);
   var sqlList=[start_day, end_day];
   // 들어온 req.query에 따른 sql where 조건 수정하주기
   if (!(emp_name==undefined||emp_name=='')){
@@ -205,7 +202,7 @@ router.get('/ehr/:type', async function(req, res){
           temp_overtime=lib.addOverTime2(temp_overtime, result[row]["CAL_OVERTIME"]);
           temp_overtime_week=lib.addOverTime2(temp_overtime_week, result[row]["CAL_OVERTIME"]);
           if(temp_overtime_week>`1200`){// (주별 12h) 초과근무 한계 넘어간경우
-            console.log('cutoff 발생')
+            console.log('주별 초과근무시간 초과 발생')
             result[row]['CUTOFF']=true;
             result[row]["CAL_OVERTIME"]=lib.subOverTime(result[row]["CAL_OVERTIME"],lib.subOverTime(temp_overtime_week,`${result[row]["over_std_time"]}00`))
             
@@ -282,7 +279,6 @@ router.get('/download/:type', function(req, res){
 
   var sql=` where ymd>=? and ymd<=?`;
 
-  db.configure(db_config['mysql']);
   var sqlList=[start_day, end_day];
   
   if (!(emp_name==undefined||emp_name=='')){
@@ -340,8 +336,6 @@ router.get('/download/:type', function(req, res){
 router.get('/gw/ehr/con/:emp_id',function(req,res){
   const emp_id=req.params.emp_id;
   console.log(emp_id);
-
-  db.configure(db_config['mysql']);
 
   var sql=`select * from connect.gw_ehr_con where emp_id=${emp_id}`;
   db.query(sql).spread(function(rows){ 
