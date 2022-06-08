@@ -1,8 +1,9 @@
 document.write("<script src='../js/index_lib.js'></script>");
+// 사원 index 페이지
 $(document).ready(function(){
+    // jsgrid cell 페이지 넘길때 내용 감지 
     let target = document.querySelector('.overtime-table');
     let observer = new MutationObserver((mutations)=>{
-        // alert('변경됨');
         $('.jsgrid-cell').each(function(index,obj){ 
 
             if(($(this).text()).includes("초과근무 일부 반영")){
@@ -17,10 +18,10 @@ $(document).ready(function(){
         subtree :true,
         characterData : true
     };
-
     observer.observe(target,option);
 
 
+    //출퇴근기록 시 날짜 선택기
     $.datepicker.setDefaults($.datepicker.regional['ko']);
     $('#datepicker1').datepicker({
         dateFormat : 'yy-mm-dd',
@@ -58,8 +59,6 @@ $(document).ready(function(){
         showMonthAfterYear: true,
         yearSuffix: '년'
     });
-
-
     var currentYear = (new Date()).getFullYear();
     var currentMonth = (new Date()).getMonth();
     var startYear = currentYear-5;
@@ -70,10 +69,11 @@ $(document).ready(function(){
             monthNames: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월']
 
     };
+
+    // monthpicker - 초과근무-급량비 조회 시 월 선택기
     $('#monthpicker1').monthpicker(options);
     $('#monthpicker2').monthpicker(options);
-
-    //미래 월은 비활성화시키기
+    //monthpicker - 미래 월은 비활성화시키기
     var months=[];
     for(var i=currentMonth+2,j=0;i<=12;i++){
         months[j++]=i;
@@ -102,11 +102,11 @@ $(document).ready(function(){
     }
 
 
-    // 조회하기 버튼 누르면 table 표출
+    // 출퇴근기록 TAB - 조회하기 버튼 누르면 table 표출
     $('#check-inout').on('click',function(e){
-       
         var start_day = $('#datepicker1').val().replace(/\-/g,'');;
         var end_day = $('#datepicker2').val().replace(/\-/g,'');;
+        // 기간 설정 잘못한 경우
         if(!validateInterval(start_day,end_day))
         {
             Swal.fire({
@@ -115,21 +115,18 @@ $(document).ready(function(){
             }).then(()=>{
                 $('#datepicker1').val('');
                 $('#datepicker2').val('');
-            });
-            
-            
+            });   
         }else{
             $('#check-inout').prop('disabled', true);
             var emp_id = $($('.mem-num')[0]).text();    
             var check_list = {'start_day':start_day,'end_day':end_day,'emp_id':emp_id}
-            // ajax로 날짜 두개, 사번 드림
-        
+            // 사번,날짜정보 보냄
             $.ajax({
-
                 method:'POST',
                 url:'/users/inout',
                 data:check_list,
                 success:function(result){
+                    
                     var list =[];
                     for(var i=0;i<result.length;i++)
                     {
@@ -166,7 +163,7 @@ $(document).ready(function(){
                             { name: "이름", type: "text"},
                             { name: "부서", type: "text"},
                             { name: "날짜", type: "text"},
-                            { name: "요일", type: "text"},
+                            { name: "요일", type: "text",width :"35px"},
                             { name:"근무유형", type:"text"},
                             { name:"출입시각", type:"text"},
                             { name:"확정시각", type:"text"},
@@ -181,7 +178,7 @@ $(document).ready(function(){
                    
                 },
                 error:function(result){
-                    alert('실패')
+                    // alert('실패')
                 }
             }).then(()=>{
                 $('#datepicker1').val(dayFormatTranslate(start_day));
@@ -195,6 +192,7 @@ $(document).ready(function(){
     $('#check-overtime').on('click',function(e){
         
         $('.table-layout').remove('.inout-table jsgrid');
+        $('.overtime-table').html('');
         var emp_id = $($('.mem-num')[0]).text();
         var date = $('#monthpicker1').val();
         // date = '2022-05'
@@ -222,7 +220,8 @@ $(document).ready(function(){
                 data:{'emp_id':emp_id,'start_day':start_day,'end_day':end_day},
                 success:function(result){
                     // result로 오는 정보 : 각 월에 해당하는 초과근무 및 급량비 산정 기록 
-                    // 
+                    // if duty = "팀장" => 초과근무 X, 급량비 O
+                   
                     console.log(result);
                     $('.summary-table').css('display','inline-table');
                    
@@ -303,6 +302,9 @@ $(document).ready(function(){
                         $('#check-overtime').prop('disabled', false);
                         
                         // detail table 표출
+                        // if duty = "팀장 " => "초과근무시간" => "출퇴근기록시간"
+                        let is_over = '초과근무시간';
+                        
                         var over_list = [];
                         for(var i=0;i<result.empInfo.length;i++)
                         {
@@ -311,9 +313,16 @@ $(document).ready(function(){
                                 var dayOfWeek = week[new Date(day).getDay()];
                                 var cutOff = result.empInfo[i].CUTOFF;
                                 var etc = '';
+                                var except = result.empInfo[i].EXCEPT;
+                                var time = result.empInfo[i].CAL_OVERTIME;
+                                if(except){
+                                    is_over = '출퇴근기록'
+                                    time = result.empInfo[i].INOUT;
+                                }
                                 if (cutOff == true){
                                     etc = "(초과근무 일부 반영)"
                                 }
+                                
                                 over_list.push({
                                     "No":`${i+1}`,
                                     "사번":result.empInfo[i]['EMP_ID'],
@@ -321,9 +330,24 @@ $(document).ready(function(){
                                     "날짜": day, 
                                     "요일": dayOfWeek,
                                     "주차": `${result.empInfo[i].WEEK}주차`,
-                                    "초과근무시간":`${hhmmToString2(result.empInfo[i].CAL_OVERTIME)} ${etc}` ,
                                     "급량비유무": (result.empInfo[i].CAL_MEAL=="TRUE") ? "O" : "X"
                                 });
+                                
+                                if(except){
+                                    
+                                    time=time.split('~').map(str=>{
+                                        if(str==''){
+                                            return '';
+                                        }
+                                        return str.substring(0,2)+':'+str.substring(2)
+                                      }).join('~')
+                                      over_list[i][is_over] = time;
+                                }
+                                else{
+                                    over_list[i][is_over] = `${hhmmToString2(time)} ${etc}`;
+                                }
+                                
+                                
                         }
         
                         $('.overtime-table').jsGrid({
@@ -338,7 +362,7 @@ $(document).ready(function(){
                                 { name: "날짜", type: "text"},
                                 { name: "요일", type: "text", width:"50px"},
                                 { name: "주차", type: "text", width:"50px"},
-                                { name: "초과근무시간", type: "text",width:"280px"},
+                                { name: `${is_over}`, type: "text",width:"280px"},
                                 { name: "급량비유무", type: "text"}
                             ]
                         });
@@ -356,7 +380,7 @@ $(document).ready(function(){
                     
                 },
                 error:function(result){
-                    alert('실패')
+                    // alert('실패')
                 }
             })
             $('#check-overtime').prop('disabled', false);
@@ -444,10 +468,8 @@ $(document).ready(function(){
                 
                     for(var i=0;i<end_d;i++)
                     {  
-                        
                         count_emp[parseInt(start_day)+i] = 0;
                     }
-                    var count_sum =0;
     
                     for(var i=1;i<result.empInfo.length;i++)
                     {
@@ -500,7 +522,7 @@ $(document).ready(function(){
                     $('a:contains("1")').click();
                 },
                 error:function(result){
-                    alert('실패')
+                    // alert('실패')
                 }
             })
 
@@ -509,7 +531,7 @@ $(document).ready(function(){
     })
 
     const login = async()=>{
-        console.log('현재 페이지는 '+document.location.href+'입니다.');
+        // console.log('현재 페이지는 '+document.location.href+'입니다.');
         const { value: password } = await Swal.fire({
             title: '비밀번호를 입력하세요',
             icon:'warning',
@@ -537,11 +559,11 @@ $(document).ready(function(){
                     password:password,
                 },
                 success:function(result){
-                    console.log(result);
+                    // console.log(result);
                     location.href='/admin/main'
                 },
                 error:function(result){
-                    console.log(result);
+                    // console.log(result);
                 }
             })
           }

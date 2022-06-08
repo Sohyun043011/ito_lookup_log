@@ -1,5 +1,5 @@
 document.write("<script src='../js/index_lib.js'></script>");
-
+// 관리자 페이지 js 
 $(document).ready(function(){
 
     // jsgrid cell 변경시 감지하여
@@ -29,7 +29,7 @@ $(document).ready(function(){
             type:"GET",
             url:"/admin/logout",
             success:function(data){
-                console.log("success");
+                // console.log("success");
                 location.replace('/users/main');
             }
         })
@@ -128,8 +128,8 @@ $(document).ready(function(){
                 url:`/admin/ehr/${type}`,
                 data:info,
                 success:function(result){
-                    console.log("success");
-                    console.log(result);
+                    // console.log("success");
+                    // console.log(result);
                     var list =[];
                     for(var i=0;i<result.length;i++)
                     {
@@ -178,12 +178,12 @@ $(document).ready(function(){
                     $('#check-search').prop('disabled', false);
                 },
                 error:function(result){
-                    alert('실패')
+                    // alert('실패')
                 }
             }).then(()=>{
                 $('.inout-download').prop('disabled', false);
-                $('#datepicker1').val(dayFormatTranslate(start_day));
-                $('#datepicker2').val(dayFormatTranslate(end_day));
+                $('#admin_datepicker1').val(dayFormatTranslate(start_day));
+                $('#admin_datepicker2').val(dayFormatTranslate(end_day));
             });
 
             
@@ -191,12 +191,12 @@ $(document).ready(function(){
     });
 
     $('a').on('click',function(){
-        alert('누름');
+        // alert('누름');
     })
     //급량비 조회버튼 - 기간 관련해서 수정
     $('#check-cal-search').on('click',function(){
         var emp_name = $('.empName').eq(1).val();
-        console.log(emp_name);
+        // console.log(emp_name);
         var emp_id = $('.empID').eq(1).val();
         var org_nm = $('.select-dept').eq(1).val();
         var type = 'cal_meal';      //급량비 조회
@@ -224,7 +224,7 @@ $(document).ready(function(){
                     url:`/admin/ehr/${type}`,
                     data:info,
                     success:function(result){
-                        console.log("cal success");
+                        // console.log("cal success");
                         console.log(result);
                         $('.summary-table').css('display','inline-table');
                    
@@ -303,18 +303,23 @@ $(document).ready(function(){
                             var list =[];
                             var cnt = 1;
                             console.log(result)
+                            
                             for(var i=0;i<result.empInfo.length;i++)
                             {
                                 day = (result.empInfo[i].YMD).replace(/(\d{4})(\d{2})(\d{2})/g, '$1-$2-$3');
                                 var week = ['일', '월', '화', '수', '목', '금', '토'];
                                 var dayOfWeek = week[new Date(day).getDay()];
                                 var cutOff = result.empInfo[i].CUTOFF;
+                                var except = result.empInfo[i].EXCEPT;
                                 var etc = '';
                                 if (cutOff == true){
                                     etc = "(초과근무 일부 반영)"
                                 }
+                                if(except==true){
+                                    etc = "(출퇴근기록 초과분으로 적용)"
+                                }
                                 
-                                if(result.empInfo[i].CAL_OVERTIME!='0000'){
+                                if(result.empInfo[i].CAL_OVERTIME!='0000' || result.empInfo[i].EXCEPT==true){
                                     list.push({
                                         "No":`${cnt}`,
                                         "사번":result.empInfo[i]['EMP_ID'],
@@ -326,6 +331,7 @@ $(document).ready(function(){
                                         "초과근무시간": `${hhmmToString2(result.empInfo[i].CAL_OVERTIME)} ${etc}`,
                                         "급량비유무": (result.empInfo[i].CAL_MEAL=="TRUE") ? "O" : "X"
                                     });
+
                                     cnt++;
                                 }
                             }
@@ -346,7 +352,7 @@ $(document).ready(function(){
                                     { name: "날짜", type: "text"},
                                     { name: "요일", type: "text"},
                                     { name: "주차", type: "text"},
-                                    { name: "초과근무시간", type: "text",width : "150px", title : "초과근무"},
+                                    { name: "초과근무시간", type: "text",width : "150px"},
                                     { name: "급량비유무", type: "text"}
                                 ]
                             });
@@ -383,9 +389,13 @@ $(document).ready(function(){
         var end_day = $('#admin_datepicker2').val().replace(/\-/g,'');;
         if(!validateInterval(start_day,end_day))
         {
-            alert('기간을 다시 설정해주세요.');
-            $('#admin_datepicker1').val('');
-            $('#admin_datepicker2').val('');
+            Swal.fire({
+                text:"기간을 다시 설정해주세요.",
+                icon:'warning'
+            }).then(()=>{
+                $('#admin_datepicker1').val('');
+                $('#admin_datepicker2').val('');
+            });
             
         }else{
             $('#check-inout').prop('disabled', true);
@@ -398,7 +408,7 @@ $(document).ready(function(){
 
     $('.cal-download').on('click', function(){
         var emp_name = $('.empName').eq(1).val().trim();
-        console.log(emp_name);
+        // console.log(emp_name);
         var emp_id = $('.empID').eq(1).val();
         var org_nm = $('.select-dept').eq(1).val().trim();
         var type = 'cal_meal';      //급량비 조회

@@ -1,3 +1,4 @@
+// index.js 관련 함수 lib
 function validateInterval(start_day, end_day){ // 기간 유효성 검사
     if(start_day==undefined||end_day==undefined||start_day==''||end_day==''){// 폼이 한쪽이라도 비어있을 때
         return false;
