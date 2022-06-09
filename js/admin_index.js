@@ -2,7 +2,7 @@ document.write("<script src='../js/index_lib.js'></script>");
 // 관리자 페이지 js 
 $(document).ready(function(){
 
-    // jsgrid cell 변경시 감지하여
+    // MutationObserver : jsgrid table 페이지 이동시에도 감지해야 함 
     let target = document.querySelector('.detail-table');
     let observer = new MutationObserver((mutations)=>{
         // alert('변경됨');
@@ -104,8 +104,9 @@ $(document).ready(function(){
         });
     }
 
-    //출퇴근기록 조회버튼
+    // 출퇴근기록 TAB - 조회하기 버튼 누르면 table 표출
     $('#check-search').on('click',function(){
+        // 버튼 누를 때마다 테이블 초기화
         $('.inout-table').html('');
         var emp_name = $('.empName').eq(0).val();
         var emp_id = $('.empID').eq(0).val();
@@ -113,6 +114,7 @@ $(document).ready(function(){
         var type = 'inout';
         var start_day = $('#admin_datepicker1').val().replace(/\-/g,'');;
         var end_day = $('#admin_datepicker2').val().replace(/\-/g,'');;
+        // 기간 설정 잘못한 경우
         if(!validateInterval(start_day,end_day))
         {
             Swal.fire({
@@ -127,7 +129,7 @@ $(document).ready(function(){
         }else{
             $('#check-search').prop('disabled', true);
             var info = {'emp_name':emp_name,'emp_id':emp_id,'org_nm':org_nm,'start_day':start_day,'end_day':end_day};
-            // ajax로 날짜 두개, 사번 드림
+            // 사번,날짜정보 보냄
             $.ajax({
                 type:"GET",
                 url:`/admin/ehr/${type}`,
@@ -177,9 +179,10 @@ $(document).ready(function(){
                             { name:"비고", type:"text"}
                         ]
                     })
+                    //$('a:contains("1")').click(): 조회하기를 다시 눌렀을 때, 1페이지로 refresh 되도록 함.
+                    //a:contains("First") 마찬가지
                     $('a:contains("1")').click();
                     $('a:contains("First")').click();
-                    // res로 받은 정보들을 list에 넣음 
                     $('#check-search').prop('disabled', false);
                 },
                 error:function(result){
@@ -187,6 +190,7 @@ $(document).ready(function(){
                     location.href=`/admin/error?${params}`
                 }
             }).then(()=>{
+                // 날짜 입력하는 곳에 남아있는 text 삭제함.
                 $('.inout-download').prop('disabled', false);
                 $('#admin_datepicker1').val(dayFormatTranslate(start_day));
                 $('#admin_datepicker2').val(dayFormatTranslate(end_day));
@@ -196,20 +200,18 @@ $(document).ready(function(){
         }
     });
 
-    $('a').on('click',function(){
-        // alert('누름');
-    })
-    //급량비 조회버튼 - 기간 관련해서 수정
+    //급량비 조회버튼 
     $('#check-cal-search').on('click',function(){
-        var emp_name = $('.empName').eq(1).val();
+        // 버튼 누를 때마다 테이블 초기화
         $('.detail-table').html('');
-        // console.log(emp_name);
+        var emp_name = $('.empName').eq(1).val();
         var emp_id = $('.empID').eq(1).val();
         var org_nm = $('.select-dept').eq(1).val();
         var type = 'cal_meal';      //급량비 조회
         var date = $('#admin_monthpicker1').val();
 
         if (date==''){
+            // 기간 잘못 설정한 경우
             Swal.fire({
                 text:"기간을 다시 설정해주세요.",
                 icon:'warning'
@@ -221,11 +223,9 @@ $(document).ready(function(){
             const year = date.split('-')[0];
             const month = date.split('-')[1];
             var [start_day,end_day] = monthPicktoString(date);
-    
-            
             $('#check-cal-search').prop('disabled', true);
             var info = {'emp_name':emp_name,'emp_id':emp_id,'org_nm':org_nm,'start_day':start_day,'end_day':end_day};
-            // ajax로 날짜 두개, 사번 드림
+            // 서버로 사번,팀이름,시작날짜,끝날짜 보냄 
             $.ajax({
                     type:"GET",
                     url:`/admin/ehr/${type}`,
@@ -239,6 +239,7 @@ $(document).ready(function(){
                         $('.week-tr').html('');
                         $('.week-overtime').html('');
                         $('.week-cal').html('');
+                        // 주 수에 따라 table layout 생성
                         for(var i=0;i<result.endOfWeek;i++)
                         {
                             $('.week-tr').append(`<th scope="col" class="${i+1}-week week-col">${i+1}주차</th>`)
@@ -246,9 +247,7 @@ $(document).ready(function(){
                             $('.week-cal').append(`<th scope="col" class="${i+1}-cal week-col"></th>`)
                         }
                         $('.week-tr').append(`<th scope="col" class="week-col">합산</th>`)
-                        // $('.week-tr').append(`<th scope="col" class="week-col">초과근무 기준시간</th>`)
                         $('.week-overtime').append(`<th scope="col" class="over-sum week-col"></th>`)
-                        // $('.week-overtime').append(`<th rowspan="2" scope="col" class="over-std week-col">25</th>`)
                         $('.week-cal').append(`<th scope="col" class="cal-sum week-col"></th>`)
                         $('.week-tr>.1-week').before(`<th scope="col" class="date week-col"></th>`)
                         $('.week-tr>.date').html(`${year}년 ${month}월`);
@@ -256,7 +255,7 @@ $(document).ready(function(){
                         $('.week-cal>.1-cal').before(`<th scope="row" class="week-col">급량비</th>`)
     
                         //각 주차에 대해 overtime,급량비 계산
-                        
+                        // 초과근무 및 급량비 계산결과 있는 경우만 실행
                         if(result.empInfo.length!=0){
                             var overtime = {1:[],2:[],3:[],4:[],5:[],6:[]};
                             var cal_meal = {1:0,2:0,3:0,4:0,5:0,6:0};
@@ -264,16 +263,17 @@ $(document).ready(function(){
                             for(var m=0;m<result.empInfo.length;m++)
                             {
                                 // WEEK에 따라서 나누기
-                                //급량비가 1주에 급량비 True몇개인지 * 8000
+                                // (급량비==true)갯수 * 8000
                                 
                                 if (result.empInfo[m].WEEK==now_week){
+                                    // 이번 주에 해당하는 초과근무시간 정보 push 하기 이 때, 급량비 == TRUE 이면 cal_meal +1
                                     overtime[`${now_week}`].push(result.empInfo[m].CAL_OVERTIME);
                                     if(result.empInfo[m].CAL_MEAL=="TRUE"){
-                                        // 트루이면 cal_meal에 넣기
                                         cal_meal[`${now_week}`]=cal_meal[`${now_week}`]+1;
                                     }
                                 }
                                 else{
+                                    // 다음주로 넘어온 경우, now_week 새로 할당
                                     now_week = result.empInfo[m].WEEK;
                                     overtime[`${now_week}`].push(result.empInfo[m].CAL_OVERTIME);
                                     if(result.empInfo[m].CAL_MEAL=="TRUE"){
@@ -282,23 +282,23 @@ $(document).ready(function(){
                                     }
                                 }
                             }
-                            const overTimeTotal = addOverTimeTotal(overtime);   //분으로 나타내짐
+                            const overTimeTotal = addOverTimeTotal(overtime);   //각 주차에 대한 초과근무시간 정보 분으로 나타냄.
                             var over_sum = 0;    
                             Object.values(overTimeTotal).forEach(function(ele,idx){
                                 over_sum=over_sum+parseInt(ele);
-                                ele_overtime =  hhmmToString(ele);
-                                $(`.${idx+1}-overtime`).html(ele_overtime);
+                                ele_overtime =  hhmmToString(ele);               //초과근무 시간 정보를 hh시간 mm분 으로 변환.
+                                $(`.${idx+1}-overtime`).html(ele_overtime);     //각 주차에 대한 초과근무 시간 삽입
                             });
                             //초과근무 합산
                             over_sum = hhmmToString(over_sum);
                             $('.over-sum').html(over_sum);
-        
+                             //급량비 합산
                             var cal_sum=0;
                             Object.values(cal_meal).forEach(function(ele,idx){
                                 //{'1':0,'2':3,...}
                                 cal_count = ele*8000;
                                 cal_sum+=cal_count;
-                                const cal_string = (cal_count).toLocaleString('ko-KR');
+                                const cal_string = (cal_count).toLocaleString('ko-KR');     //원 단위 (,) 나타내기 위함
                                 $(`.week-cal>.${idx+1}-cal`).html(cal_string+'원');
                             });
         
@@ -307,9 +307,8 @@ $(document).ready(function(){
                             $('#check-overtime').prop('disabled', false);
         
         
-                            var list =[];
-                            var cnt = 1;
-                            // console.log(result)
+                            var list =[];           //jsGrid table에 넣을 데이터 리스트
+                            var cnt = 1;            //각 행의 index
                             
                             for(var i=0;i<result.empInfo.length;i++)
                             {
@@ -332,12 +331,12 @@ $(document).ready(function(){
                                         "날짜": day, 
                                         "요일": dayOfWeek,
                                         "주차": `${result.empInfo[i].WEEK}주차`,
-                                       
                                         "급량비유무": (result.empInfo[i].CAL_MEAL=="TRUE") ? "O" : "X"
                                     });
                                     if(except){
                                         time = result.empInfo[i].INOUT;
                                         etc = "(출퇴근기록 초과분으로 적용)"
+                                        // time 0900-> 09:00 으로 변환함
                                         time=time.split('~').map(str=>{
                                             if(str==''){
                                                 return '';
@@ -373,17 +372,8 @@ $(document).ready(function(){
                                     { name: "급량비유무", type: "text"}
                                 ]
                             });
-
-                            $('.jsgrid-cell').each(function(index,obj){ 
-
-                                if(($(this).text()).includes("초과근무 일부 반영")){
-                                    $(this).addClass('HL');
-                                    $(this).addClass('fw-bold');
-                                }
-                            });
                             $('a:contains("1")').click();
                             $('a:contains("First")').click();
-                            // res로 받은 정보들을 list에 넣음 
                         }
                         $('#check-cal-search').prop('disabled', false);
                     }, 
@@ -401,6 +391,7 @@ $(document).ready(function(){
         
     });
 
+    //출퇴근기록 조회 EXCEL DOWNLOAD
     $('.inout-download').on('click', function(){
         var emp_name = $('.empName').eq(0).val();
         var emp_id = $('.empID').eq(0).val();
@@ -420,13 +411,13 @@ $(document).ready(function(){
             
         }else{
             $('#check-inout').prop('disabled', true);
-            var emp_id = $($('.mem-num')[0]).text();    
-            // ajax로 날짜 두개, 사번 드림
+            var emp_id = $($('.mem-num')[0]).text();   
             window.open(`/admin/download/${type}?emp_name=${emp_name}&emp_id=${emp_id}&org_nm=${org_nm}`+
             `&start_day=${start_day}&end_day=${end_day}`);
         }
     })
 
+    //초과근무 및 급량비 조회 EXCEL DOWNLOAD
     $('.cal-download').on('click', function(){
         var emp_name = $('.empName').eq(1).val().trim();
         // console.log(emp_name);
@@ -438,7 +429,6 @@ $(document).ready(function(){
         const month = date.split('-')[1];
         var [start_day,end_day] = monthPicktoString(date);
 
-        // ajax로 날짜 두개, 사번 드림
         window.open(`/admin/download/${type}?emp_name=${emp_name}&emp_id=${emp_id}&org_nm=${org_nm}`+
         `&start_day=${start_day}&end_day=${end_day}`);
     })

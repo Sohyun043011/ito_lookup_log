@@ -53,16 +53,6 @@ function hhmmToString2(time){ // 초과근무 시간정보를 'hh시간 mm분' �
         return hour+'시간 '+minute+'분'
     }
 }
-function calMeal(dict){
-    cal_dict ={};
-    // week에 따라서 cal_meal 이 true인게 몇개 인지
-    //cal_dict = {'1':1,'2':3,...} 형식으로 만들기
-    for([key, value] of Object.entries(dict)){
-        dict[key]
-    }
-    return dict;
-
-}
 
 function monthPicktoString(date){
     const words = date.split('-');
