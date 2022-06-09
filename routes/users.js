@@ -37,8 +37,7 @@ router.get('/login/:emp_id', async function(req, res){
     /*
       Chronium 기반 브라우저(Chrome, Edge, Firefox) 제외한 모든 브라우저의 접근 차단
     */
-    console.log('IE 감지')
-    res.redirect('/users/error');
+    res.redirect('/users/error?msg=Internet Explorer에서 사용할 수 없습니다.');
   }else{
     sql='select count(*) as session_count from good.session_lookup_log' 
     db.query(sql).spread(function(rows){ //세션 수 조회
@@ -70,11 +69,10 @@ router.get('/login/:emp_id', async function(req, res){
           res.redirect('/users/main')
         });
       } else{
-        res.status(404).send('직원정보가 존재하지 않음');
+        res.redirect('/users/error?msg=직원정보가 없습니다.');
       };
     }).catch((err)=>{
       console.log(err);
-      res.status(404).send('로그인 오류가 발생하여 잠시 후 다시 시도해주세요.');
     })
   }
 });
@@ -86,7 +84,7 @@ router.get('/main', function(req, res) { //
   */
   if(req.session.data){ // 세션 유효성 검증
     res.render('main',{list:req.session.data[0]})
-  }else res.status(404).send('세션 정보가 없습니다. 그룹웨어 페이지에서 다시 접속해주세요.');
+  }else res.redirect('/users/error?msg=세션 정보가 없습니다. 그룹웨어 페이지에서 다시 접속해주세요.');
 });
 
 router.post('/inout',function(req, res){

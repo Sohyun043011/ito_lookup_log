@@ -31,6 +31,10 @@ $(document).ready(function(){
             success:function(data){
                 // console.log("success");
                 location.replace('/users/main');
+            },
+            error:function(result){
+                var params = "msg="+result.responseText
+                location.href=`/admin/error?${params}`
             }
         })
     })
@@ -179,7 +183,8 @@ $(document).ready(function(){
                     $('#check-search').prop('disabled', false);
                 },
                 error:function(result){
-                    // alert('실패')
+                    var params = "msg="+result.responseText
+                    location.href=`/admin/error?${params}`
                 }
             }).then(()=>{
                 $('.inout-download').prop('disabled', false);
@@ -370,7 +375,7 @@ $(document).ready(function(){
                                     { name: "날짜", type: "text"},
                                     { name: "요일", type: "text"},
                                     { name: "주차", type: "text"},
-                                    { name: "초과근무시간", type: "text",width : "150px"},
+                                    { name: "초과근무시간", type: "text",width : "250px"},
                                     { name: "급량비유무", type: "text"}
                                 ]
                             });
@@ -387,6 +392,10 @@ $(document).ready(function(){
                             // res로 받은 정보들을 list에 넣음 
                         }
                         $('#check-cal-search').prop('disabled', false);
+                    }, 
+                    error:function(result){
+                        var params = "msg="+result.responseText
+                        location.href=`/admin/error?${params}`
                     }
                 }).then(()=>{
                     $('.cal-download').prop('disabled', false);

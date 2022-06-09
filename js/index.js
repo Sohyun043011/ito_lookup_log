@@ -179,7 +179,8 @@ $(document).ready(function(){
                    
                 },
                 error:function(result){
-                    // alert('실패')
+                    var params = "msg="+result.responseText
+                    location.href=`/users/error?${params}`
                 }
             }).then(()=>{
                 $('#datepicker1').val(dayFormatTranslate(start_day));
@@ -380,7 +381,8 @@ $(document).ready(function(){
                     
                 },
                 error:function(result){
-                    // alert('실패')
+                    var params = "msg="+result.responseText
+                    location.href=`/users/error?${params}`
                 }
             })
             $('#check-overtime').prop('disabled', false);
@@ -524,7 +526,8 @@ $(document).ready(function(){
                     $('a:contains("1")').click();
                 },
                 error:function(result){
-                    // alert('실패')
+                    var params = "msg="+result.responseText
+                    location.href=`/users/error?${params}`
                 }
             })
 
@@ -565,7 +568,8 @@ $(document).ready(function(){
                     location.href='/admin/main'
                 },
                 error:function(result){
-                    // console.log(result);
+                    var params = "msg="+result.responseText
+                    location.href=`/admin/error?${params}`
                 }
             })
           }

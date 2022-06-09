@@ -21,7 +21,6 @@
     <link rel="stylesheet" href="../css/registerForm.css">
     <link rel="stylesheet" href="../css/adminForm.css">
     <link rel="stylesheet" href="../css/errorForm.css">
-    <script src="../js/error.js"></script>
 </head>
 <body>
         <div class="error-div">
@@ -30,7 +29,8 @@
                 <span class="err-msg"><%= error %> </span>
             </div>
             <div>
-                <button type="button" class="btn btn-outline-secondary err-btn" onclick="history.back(-1)">이전페이지</button>
+                <a href="#" onclick="javascript:self.close()">close</a>
+                <button type="button" class="btn btn-outline-secondary err-btn" onclick="window.open('error','_parent',''); window.close();">이전페이지</button>
             </div>
             
 
