@@ -31,6 +31,10 @@ $(document).ready(function(){
             success:function(data){
                 // console.log("success");
                 location.replace('/users/main');
+            },
+            error:function(result){
+                var params = "msg="+result.responseText
+                location.href=`/admin/error?${params}`
             }
         })
     })
@@ -179,7 +183,8 @@ $(document).ready(function(){
                     $('#check-search').prop('disabled', false);
                 },
                 error:function(result){
-                    // alert('실패')
+                    var params = "msg="+result.responseText
+                    location.href=`/admin/error?${params}`
                 }
             }).then(()=>{
                 $('.inout-download').prop('disabled', false);
@@ -387,6 +392,10 @@ $(document).ready(function(){
                             // res로 받은 정보들을 list에 넣음 
                         }
                         $('#check-cal-search').prop('disabled', false);
+                    }, 
+                    error:function(result){
+                        var params = "msg="+result.responseText
+                        location.href=`/admin/error?${params}`
                     }
                 }).then(()=>{
                     $('.cal-download').prop('disabled', false);

@@ -38,8 +38,7 @@ router.get('/login/:emp_id', async function(req, res){
     /*
       Chronium 기반 브라우저(Chrome, Edge, Firefox) 제외한 모든 브라우저의 접근 차단
     */
-    console.log('IE 감지')
-    res.redirect('/users/error');
+    res.redirect('/users/error?msg=Internet Explorer에서 사용할 수 없습니다.');
   }else{
     sql='select count(*) as session_count from good.session_lookup_log' 
     db.query(sql).spread(function(rows){ //세션 수 조회
@@ -71,11 +70,10 @@ router.get('/login/:emp_id', async function(req, res){
           res.redirect('/users/main')
         });
       } else{
-        res.status(404).send('직원정보가 존재하지 않음');
+        res.redirect('/users/error?msg=직원정보가 없습니다.');
       };
     }).catch((err)=>{
       console.log(err);
-      res.status(404).send('로그인 오류가 발생하여 잠시 후 다시 시도해주세요.');
     })
   }
 });
@@ -87,7 +85,7 @@ router.get('/main', function(req, res) { //
   */
   if(req.session.data){ // 세션 유효성 검증
     res.render('main',{list:req.session.data[0]})
-  }else res.status(404).send('세션 정보가 없습니다. 그룹웨어 페이지에서 다시 접속해주세요.');
+  }else res.redirect('/users/error?msg=세션 정보가 없습니다. 그룹웨어 페이지에서 다시 접속해주세요.');
 });
 
 router.post('/inout',function(req, res){
@@ -98,7 +96,7 @@ router.post('/inout',function(req, res){
     이후 JSON data return
   */
   if(!req.session.data){ // 세션정보 존재하지 않으면 오류 표출
-    res.status(404).send('세션 정보 없음');
+    res.status(404).send('세션 정보가 없습니다. 그룹웨어 페이지에서 다시 접속해주세요.');
   }
 
   const {emp_id, start_day, end_day}=req.body; // 필터 정보 저장
@@ -161,7 +159,7 @@ router.post('/overtime',async function(req, res){
     ++ 06/09 : 주별/월별 초과근무 최대 한도 설정하고 잘라내서 급량비 재산정
   */ 
   if(!req.session.data){ // 세션정보 존재하지 않으면 오류 표출
-    res.status(404).send('세션 정보 없음'); 
+    res.status(404).send('세션 정보가 없습니다. 그룹웨어 페이지에서 다시 접속해주세요.'); 
   }
 
   const {emp_id, start_day, end_day}=req.body; // 필터 정보 저장
@@ -299,7 +297,7 @@ router.post('/cal_meal',function(req, res){
     ++ 06/09 : 주별/월별 초과근무 최대 한도 설정하고 잘라내서 급량비 재산정
   */ 
   if(!req.session.data){ // 세션정보 존재하지 않으면 오류 표출
-    res.status(404).send('세션 정보 없음'); 
+    res.status(404).send('세션 정보가 없습니다. 그룹웨어 페이지에서 다시 접속해주세요.'); 
   }
   const {dept_name, start_day, end_day}=req.body; // 필터 정보 저장
 
@@ -408,8 +406,11 @@ router.post('/cal_meal',function(req, res){
   });
 });
 
-router.get('/error',function(req,res){
-  res.send('<p>Internet Explorer에서 지원하지 않습니다.</p>');
-});
+router.get('/error',(req,res)=>{ // '/users/error?msg=~~'형식
+  error_msg=req.query.msg;
+  console.log(req.query);
+  console.log(error_msg);
+  res.render('error',{error:error_msg});
+})
 
 module.exports=router;

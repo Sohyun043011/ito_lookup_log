@@ -357,5 +357,10 @@ router.get('/gw/ehr/con/:emp_id',function(req,res){
     console.log(err);
   });
 })
-
+router.get('/error',(req,res)=>{ // '/users/error?msg=~~'형식
+  error_msg=req.query.msg;
+  console.log(req.query);
+  console.log(error_msg);
+  res.render('error',{error:error_msg});
+})
 module.exports=router;
