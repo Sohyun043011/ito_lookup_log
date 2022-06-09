@@ -13,10 +13,13 @@ const { json } = require('express/lib/response');
 var UserRouter=require('./routes/users') // users.js에 기록된 router 정보
 var AdminRouter=require('./routes/admin') // admin.js에 기록된 router 정보
 
-/* mysql, mysql session storage, 관리자 비밀번호 정보
-gitignore로 설정되어 공사 서버 접속정보 외부로 노출 안됨 */
-const db_config=require('./db_config') 
+/* 
+    mysql, mysql session storage, 관리자 비밀번호 정보
+    gitignore로 설정되어 공사 서버 접속정보 외부로 노출 안됨 
+    ***** 해당 파일 업데이트 시 수동으로 소스 옮겨줘야 합니다!!! *****
+*/
 
+const db_config=require('./db_config') 
 var cookieParser=require('cookie-parser') 
 
 // session_store를 사용하여 세션 데이터를 연동 DB에 저장

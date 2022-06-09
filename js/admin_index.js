@@ -375,7 +375,7 @@ $(document).ready(function(){
                                     { name: "날짜", type: "text"},
                                     { name: "요일", type: "text"},
                                     { name: "주차", type: "text"},
-                                    { name: "초과근무시간", type: "text",width : "150px"},
+                                    { name: "초과근무시간", type: "text",width : "250px"},
                                     { name: "급량비유무", type: "text"}
                                 ]
                             });
