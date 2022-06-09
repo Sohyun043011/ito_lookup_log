@@ -13,6 +13,7 @@ OR (EMP_GRADE_NM in ('1급', '2급', '3급'))`;
 var exception_list;
 
 function get_exception_list(){
+  console.log('exception list 삽입')
   db.query(sql).spread(function(rows){ //세션 수 조회
     result=JSON.parse(JSON.stringify(rows));
     for(i in result){
