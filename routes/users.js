@@ -4,14 +4,15 @@ var db=require('mysql2-promise')();
 var db_config=require('../db_config');
 var lib=require('../js/lib');
 
+db.configure(db_config['mysql']); // db conn, cursor 생성 
 sql=`SELECT emp_id FROM connect.hr_info WHERE (emp_grade_nm = '4급' AND duty_nm='팀장') 
-OR (EMP_GRADE_NM in ('1급', '2급', '3급'))`;
-
-var exception_list;
+  OR (EMP_GRADE_NM in ('1급', '2급', '3급'))`;
+  
+var exception_list; // 3급 이상 또는 4급 팀장 사번 리스트 (이하 exception list)
 
 function get_exception_list(){
-  db.configure(db_config['mysql']);
-  db.query(sql).spread(function(rows){ //세션 수 조회
+  
+  db.query(sql).spread(function(rows){
     result=JSON.parse(JSON.stringify(rows));
     for(i in result){
       result[i]=result[i]["emp_id"]
@@ -28,187 +29,223 @@ get_exception_list();
 
 router.get('/login/:emp_id', async function(req, res){
   /*
+    Login URL
     최초 세션 테이블에서 세션 갯수 확인 및 직원 정보가 일치하면 세션 생성해주고
     main page로 redirect
+    IE browser는 구버전의 스크립트 엔진 이슈로 지원하지 않음
   */
   if((req.header('User-Agent').indexOf('Chrome') || req.header('User-Agent').indexOf('Firefox'))==-1){
+    /*
+      Chronium 기반 브라우저(Chrome, Edge, Firefox) 제외한 모든 브라우저의 접근 차단
+    */
     console.log('IE 감지')
     res.redirect('/users/error');
   }else{
-    db.configure(db_config['mysql']);
-    sql='select count(*) as session_num from good.session_lookup_log' 
+    sql='select count(*) as session_count from good.session_lookup_log' 
     db.query(sql).spread(function(rows){ //세션 수 조회
-      if(JSON.parse(JSON.stringify(rows))[0]['session_num']>=50){
-        // 접속 중인 세션이 5개 이상이면 접속 차단 후 404 error (with msg) 보냄 
+      if(JSON.parse(JSON.stringify(rows))[0]['session_count']>=50){
+        // 접속 중인 세션이 50개 이상이면 접속 차단 후 404 error (with msg) 보냄 
         res.status(404).send('접속 중인 사용자가 너무 많습니다. 잠시 후에 시도해주세요.');
       }
     })
-    // 넘겨받은 emp_id로 직원 정보 조회
+    /* 
+      넘겨받은 emp_id로 직원 정보 조회
+      cf) req.params는 get request url에 binding된 parameter (/login/:emp_id 에서 emp_id)
+          req.query는 get request url 끝에 붙는 query string (/query/search?searchWord=DB에서 searchWord)
+          req.body는 post request의 body에 담긴 데이터
+    */
+
     sql=`select EMP_ID, EMP_NM, ORG_NM from connect.hr_info where emp_id=${req.params.emp_id}`;
     db.query(sql).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
       if (JSON.parse(JSON.stringify(rows)).length==1){
         console.log(`${req.params.emp_id}님의 직원정보가 존재합니다.`);
         req.session.data=JSON.parse(JSON.stringify(rows));
+        // isAdmin property : 관리자 페이지에 접근할 권한 여부
         req.session.isAdmin=false;
         req.session.save(()=>{
-          console.log('세션 생성 완료!');
-          /*3. '/user/main/으로 redirect */
+          console.log(`${req.params.emp_id} 세션 생성`);
+          /* 
+            /user/main/으로 redirect
+            ajax로 처리하는 router에서는 redirect가 적용되지 않음
+          */
           res.redirect('/users/main')
         });
       } else{
-        res.send('직원정보가 존재하지 않음'); // 추후 수정
+        res.status(404).send('직원정보가 존재하지 않음');
       };
+    }).catch((err)=>{
+      console.log(err);
+      res.status(404).send('로그인 오류가 발생하여 잠시 후 다시 시도해주세요.');
     })
   }
 });
 
 router.get('/main', function(req, res) { //
   /*
-    메인 페이지
-    1. 세션 정보를 페이지단으로 넘겨주기(ejs) 또는 세션정보를 바탕으로 페이지 내부(client)에서 처리
-    2. 출퇴근 기록 조회 | 급량비 및 초과근무 기록 조회의 2개의 tab으로 구성
-    이후 main page 리턴
+    Main Page
+    세션 정보를 페이지단으로 넘겨주기(ejs)
   */
-  if(req.session.data){ // 세션 정보 있는지 확인
+  if(req.session.data){ // 세션 유효성 검증
     res.render('main',{list:req.session.data[0]})
-  }else res.status(404).send('세션 정보 없음'); //추후 수정
-  });
+  }else res.status(404).send('세션 정보가 없습니다. 그룹웨어 페이지에서 다시 접속해주세요.');
+});
 
 router.post('/inout',function(req, res){
   /*
-    출퇴근 기록 조회 
-    filter 안에 있는 내용(사번, 부서, interval)을 기반으로 중계DB의 connect.ehr_cal에서 값을 가져오는 쿼리를 실행
-    이후 res.json으로 리턴
+    출퇴근 기록 조회 버튼 클릭 시 발생
+    
+    필터 정보(사번, 부서, 기간)를 기준으로 중계DB의 connect.ehr_cal에서 데이터를 가져오기
+    이후 JSON data return
   */
   if(!req.session.data){ // 세션정보 존재하지 않으면 오류 표출
-    res.status(404).send('세션 정보 없음'); //추후 수정
+    res.status(404).send('세션 정보 없음');
   }
 
-  const {emp_id, start_day, end_day}=req.body; // 넘겨준 데이터를 변수에 저장 (사번, 기간)
+  const {emp_id, start_day, end_day}=req.body; // 필터 정보 저장
 
-  db.configure(db_config['mysql']);
   sql='select EMP_ID, NAME, ORG_NM, YMD, WORK_TYPE, FIX1, `INOUT`, PLAN1, ERROR_INFO from connect.ehr_cal ' +
-  'where emp_id=? and ymd>=? and ymd<=? order by YMD'; // 특정 기간 내의 직원 출퇴근 기록을 날짜 순으로 정렬
-
-  db.query(sql,[emp_id, start_day, end_day]).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
-    result=JSON.parse(JSON.stringify(rows));
+  'where emp_id=? and ymd>=? and ymd<=? order by YMD'; // 직원 출퇴근 기록을 날짜 순으로 정렬, '?'로 사번, 기간 binding
+  db.query(sql,[emp_id, start_day, end_day]).spread(function(rows){ // list query binding
     for(line of result){
+
       line["INOUT"]=line["INOUT"].split('~').map(str=>{
         if(str==''){
             return '';
         }
         return str.substring(0,2)+':'+str.substring(2)
-      }).join('~')
+      }).join('~') // 출퇴근기록 처리 'hhmm~hhmm' => 'hh:mm~hh:mm'
+
       if(line["FIX1"]!='ERROR'){
         line["FIX1"]=line["FIX1"].split('~').map(str=>{
           if(str==''){
               return '';
           }
           return str.substring(0,2)+':'+str.substring(2)
-        }).join('~')
+        }).join('~') // 확정시간 처리 'hhmm~hhmm' => 'hh:mm~hh:mm'
       }else{
         line["FIX1"]='수기 계산 필요';
       }
+
       if(line["PLAN1"]!='None'){
         line["PLAN1"]=line["PLAN1"].split('~').map(str=>{
           if(str==''){
               return '';
           }
           return str.substring(0,2)+':'+str.substring(2)
-        }).join('~')
+        }).join('~') // 계획시간 처리 'hhmm~hhmm' => 'hh:mm~hh:mm'
       }else{
         line["PLAN1"]='~';
       }
+
       if(line["ERROR_INFO"]=='None'){
         line["ERROR_INFO"]='';
       }
-      
     }
     return result;
   }).then(result=>{
-    console.log(result);
     res.json(result);
+  }).catch(err=>{
+    console.log(err);
+    res.status(404).send('조회 시 오류가 발생하여 잠시 후에 다시 시도해주세요.');
   });
 });
 
 router.post('/overtime',async function(req, res){
   /*
-    급량비 및 초과근무 기록 조회
-    filter 안에 있는 내용(사번, 부서, 연월 정보)을 기반으로 중계DB의 connect.ehr_cal에서 값을 가져오는 쿼리를 실행
+    초과근무 및 급량비 조회 버튼 클릭 시 발생
+    필터 정보(사번, 연/월)를 기준으로 중계DB의 connect.ehr_cal에서 데이터 가져오기
+
     최초에 해당 연월에 해당하는 ehr_cal 데이터 행 수와 날짜를 기준으로 몇주차까지 완전하게 계산가능한지 판별하고
     각 주차별로 초과근무, 급량비 내역 표출 및 월별 합산해서 표출할 수 있는 데이터 set 생성
-    이후 res.json으로 리턴
+
+    ++ 06/09 : 주별/월별 초과근무 최대 한도 설정하고 잘라내서 급량비 재산정
   */ 
   if(!req.session.data){ // 세션정보 존재하지 않으면 오류 표출
-    res.status(404).send('세션 정보 없음'); //추후 수정
+    res.status(404).send('세션 정보 없음'); 
   }
-  const {emp_id, start_day, end_day}=req.body;
-  var temp_overtime='0000'; // 임시 초과근무 저장변수 (월별)
-  var temp_overtime_week='0000' // 임시 초과근무 저장변수 (주별)
-  var temp_week; // 임시 주차 저장변수
 
-  db.configure(db_config['mysql']);
+  const {emp_id, start_day, end_day}=req.body; // 필터 정보 저장
+
+  var temp_overtime='0000'; // 초과근무분 임시 저장 (월별)
+  var temp_overtime_week='0000' // 초과근무분 임시 저장 (주별)
+  var temp_week; // #주차 정보 저장
+
+  // 초과근무 내역이 존재하거나 급량비 산정 대상인 데이터만 가져오기
   sql='SELECT a.EMP_ID AS EMP_ID, a.`NAME` AS `NAME`, a.YMD AS YMD, a.CAL_OVERTIME AS CAL_OVERTIME, a.CAL_MEAL AS CAL_MEAL,' +
   ' a.`INOUT` AS `INOUT`,'+
   ` b.over_std_time AS over_std_time from connect.ehr_cal a LEFT JOIN (SELECT EMP_ID, over_std_time FROM connect.gw_ehr_con)b`+
   ` ON a.EMP_ID=b.EMP_ID`+
   ` where a.emp_id=? and a.YMD>=? and a.YMD<=? and (a.CAL_OVERTIME!='0000' OR a.CAL_MEAL!='FALSE') order by YMD`;
-
+  
   db.query(sql,[emp_id, start_day, end_day]).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
-    
     result=JSON.parse(JSON.stringify(rows));
     new_result={
-      "empInfo":[], // 일별 데이터
+      "empInfo":[], // result
       "endOfWeek": lib.weekOfMonth(end_day) // 마지막 주 정보
     }
-    var row=0;
-    //over_std_time=0이면 그냥 넘기기
 
-    console.log(exception_list)
+    var row=0;
+
     while(row<result.length){
+      /*
+        result property 정보
+        CUTOFF : 월별/주별 초과근무 최대치 초과로 초과근무분이 잘렸는지 여부
+        EXCEPT : exception_list에 존재하는 사용자인지 여부
+        WEEK : 데이터가 몇 주차에 해당하는지에 대한 정보
+        그 외 : SQL 조회 산출물
+      */
       result[row]['CUTOFF']=false;
       result[row]['EXCEPT']=false;
-      result[row]['WEEK']=lib.weekOfMonth(result[row]['YMD']);
-      if(row==0){
+      result[row]['WEEK']=lib.weekOfMonth(result[row]['YMD']); // 특정 날짜가 몇주차인지
+
+      if(row==0){ // 첫번째 데이터 WEEK 설정 (주별 초과근무시간 초기화 용도)
         temp_week=result[row]['WEEK'];
       }else{
-        if(temp_week!=result[row['WEEK']]){
+        if(temp_week!=result[row['WEEK']]){ // 주차 바뀌면 임시변수 초기화
           temp_overtime_week='0000';
           temp_week=result[row]['WEEK'];
         }
       }
-    
-      if(exception_list.indexOf(result[row]['EMP_ID'])!=-1){
-        result[row]['over_std_time']=0;
+
+      if(exception_list.indexOf(result[row]['EMP_ID'])!=-1){ // exception list 안에 있는 사번정보 발견 시
+        // exception list에 해당하는 직원임에도 불구하고 초과근무 기준시간이 0시간이 아닌 데이터가 있어 수동으로 변경
+        result[row]['over_std_time']=0; 
         result[row]['EXCEPT']=true;
         row++;
         continue;
       }
-      if(temp_overtime==(parseInt(result[row]["over_std_time"])*100).toString()){//초과근무 꽉 채우면 모두 drop
+
+      if(temp_overtime==(parseInt(result[row]["over_std_time"])*100).toString()){ // 월별 초과근무 꽉 채우면 모두 drop
         result.splice(row, 1);
-        console.log('열 삭제')
+        console.log('열 삭제');
         continue;
       }
       
-      temp_overtime=lib.addOverTime2(temp_overtime, result[row]["CAL_OVERTIME"]);
+      // 월별/주별 초과근무시간 누적
+      temp_overtime=lib.addOverTime2(temp_overtime, result[row]["CAL_OVERTIME"]); 
       temp_overtime_week=lib.addOverTime2(temp_overtime_week, result[row]["CAL_OVERTIME"]);
-      console.log(temp_overtime_week);
-      if(temp_overtime_week>`1200`){// (주별 12h) 초과근무 한계 넘어간경우
-        console.log('cutoff 발생')
-        result[row]['CUTOFF']=true;
-        result[row]["CAL_OVERTIME"]=lib.subOverTime(result[row]["CAL_OVERTIME"],lib.subOverTime(temp_overtime_week,`${result[row]["over_std_time"]}00`))
-        
-        temp_overtime_week='0000';
-        //급량비 TRUE이면
-        // 주말데이터면 2시간 넘겨야 급량비 TRUE
-        // 평일이면 1시간 넘겨야 급량비 TRUE
 
+      if(temp_overtime_week>`1200`){// 주별 (12h) 초과근무 한계 넘어간경우
+        console.log('주별 초과근무시간 cutoff')
+        result[row]['CUTOFF']=true;
+
+        // 초과근무시간 잘라나기
+        result[row]["CAL_OVERTIME"]=lib.subOverTime(
+          result[row]["CAL_OVERTIME"],lib.subOverTime(
+            temp_overtime_week,`${result[row]["over_std_time"]}00`
+          )
+        )
+        
+        /* 
+          급량비 산정 대상이면 잘린 초과근무 시간에 대해서 재산정
+          주말데이터면 2시간 넘겨야 급량비 인정, 평일이면 1시간 넘겨야 급량비 인정
+        */
         if(result[row]["CAL_MEAL"]=="TRUE"){
-          if(lib.yyyymmddToDay(result[row]["YMD"])==0 || lib.yyyymmddToDay(result[row]["YMD"])==6){
+          if(lib.yyyymmddToDay(result[row]["YMD"])==0 || lib.yyyymmddToDay(result[row]["YMD"])==6){// 주말
             if(result[row]["CAL_OVERTIME"]<'0200'){
               result[row]["CAL_MEAL"]="FALSE";
             }
-          }else{
+          }else{// 평일
             if(result[row]["CAL_OVERTIME"]<'0100'){
               result[row]["CAL_MEAL"]="FALSE";
             }
@@ -216,21 +253,24 @@ router.post('/overtime',async function(req, res){
         }
       }
 
-      if(temp_overtime>`${result[row]["over_std_time"]}00`){// (월별) 초과근무 한계 넘어간경우
-        console.log('cutoff 발생')
+      if(temp_overtime>`${result[row]["over_std_time"]}00`){// 월별 초과근무 한계 넘어간경우
+        console.log('월별 초과근무시간 cutoff')
         result[row]['CUTOFF']=true;
+
+        // 초과근무시간 잘라나기
         result[row]["CAL_OVERTIME"]=lib.subOverTime(result[row]["CAL_OVERTIME"],lib.subOverTime(temp_overtime,`${result[row]["over_std_time"]}00`))
         temp_overtime=`${result[row]["over_std_time"]}00`;
-        //급량비 TRUE이면
-        // 주말데이터면 2시간 넘겨야 급량비 TRUE
-        // 평일이면 1시간 넘겨야 급량비 TRUE
-
+        
+        /* 
+          급량비 산정 대상이면 잘린 초과근무 시간에 대해서 재산정
+          주말데이터면 2시간 넘겨야 급량비 인정, 평일이면 1시간 넘겨야 급량비 인정
+        */
         if(result[row]["CAL_MEAL"]=="TRUE"){
-          if(lib.yyyymmddToDay(result[row]["YMD"])==0 || lib.yyyymmddToDay(result[row]["YMD"])==6){
+          if(lib.yyyymmddToDay(result[row]["YMD"])==0 || lib.yyyymmddToDay(result[row]["YMD"])==6){// 주말
             if(result[row]["CAL_OVERTIME"]<'0200'){
               result[row]["CAL_MEAL"]="FALSE";
             }
-          }else{
+          }else{// 평일
             if(result[row]["CAL_OVERTIME"]<'0100'){
               result[row]["CAL_MEAL"]="FALSE";
             }
@@ -240,66 +280,106 @@ router.post('/overtime',async function(req, res){
       row++;
     }
     new_result["empInfo"]=result
-
     new_result=JSON.parse(JSON.stringify(new_result));
-    
-    
     res.json(new_result);
   }).catch((err)=>{
     console.log(err);
+    res.status(404).send('조회 시 오류가 발생하여 잠시 후 다시 시도해주시기 바랍니다.');
   });
 });
 
 router.post('/cal_meal',function(req, res){
   /*
-    급량비 및 초과근무 기록 조회
-    filter 안에 있는 내용(사번, 부서, 연월 정보)을 기반으로 중계DB의 connect.ehr_cal에서 값을 가져오는 쿼리를 실행
+    팀별 급량비 조회 버튼 클릭 시 발생
+    필터 정보(사번, 연/월)를 기준으로 중계DB의 connect.ehr_cal에서 데이터 가져오기
+
     최초에 해당 연월에 해당하는 ehr_cal 데이터 행 수와 날짜를 기준으로 몇주차까지 완전하게 계산가능한지 판별하고
     각 주차별로 초과근무, 급량비 내역 표출 및 월별 합산해서 표출할 수 있는 데이터 set 생성
-    이후 res.json으로 리턴
+
+    ++ 06/09 : 주별/월별 초과근무 최대 한도 설정하고 잘라내서 급량비 재산정
   */ 
   if(!req.session.data){ // 세션정보 존재하지 않으면 오류 표출
-    res.status(404).send('세션 정보 없음'); //추후 수정
+    res.status(404).send('세션 정보 없음'); 
   }
-  const {dept_name, start_day, end_day}=req.body;
-  var tempEmpId; // 임시저장사번 
-  var temp_overtime='0000'; // 임시저장초과근무시간
+  const {dept_name, start_day, end_day}=req.body; // 필터 정보 저장
 
-  db.configure(db_config['mysql']);
-  // sql='select EMP_ID, `NAME`, ORG_NM, YMD, CAL_OVERTIME, CAL_MEAL from connect.ehr_cal where org_nm=? and ymd>=? and ymd<=?';
+  var tempEmpId; // 임시사번 저장, 팀에 소속된 모든 사람들의 데이터 처리를 하기 위해서 사용
+  var temp_overtime='0000'; // 초과근무분 임시 저장 (월별)
+  var temp_overtime_week='0000' // 초과근무분 임시 저장 (주별)
+  var temp_week; // #주차 정보 저장
+
+  // 초과근무 내역이 존재하거나 급량비 산정 대상인 데이터만 가져오기
   sql='SELECT a.EMP_ID AS EMP_ID, a.`NAME` AS `NAME`, a.YMD AS YMD, a.CAL_OVERTIME AS CAL_OVERTIME, a.CAL_MEAL AS CAL_MEAL, a.ORG_NM as ORG_NM,' +
   ' a.`INOUT` AS `INOUT`,'+
   ` b.over_std_time AS over_std_time from connect.ehr_cal a LEFT JOIN (SELECT EMP_ID, over_std_time FROM connect.gw_ehr_con)b`+
   ` ON a.EMP_ID=b.EMP_ID`+
-  ` where a.ORG_NM=? and a.YMD>=? and a.YMD<=? and (a.CAL_OVERTIME!='0000' OR a.CAL_MEAL!='FALSE') order by YMD`;
-  
+  ` where a.ORG_NM=? and a.YMD>=? and a.YMD<=? and (a.CAL_OVERTIME!='0000' OR a.CAL_MEAL!='FALSE') order by EMP_ID, YMD`;
+  // db.query(sql,[dept_name, start_day, end_day]).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
   db.query(sql,[dept_name, start_day, end_day]).spread(function(rows){ // 넘겨받은 emp_id로 직원 정보 조회
     result=JSON.parse(JSON.stringify(rows));
     console.log(result);
     new_result={
-      "empInfo":[], // 일별 데이터
+      "empInfo":[], // result
       "endOfWeek": lib.weekOfMonth(end_day) // 마지막 주 정보
     }
+
     var row=0;
     while(row<result.length){
+
+      result[row]['CUTOFF']=false;
+      result[row]['EXCEPT']=false;
       result[row]['WEEK']=lib.weekOfMonth(result[row]['YMD']);
       
-
       if(row==0){// 사번 맨처음 넣기
         tempEmpId=result[row]['EMP_ID'];
-      }else if(tempEmpId!=result[row]['EMP_ID']){
-        tempEmpId=result[row]['EMP_ID'];
-        temp_overtime='0000'
+        temp_week=result[row]['WEEK'];
+      }else{
+        if(tempEmpId!=result[row]['EMP_ID']){ // 사번 정보 바뀔 때 감지
+          tempEmpId=result[row]['EMP_ID'];
+          temp_overtime='0000'
+        }
+        if(temp_week!=result[row['WEEK']]){ // 주차 바뀌면 임시변수 초기화
+          temp_overtime_week='0000';
+          temp_week=result[row]['WEEK'];
+        }
       }
-      if(result[row]['over_std_time']==0){
-        row++;
-        continue;
-      }
+
       if(temp_overtime==(parseInt(result[row]["over_std_time"])*100).toString()){//초과근무 꽉 채우면 모두 drop
         result.splice(row, 1);
+        console.log('열 삭제');
         continue;
       }
+
       temp_overtime=lib.addOverTime2(temp_overtime, result[row]["CAL_OVERTIME"]);
+      temp_overtime_week=lib.addOverTime2(temp_overtime_week, result[row]["CAL_OVERTIME"]);
+
+      if(temp_overtime_week>`1200`){// 주별 (12h) 초과근무 한계 넘어간경우
+        console.log('주별 초과근무시간 cutoff')
+        result[row]['CUTOFF']=true;
+
+        // 초과근무시간 잘라나기
+        result[row]["CAL_OVERTIME"]=lib.subOverTime(
+          result[row]["CAL_OVERTIME"],lib.subOverTime(
+            temp_overtime_week,`${result[row]["over_std_time"]}00`
+          )
+        )
+        /* 
+          급량비 산정 대상이면 잘린 초과근무 시간에 대해서 재산정
+          주말데이터면 2시간 넘겨야 급량비 인정, 평일이면 1시간 넘겨야 급량비 인정
+        */
+        if(result[row]["CAL_MEAL"]=="TRUE"){
+          if(lib.yyyymmddToDay(result[row]["YMD"])==0 || lib.yyyymmddToDay(result[row]["YMD"])==6){// 주말
+            if(result[row]["CAL_OVERTIME"]<'0200'){
+              result[row]["CAL_MEAL"]="FALSE";
+            }
+          }else{// 평일
+            if(result[row]["CAL_OVERTIME"]<'0100'){
+              result[row]["CAL_MEAL"]="FALSE";
+            }
+          }
+        }
+      }
+
       if(temp_overtime>`${result[row]["over_std_time"]}00`){//초과근무 한계 넘어간경우
         result[row]["CAL_OVERTIME"]=lib.subOverTime(result[row]["CAL_OVERTIME"],lib.subOverTime(temp_overtime,`${result[row]["over_std_time"]}00`))
         temp_overtime=`${result[row]["over_std_time"]}00`;
@@ -318,13 +398,13 @@ router.post('/cal_meal',function(req, res){
       }
       row++;
     }
-    console.log(result);
+  
     new_result["empInfo"]=result
     new_result=JSON.parse(JSON.stringify(new_result));
-
     res.json(new_result);
   }).catch((err)=>{
     console.log(err);
+    res.status(404).send('조회 시 오류가 발생하여 잠시 후에 다시 시도해주세요.');
   });
 });
 
