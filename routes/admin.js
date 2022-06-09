@@ -378,8 +378,8 @@ router.get('/gw/ehr/con/:emp_id',function(req,res){
   }).then((result)=>{
     var new_result={}
 
-    new_result["OVERTIME"]=`초과근무 <br/> ${lib.digitTimeToFormatted(result[0]["TOTAL_OVERTIME"])} / ${result[0]["over_std_time"]}h`;
-    new_result["VOC"]=`잔여연차 <br/> ${lib.floatTimeToFormatted(result[0]["dayoff_rest_time"])} / ${result[0]["dayoff_std_time"]}h`;
+    new_result["OVERTIME"]=`초과근무 ${lib.digitTimeToFormatted(result[0]["TOTAL_OVERTIME"])} / ${result[0]["over_std_time"]}h`;
+    new_result["VOC"]=`잔여연차 ${lib.floatTimeToFormatted(result[0]["dayoff_rest_time"])} / ${result[0]["dayoff_std_time"]}h`;
     new_result["ORG_EDU"]=`기관교육 ${result[0]["i_edu_admit_time"]}h / ${result[0]["i_edu_std_time"]}h`;
     new_result["IND_EDU"]=`개인교육 ${result[0]["p_edu_admit_time"]}h / ${result[0]["p_edu_std_time"]}h`;
     return new_result;
