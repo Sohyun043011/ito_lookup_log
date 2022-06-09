@@ -441,10 +441,13 @@ function digitTimeToFormatted(time){ //time:string (ex : 1344 - 13h 44m으로 �
 
     var returnString=''
     if(hour!=0){
-        returnString=returnString+`${hour}시간`
+        returnString=returnString+`${hour}h`
     }
     if(minute!=0){
-        returnString=returnString+` ${minute}분`
+        returnString=returnString+` ${minute}m`
+    }
+    if (hour==0 && minute==0){
+        return '0h';
     }
     return returnString;
 }
@@ -455,13 +458,13 @@ function floatTimeToFormatted(time){ //time:string (ex : 1344 - 13h 44m으로 �
     var minute=timeInt%100;
     var returnString=''
     if(hour!=0){
-        returnString=returnString+`${hour}시간`
+        returnString=returnString+`${hour}h`
     }
     if(minute!=0){
-        returnString=returnString+` ${minute}분`
+        returnString=returnString+` ${minute}m`
     }
     if (hour==0 && minute==0){
-        return '0시간';
+        return '0h';
     }
     return returnString;
 }
