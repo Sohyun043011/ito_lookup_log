@@ -97,7 +97,7 @@ router.post('/inout',function(req, res){
     이후 JSON data return
   */
   if(!req.session.data){ // 세션정보 존재하지 않으면 오류 표출
-    res.status(404).send('세션 정보 없음');
+    res.status(404).send('세션 정보가 없습니다. 그룹웨어 페이지에서 다시 접속해주세요.');
   }
 
   const {emp_id, start_day, end_day}=req.body; // 필터 정보 저장
@@ -160,7 +160,7 @@ router.post('/overtime',async function(req, res){
     ++ 06/09 : 주별/월별 초과근무 최대 한도 설정하고 잘라내서 급량비 재산정
   */ 
   if(!req.session.data){ // 세션정보 존재하지 않으면 오류 표출
-    res.status(404).send('세션 정보 없음'); 
+    res.status(404).send('세션 정보가 없습니다. 그룹웨어 페이지에서 다시 접속해주세요.'); 
   }
   console.log(exception_list);
   const {emp_id, start_day, end_day}=req.body; // 필터 정보 저장
@@ -291,7 +291,7 @@ router.post('/cal_meal',function(req, res){
     ++ 06/09 : 주별/월별 초과근무 최대 한도 설정하고 잘라내서 급량비 재산정
   */ 
   if(!req.session.data){ // 세션정보 존재하지 않으면 오류 표출
-    res.status(404).send('세션 정보 없음'); 
+    res.status(404).send('세션 정보가 없습니다. 그룹웨어 페이지에서 다시 접속해주세요.'); 
   }
   const {dept_name, start_day, end_day}=req.body; // 필터 정보 저장
 

@@ -37,7 +37,7 @@ router.post('/login',function(req, res){ //data 키값 중 password라는 항목
     이후 admin page로 redirect
   */
   if (!req.session.data){ // session data 유효성 검사
-    res.status(404).send('세션 정보 없음'); 
+    res.status(404).send('세션 정보가 없습니다. 그룹웨어 페이지에서 다시 접속해주세요.'); 
   }
 
   password=db_config.adminPageInfo.password; // 관리자 로그인 암호
@@ -55,10 +55,14 @@ router.post('/login',function(req, res){ //data 키값 중 password라는 항목
 });
 
 router.get('/logout',function(req,res){ // 별도로 session destroy를 해주지 않아도 됨
-  req.session.isAdmin=false;
-  req.session.save(()=>{
-    res.send('로그아웃');
-  })
+  if(req.session.isAdmin){
+    req.session.isAdmin=false;
+    req.session.save(()=>{
+      res.send('로그아웃');
+    })
+  }else{
+    res.status(404).send('관리자 권한이 없습니다. 그룹웨어 페이지에서 다시 접속해주세요.'); 
+  }
 })
 
 router.get('/main', function(req, res) { //
@@ -84,7 +88,7 @@ router.get('/main', function(req, res) { //
       res.status(404).send('직원 정보 조회 중 오류가 발생하였습니다. 다시 시도해주세요.');
     })
   }else {
-    res.status(404).send('관리자 권한이 없습니다. 로그인 후 다시 시도해주세요.');
+    res.status(404).send('관리자 권한이 없습니다. 그룹웨어 페이지에서 다시 접속해주세요.');
   }
 });
 
@@ -95,7 +99,7 @@ router.get('/ehr/:type', async function(req, res){
     이후 form 정보 리턴
   */
   if (!req.session.isAdmin){ // request, session, session data 유효성 검사
-    res.status(404).send('관리자 권한이 없습니다. 로그인 후 다시 시도해주세요.'); //추후 수정
+    res.status(404).send('관리자 권한이 없습니다. 그룹웨어 페이지에서 다시 접속해주세요.'); //추후 수정
   }
 
   // 필터 정보 가져오기
@@ -292,7 +296,7 @@ router.get('/download/:type', function(req, res){
   */
 
   if (!req.session.isAdmin){ // request, session, session data 유효성 검사
-    res.status(404).send('관리자 권한이 없습니다. 로그인 후 다시 시도해주세요.'); 
+    res.status(404).send('관리자 권한이 없습니다. 그룹웨어 페이지에서 다시 접속해주세요.'); 
   }
   console.log('download 시작');
   const xl = require('excel4node');
@@ -302,7 +306,7 @@ router.get('/download/:type', function(req, res){
   var sql=``;
 
   var {emp_name, emp_id, org_nm, start_day, end_day}= req.query;
-  
+
   var sql=` where ymd>=? and ymd<=?`;
 
   var sqlList=[start_day, end_day];
