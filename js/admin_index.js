@@ -48,7 +48,7 @@ $(document).ready(function(){
         ,showOtherMonths : true
         ,changeYear:true
         ,changeMonth:true
-        ,minDate:"-5M",
+        ,minDate:new Date('2022-01-01'),
         maxDate:"+0D",
         prevText: '이전 달',
         nextText: '다음 달',
@@ -167,23 +167,23 @@ $(document).ready(function(){
                         pageSize: 15,
                         pageButtonCount: 5,
                         fields: [
-                            { name: "No", type: "number",width:"35px"},
+                            { name: "No", type: "number",width:"5%"},
                             { name: "사번", type: "text"},
                             { name: "이름", type: "text"},
                             { name: "날짜", type: "text"},
                             { name: "요일", type: "text"},
-                            { name:"근무유형", type:"text"},
+                            { name:"근무유형", type:"text",width:"15%"},
                             { name:"출입시각", type:"text"},
                             { name:"확정시각", type:"text"},
                             { name:"계획시간", type:"text"},
-                            { name:"비고", type:"text"}
+                            { name:"비고", type:"text",width:"15%"}
                         ]
                     })
                     //$('a:contains("1")').click(): 조회하기를 다시 눌렀을 때, 1페이지로 refresh 되도록 함.
                     //a:contains("First") 마찬가지
                     $('a:contains("1")').click();
                     $('a:contains("First")').click();
-                    $('#check-search').prop('disabled', false);
+                    
                 },
                 error:function(result){
                     var params = "msg="+result.responseText
@@ -191,6 +191,7 @@ $(document).ready(function(){
                 }
             }).then(()=>{
                 // 날짜 입력하는 곳에 남아있는 text 삭제함.
+                $('#check-search').prop('disabled', false);
                 $('.inout-download').prop('disabled', false);
                 $('#admin_datepicker1').val(dayFormatTranslate(start_day));
                 $('#admin_datepicker2').val(dayFormatTranslate(end_day));
@@ -361,7 +362,7 @@ $(document).ready(function(){
                                 // pageSize: 15,
                                 // pageButtonCount: 5,
                                 fields: [
-                                    { name: "No", type: "number",width:"35px"},
+                                    { name: "No", type: "number",width:"5%"},
                                     { name: "사번", type: "text"},
                                     { name: "이름", type: "text"},
                                     { name: "부서명", type: "text"},
@@ -375,13 +376,14 @@ $(document).ready(function(){
                             $('a:contains("1")').click();
                             $('a:contains("First")').click();
                         }
-                        $('#check-cal-search').prop('disabled', false);
+                        
                     }, 
                     error:function(result){
                         var params = "msg="+result.responseText
                         location.href=`/admin/error?${params}`
                     }
                 }).then(()=>{
+                    $('#check-cal-search').prop('disabled', false);
                     $('.cal-download').prop('disabled', false);
             
             });
