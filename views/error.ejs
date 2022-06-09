@@ -24,16 +24,17 @@
 </head>
 <body>
         <div class="error-div">
-            <img class="error-img" src="../404err.png" onerror="this.style.display='none';">
+            <img class="error-img" src="../img/404err.png" onerror="this.style.display='none';">
             <div style="padding: 20px">
                 <span class="err-msg"><%= error %> </span>
             </div>
+            <% if(error=='관리자 권한이 없습니다. 그룹웨어 페이지에서 다시 접속해주세요.' || error=='세션 정보가 없습니다. 그룹웨어 페이지에서 다시 접속해주세요.'){%>
+                <h4>창을 닫아주세요.</h4>
+            <% }else{%>
             <div>
-                <a href="#" onclick="javascript:self.close()">close</a>
-                <button type="button" class="btn btn-outline-secondary err-btn" onclick="window.open('error','_parent',''); window.close();">이전페이지</button>
+                    <button type="button" class="btn btn-outline-secondary err-btn" onclick="location.href = document.referrer;">돌아가기</button>
             </div>
-            
-
+            <% }%>
         </div>
     
 </body>

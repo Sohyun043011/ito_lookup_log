@@ -134,7 +134,7 @@ $(document).ready(function(){
                 data:info,
                 success:function(result){
                     // console.log("success");
-                    console.log(result);
+                    // console.log(result);
                     var list =[];
                     for(var i=0;i<result.length;i++)
                     {
@@ -232,7 +232,7 @@ $(document).ready(function(){
                     data:info,
                     success:function(result){
                         // console.log("cal success");
-                        console.log(result);
+                        // console.log(result);
                         $('.summary-table').css('display','inline-table');
                    
                         // table생성 (end_of_week에 따라서)
@@ -321,14 +321,8 @@ $(document).ready(function(){
                                 var etc = '';
                                 var time = result.empInfo[i].CAL_OVERTIME;
                                 if (cutOff == true){
-                                   
                                     etc = "(초과근무 일부 반영)"
                                 }
-                                if(except==true){
-                                    time = result.empInfo[i].INOUT;
-                                    etc = "(출퇴근기록 초과분으로 적용)"
-                                }
-                                
                                 if(result.empInfo[i].CAL_OVERTIME!='0000' || result.empInfo[i].EXCEPT==true){
                                     list.push({
                                         "No":`${cnt}`,
@@ -341,7 +335,9 @@ $(document).ready(function(){
                                        
                                         "급량비유무": (result.empInfo[i].CAL_MEAL=="TRUE") ? "O" : "X"
                                     });
-                                    if(except==true){
+                                    if(except){
+                                        time = result.empInfo[i].INOUT;
+                                        etc = "(출퇴근기록 초과분으로 적용)"
                                         time=time.split('~').map(str=>{
                                             if(str==''){
                                                 return '';
@@ -349,8 +345,6 @@ $(document).ready(function(){
                                             return str.substring(0,2)+':'+str.substring(2)
                                           }).join('~')
                                           list[i]['초과근무시간'] = `${time} ${etc}`;
-
-
                                     }
                                     else{
                                         list[i]['초과근무시간'] = `${hhmmToString2(time)} ${etc}`;
