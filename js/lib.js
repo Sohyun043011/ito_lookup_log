@@ -453,7 +453,6 @@ function floatTimeToFormatted(time){ //time:string (ex : 1344 - 13h 44m으로 �
     var timeInt=parseInt(time);
     var hour=parseInt(timeInt/100);
     var minute=timeInt%100;
-
     var returnString=''
     if(hour!=0){
         returnString=returnString+`${hour}시간`
@@ -461,9 +460,12 @@ function floatTimeToFormatted(time){ //time:string (ex : 1344 - 13h 44m으로 �
     if(minute!=0){
         returnString=returnString+` ${minute}분`
     }
+    if (hour==0 && minute==0){
+        return '0시간';
+    }
     return returnString;
 }
-
+console.log(floatTimeToFormatted('0'));
 
 function yyyymmddToDay(ymd){
     var y = parseInt(ymd.substr(0, 4));
