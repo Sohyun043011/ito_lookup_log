@@ -130,7 +130,7 @@ $(document).ready(function(){
                 data:info,
                 success:function(result){
                     // console.log("success");
-                    // console.log(result);
+                    console.log(result);
                     var list =[];
                     for(var i=0;i<result.length;i++)
                     {
@@ -227,7 +227,7 @@ $(document).ready(function(){
                     data:info,
                     success:function(result){
                         // console.log("cal success");
-                        // console.log(result);
+                        console.log(result);
                         $('.summary-table').css('display','inline-table');
                    
                         // table생성 (end_of_week에 따라서)

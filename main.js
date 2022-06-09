@@ -3,28 +3,34 @@ const res = require('express/lib/response');
 const http=require('http');
 const url = require('url');
 const path=require('path')
-const express=require('express');
-const session=require('express-session');
-const mysql_store=require('express-mysql-session')(session);
+const express=require('express'); // express 프레임워크
+const session=require('express-session'); // express 내에서 session사용
+const mysql_store=require('express-mysql-session')(session); 
+// session storage (DB에 세션정보 저장, good.session_lookup_log)
 const { DEC8_SWEDISH_CI } = require('mysql/lib/protocol/constants/charsets');
 var bodyParser = require('body-parser');
 const { json } = require('express/lib/response');
-var UserRouter=require('./routes/users')
-var AdminRouter=require('./routes/admin')
-const db_config=require('./db_config')
-var cookieParser=require('cookie-parser')
+var UserRouter=require('./routes/users') // users.js에 기록된 router 정보
+var AdminRouter=require('./routes/admin') // admin.js에 기록된 router 정보
 
-var session_store= new mysql_store(db_config['mysql-session']); // session_store를 사용하여 세션 데이터를 연동 DB에 저장
+/* mysql, mysql session storage, 관리자 비밀번호 정보
+gitignore로 설정되어 공사 서버 접속정보 외부로 노출 안됨 */
+const db_config=require('./db_config') 
+
+var cookieParser=require('cookie-parser') 
+
+// session_store를 사용하여 세션 데이터를 연동 DB에 저장
+var session_store= new mysql_store(db_config['mysql-session']); 
+
 const port=3001; // 포트접속정보
 
 const app=express();
 
+// ejs engine linking
 app.set('views','./views');
-app.set('view engine','ejs'); // ejs engine linking
+app.set('view engine','ejs'); 
 
-/*
-    app.use로 필요한 middleware를 사용함을 명시
-*/
+// app.use로 특정 middleware를 사용 (라우터 정보, 참조하는 디렉토리 및 하위 파일, 모듈 등)
 app.use(cookieParser());
 app.use(session({
     secret:'awefeawfe', // 암호화코드
@@ -45,7 +51,7 @@ app.use(express.static(path.join(__dirname+'/lib')));
 app.use(express.static(path.join(__dirname+'/data')));
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 app.use(bodyParser.json()); // for parsing application/json
-app.use('/users', UserRouter) //router 객체 설정
+app.use('/users', UserRouter)
 app.use('/admin', AdminRouter)
 
 app.use((request, response)=>{ //잘못된 url로 접근 시
@@ -54,4 +60,5 @@ app.use((request, response)=>{ //잘못된 url로 접근 시
 
 app.listen(port, function(){ // 3001번 포트로 listen
     console.log(`Server running at ${port}`);
+    /* 추후 한 사용자에 대한 1분당 db조회 수 제한 추가 예정 */
 });

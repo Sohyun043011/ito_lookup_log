@@ -416,6 +416,7 @@ $(document).ready(function(){
                 data:{'dept_name':dept_name,'start_day':start_day,'end_day':end_day},
                 success:function(result){
                     // 요약 table 출력
+                    console.log(result);
                     $('.team-summary-table').css('display','inline-table');
                     $('.team-week-tr').html('');
                     $('.team-week-cal').html('');

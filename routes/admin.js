@@ -206,8 +206,7 @@ router.get('/ehr/:type', async function(req, res){
             result[row]['CUTOFF']=true;
             result[row]["CAL_OVERTIME"]=lib.subOverTime(result[row]["CAL_OVERTIME"],lib.subOverTime(temp_overtime_week,`${result[row]["over_std_time"]}00`))
             
-            temp_overtime_week='0000';
-            //급량비 TRUE이면
+            // 급량비 TRUE이면
             // 주말데이터면 2시간 넘겨야 급량비 TRUE
             // 평일이면 1시간 넘겨야 급량비 TRUE
     
