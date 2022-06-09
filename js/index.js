@@ -224,7 +224,7 @@ $(document).ready(function(){
                     // result로 오는 정보 : 각 월에 해당하는 초과근무 및 급량비 산정 기록 
                     // if duty = "팀장" => 초과근무 X, 급량비 O
                    
-                    console.log(result);
+                    // console.log(result);
                     $('.summary-table').css('display','inline-table');
                    
                     // table생성 (end_of_week에 따라서)
@@ -317,10 +317,7 @@ $(document).ready(function(){
                                 var etc = '';
                                 var except = result.empInfo[i].EXCEPT;
                                 var time = result.empInfo[i].CAL_OVERTIME;
-                                if(except){
-                                    is_over = '출퇴근기록'
-                                    time = result.empInfo[i].INOUT;
-                                }
+                               
                                 if (cutOff == true){
                                     etc = "(초과근무 일부 반영)"
                                 }
@@ -335,7 +332,8 @@ $(document).ready(function(){
                                 });
                                 
                                 if(except){
-                                    
+                                    is_over = '출퇴근기록'
+                                    time = result.empInfo[i].INOUT;
                                     time=time.split('~').map(str=>{
                                         if(str==''){
                                             return '';
@@ -418,7 +416,7 @@ $(document).ready(function(){
                 data:{'dept_name':dept_name,'start_day':start_day,'end_day':end_day},
                 success:function(result){
                     // 요약 table 출력
-                    console.log(result);
+                    // console.log(result);
                     $('.team-summary-table').css('display','inline-table');
                     $('.team-week-tr').html('');
                     $('.team-week-cal').html('');
