@@ -446,6 +446,9 @@ function digitTimeToFormatted(time){ //time:string (ex : 1344 - 13h 44m으로 �
     if(minute!=0){
         returnString=returnString+` ${minute}m`
     }
+    if (hour==0 && minute==0){
+        return '0h';
+    }
     return returnString;
 }
 
