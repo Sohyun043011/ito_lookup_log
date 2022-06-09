@@ -393,7 +393,7 @@ router.get('/gw/ehr/con/:emp_id',function(req,res){
 
 router.get('/error',function(req,res){ // admin에서 발생하는 모든 에러 케이스 처리
   var error_msg=req.query.msg;
-  res.redirect('error',{error:error_msg});
+  res.render('error',{error:error_msg});
 });
 
 module.exports=router; //이거 안해주면 main.js app(express) 객체에서 라우터 접근 못함
