@@ -1,0 +1,26 @@
+.container{
+    display: flex;
+    justify-content:center;
+    align-items : center;
+}
+.error-div{
+    flex-direction: column;
+    display: flex;
+    justify-content:center;
+    align-items : center;
+    margin:10%;
+    text-align: center;
+}
+.error-img
+{
+    height: 200px;
+}
+.err-msg
+{
+    display: block; 
+    font-size:larger;
+    font-weight: 800;
+}
+.err-btn{
+    width: 200px;
+}

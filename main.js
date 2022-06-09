@@ -56,6 +56,7 @@ app.use('/admin', AdminRouter)
 
 app.use((request, response)=>{ //잘못된 url로 접근 시
     response.send(`<h1>Sorry, page not found.</h1>`);
+    // res.render('error',{error:'<h1>Sorry, page not found.</h1>'})
 });
 
 app.listen(port, function(){ // 3001번 포트로 listen
